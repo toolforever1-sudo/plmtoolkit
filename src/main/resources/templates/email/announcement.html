@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  @media (prefers-color-scheme: dark) {
+    .email-body { background:#1a1d21 !important; }
+    .email-card { background:#23262b !important; border-color:#3a3d42 !important; }
+    .email-ink  { color:#e8e6df !important; }
+    .email-muted{ color:#9CA3AF !important; }
+    .footer-pill{ background:#23262b !important; }
+  }
+</style>
+</head>
+<body class="email-body" style="margin:0; padding:0; background:#FAFAF7; font-family:'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FAFAF7;">
+  <tr><td align="center" style="padding:28px 12px;">
+    <table role="presentation" class="email-card" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%; background:#ffffff; border:1px solid #e8e6df; border-radius:8px;">
+      <!-- Header: PT monogram + brand + ANNOUNCEMENT chip -->
+      <tr><td style="padding:18px 24px 16px; border-bottom:1px solid #ececec;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td width="24" valign="middle" style="width:24px;">
+            <div style="width:24px; height:24px; border-radius:5px; background:#0F1720; color:#FAFAF7; font-family:'IBM Plex Mono',Consolas,monospace; font-size:10px; font-weight:700; text-align:center; line-height:24px;">PT</div>
+          </td>
+          <td valign="middle" style="padding-left:10px; font-size:13px;">
+            <span class="email-ink" style="font-weight:600; color:#0F1720;">PLM Toolkit</span><span class="email-muted" style="color:#6B7280;"> / Announcement</span>
+          </td>
+          <td valign="middle" align="right">
+            <span class="email-muted" style="font-family:'IBM Plex Mono',Consolas,monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6B7280; border:1px solid #e8e6df; padding:3px 8px; border-radius:3px; background:#fafaf7;">Announcement</span>
+          </td>
+        </tr></table>
+      </td></tr>
+      <!-- Date + headline -->
+      <tr><td style="padding:22px 24px 6px;">
+        <div class="email-muted" style="font-family:'IBM Plex Mono',Consolas,monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#6B7280; margin-bottom:8px;">${dateLabel}</div>
+        <h2 class="email-ink" style="font-family:'IBM Plex Serif',Georgia,serif; font-weight:500; font-size:24px; line-height:1.2; letter-spacing:-0.01em; color:#0F1720; margin:0 0 8px;">${subject}</h2>
+      </td></tr>
+      <!-- AI-generated body: intro paragraph, optional key-facts table, outro, sign-off -->
+      <tr><td style="padding:0 24px 20px;">
+        ${bodyHtml}
+      </td></tr>
+      <!-- Footer strip -->
+      <tr><td class="footer-pill" style="border-top:1px solid #ececec; padding:12px 24px; font-size:11px; color:#9CA3AF; background:#fafaf7; border-radius:0 0 8px 8px;">
+        Sent by PLM IT via PLM Toolkit &middot; You&rsquo;re receiving this because you use the Agile PLM Toolkit.
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

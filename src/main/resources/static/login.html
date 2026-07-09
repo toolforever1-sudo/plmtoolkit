@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agile PLM Toolkit &mdash; Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--t-body);
+    line-height: var(--lh-body);
+    -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ---- top bar ---- */
+  .topbar {
+    height: var(--h-topbar);
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    flex: 0 0 auto;
+  }
+  .brand-mark { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
+  .brand-mark img { height: 18px; }
+  .brand-mark .name { color: var(--ink); }
+  .brand-mark .name em { font-style: normal; color: var(--ink-3); font-weight: 400; margin-left: 4px; }
+  .topbar-meta { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: var(--t-micro); color: var(--ink-3); }
+  .topbar-meta .dotg { width: 6px; height: 6px; border-radius: 50%; background: var(--good); display: inline-block; margin-right: 6px; box-shadow: 0 0 0 3px color-mix(in oklab, var(--good) 18%, transparent); }
+  .topbar-meta .sep { opacity: .4; }
+
+  /* ---- two-column stage ---- */
+  .stage { flex: 1 1 auto; display: grid; grid-template-columns: 1.4fr 1fr; min-height: 0; }
+  @media (max-width: 980px) { .stage { grid-template-columns: 1fr; } .left-pane { display: none; } }
+
+  /* ---- left pane (info / status / what's new) ---- */
+  .left-pane {
+    padding: 48px 56px;
+    border-right: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--surface-2) 0%, var(--bg) 60%);
+    overflow-y: auto;
+  }
+  .crumb { display: flex; align-items: center; gap: 10px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 22px; padding: 0 8px; border-radius: var(--radius-pill);
+    background: #fff; border: 1px solid var(--line);
+    font-family: var(--font-mono); font-size: var(--t-micro); color: var(--ink-2);
+  }
+  .left-pane h2 {
+    font-family: var(--font-serif); font-weight: 500;
+    font-size: 30px; line-height: 1.15; letter-spacing: -0.012em;
+    margin: 22px 0 8px; max-width: 18ch; color: var(--ink);
+  }
+  .left-pane .lede { color: var(--ink-3); font-size: 14px; max-width: 50ch; line-height: 1.55; }
+
+  .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; max-width: 560px; }
+  .status-grid .cell { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+  .status-grid .cell .n { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+  .status-grid .cell .v { font-family: var(--font-serif); font-weight: 500; font-size: 22px; margin-top: 4px; color: var(--ink); }
+  .status-grid .cell .v small { font-size: 14px; color: var(--ink-3); font-family: var(--font-serif); }
+  .status-grid .cell .d { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--ink-3); }
+  .status-grid .cell .d .ok { color: var(--good-ink); }
+
+  .panel { margin-top: 24px; max-width: 560px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .panel-head .h { font-family: var(--font-mono); font-size: var(--t-label); text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+  .panel-head .more { font-size: 12px; color: var(--accent); text-decoration: none; }
+  .panel-head .more:hover { text-decoration: underline; }
+  .panel ul { list-style: none; }
+  .panel li { display: grid; grid-template-columns: 80px 1fr auto; gap: 14px; align-items: baseline; padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .panel li:last-child { border-bottom: 0; }
+  .panel li .when { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+  .tag { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: var(--radius-pill); }
+  .tag.new  { background: var(--good-bg); color: var(--good-ink); }
+  .tag.fix  { background: var(--accent-2); color: var(--accent-ink); }
+  .tag.note { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+
+  /* ---- right pane (auth form) ---- */
+  .right-pane {
+    padding: 60px 48px;
+    display: grid; place-items: center;
+    background: radial-gradient(500px 400px at 100% 0%, color-mix(in oklab, var(--accent) 5%, transparent), transparent 60%), var(--bg);
+  }
+  .form-card { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 16px; }
+  .form-card .lab { font-family: var(--font-mono); font-size: var(--t-label); text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+  .form-card h3 { font-family: var(--font-serif); font-weight: 500; font-size: 26px; line-height: 1.15; letter-spacing: -0.012em; }
+  .form-card .sub { color: var(--ink-3); font-size: 13px; margin-top: -8px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-family: var(--font-mono); font-size: var(--t-label); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+  .field-wrap { position: relative; }
+  .field-wrap .icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink-4); pointer-events: none; }
+  .field-wrap .reveal { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; color: var(--ink-3); font-family: var(--font-mono); font-size: 11px; padding: 4px 6px; border-radius: 4px; }
+  .field-wrap .reveal:hover { background: var(--surface-2); color: var(--ink); }
+  .input { width: 100%; height: 38px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--line-2); background: #fff; font: inherit; color: var(--ink); transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+  .input.with-icon { padding-left: 36px; }
+  .input::placeholder { color: var(--ink-4); }
+  .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent); }
+  .input:disabled { background: var(--surface-2); color: var(--ink-3); }
+
+  .row-between { display: flex; align-items: center; justify-content: space-between; }
+  .check { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-small); color: var(--ink-2); cursor: pointer; }
+  .check input { accent-color: var(--accent); }
+
+  .btn { height: 40px; border-radius: var(--radius); border: 1px solid transparent; font-family: var(--font-sans); font-size: 14px; font-weight: 600; cursor: pointer; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background var(--dur) var(--ease); }
+  .btn-accent { background: var(--accent); color: #fff; width: 100%; }
+  .btn-accent:hover { background: oklch(46% 0.14 255); }
+  .btn-accent:disabled { background: var(--ink-4); cursor: not-allowed; }
+
+  .help-line { display: flex; align-items: flex-start; gap: 12px; margin-top: 4px; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+  .help-line .glyph { width: 22px; height: 22px; border-radius: var(--radius-sm); background: var(--accent-2); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; font-size: 12px; flex: 0 0 auto; }
+  .link { color: var(--accent); text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .micro { font-family: var(--font-mono); font-size: var(--t-micro); color: var(--ink-3); }
+
+  /* error / success */
+  .error-msg { display: none; padding: 10px 12px; border-radius: var(--radius); font-size: 13px; line-height: 1.5; background: var(--bad-bg); border: 1px solid color-mix(in oklab, var(--bad) 30%, transparent); color: var(--bad-ink); }
+  .error-msg.group-error { background: var(--warn-bg); border-color: color-mix(in oklab, var(--warn) 35%, transparent); color: oklch(38% 0.1 75); }
+
+  .spinner-small { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  textarea.input { height: auto; padding: 10px 12px; resize: vertical; font: inherit; line-height: 1.5; }
+
+  /* ---- What's New modal — same selectors as the in-app modal in style.css.
+     Inlined here because login.html intentionally does not load the full
+     style.css. Matches whats-new.js's _renderWhatsNewModal output exactly. */
+  .whats-new-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:4000; display:flex; align-items:center; justify-content:center; }
+  .whats-new-modal { background:white; border-radius:10px; width:520px; max-width:92vw; max-height:82vh; display:flex; flex-direction:column; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden; }
+  .whats-new-modal .wn-header { background:var(--ink, #222); color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; }
+  .whats-new-modal .wn-header h3 { margin:0; font-size:16px; }
+  .whats-new-modal .wn-close { color:rgba(255,255,255,0.6); cursor:pointer; font-size:20px; line-height:1; background:none; border:none; }
+  .whats-new-modal .wn-close:hover { color:white; }
+  .whats-new-modal .wn-body { flex:1; overflow-y:auto; padding:20px 24px; }
+  .wn-release { margin-bottom:24px; position:relative; padding-left:24px; }
+  .wn-release::before { content:''; position:absolute; left:5px; top:8px; bottom:-20px; width:2px; background:#d0d5dd; }
+  .wn-release:last-child::before { display:none; }
+  .wn-release .wn-dot { position:absolute; left:0; top:6px; width:12px; height:12px; border-radius:50%; background:#4a6fa5; border:2px solid white; box-shadow:0 0 0 2px #4a6fa5; }
+  .wn-release:first-child .wn-dot { background:#28a745; box-shadow:0 0 0 2px #28a745; }
+  .wn-release .wn-date { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  .wn-release .wn-title { font-size:14px; font-weight:600; color:#333; margin-bottom:6px; }
+  .wn-release ul { margin:0; padding-left:16px; }
+  .wn-release li { font-size:12px; color:#555; margin:3px 0; line-height:1.5; }
+  .wn-release li strong { color:#333; }
+  .wn-badge { display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:1px 6px; border-radius:3px; margin-right:4px; }
+  .wn-badge-new { background:#d4edda; color:#155724; }
+  .wn-badge-fix { background:#fff3cd; color:#856404; }
+  .wn-badge-improve { background:#e8f0fe; color:#333; }
+
+  /* ---- Trouble-signing-in mini modal */
+  .help-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:4000; display:flex; align-items:center; justify-content:center; }
+  .help-modal { background:#fff; border-radius:10px; width:440px; max-width:92vw; padding:22px 24px 18px; box-shadow:0 12px 40px rgba(0,0,0,0.25); }
+  .help-modal h3 { margin:0 0 4px; font-family: var(--font-serif, Georgia, serif); font-weight:500; font-size:18px; color: var(--ink, #222); }
+  .help-modal .sub { font-size:12px; color: var(--ink-3, #777); margin-bottom:14px; }
+  .help-modal dl { margin:0; }
+  .help-modal dt { font-family: var(--font-mono, monospace); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color: var(--ink-3, #777); margin-top:12px; }
+  .help-modal dd { margin:4px 0 0; font-size:13px; color: var(--ink, #222); line-height:1.5; }
+  .help-modal dd code { font-family: var(--font-mono, monospace); background:#FAFAF7; padding:1px 5px; border-radius:3px; font-size:12px; }
+  .help-modal .actions { display:flex; justify-content:flex-end; margin-top:18px; }
+  .help-modal .btn-close { background: var(--accent, #2c6fbb); color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:13px; cursor:pointer; }
+  .help-modal .btn-close:hover { opacity:0.9; }
+</style>
+</head>
+<body data-instance-autoload="login">
+
+<header class="topbar">
+  <div class="brand-mark">
+    <img src="sandisk-logo-red.png" alt="">
+    <span class="name">Agile PLM <em>Toolkit</em></span>
+  </div>
+  <div class="topbar-meta">
+    <span><span class="dotg"></span>All systems normal</span>
+    <span class="sep">|</span>
+    <span id="topbarVersion">v1.0.1 &middot; prod</span>
+  </div>
+</header>
+
+<main class="stage">
+  <!-- Left: info / status / what's new -->
+  <aside class="left-pane">
+    <div class="crumb">
+      <span class="pill"><span style="width:6px;height:6px;border-radius:50%;background:var(--good);display:inline-block"></span>Production</span>
+      <span class="pill" id="buildPill">v1.0.1 &middot; 2026.05.06</span>
+    </div>
+
+    <h2>Welcome to the PLM Toolkit.</h2>
+    <p class="lede">A faster way to inspect Agile fields, compare BOMs, and trace ECN history. Sign in on the right to pick up where you left off.</p>
+
+    <div class="status-grid" id="statusGrid">
+      <div class="cell">
+        <div class="n">Cache</div>
+        <div class="v" id="statCache">98.7<small>%</small></div>
+        <div class="d"><span class="ok">●</span> hit rate &middot; 24h</div>
+      </div>
+      <div class="cell">
+        <div class="n">p50 lookup</div>
+        <div class="v" id="statP50">42<small>ms</small></div>
+        <div class="d"><span class="ok">●</span> within target</div>
+      </div>
+      <div class="cell">
+        <div class="n">Parts indexed</div>
+        <div class="v" id="statParts">14,283</div>
+        <div class="d" id="statPartsSync">last sync &middot; 4 min ago</div>
+      </div>
+    </div>
+
+    <section class="panel">
+      <header class="panel-head">
+        <span class="h">What's new</span>
+        <a href="#" class="more" onclick="if (window.showWhatsNew) { showWhatsNew(); return false; }">View all →</a>
+      </header>
+      <ul id="whatsNewList">
+        <li><span class="when">May 6</span><span>BOM Explorer now supports multi-rev side-by-side comparison.</span><span class="tag new">New</span></li>
+        <li><span class="when">May 2</span><span>Field history exports include change author and change reason.</span><span class="tag fix">Improved</span></li>
+        <li><span class="when">Apr 28</span><span>Scheduled maintenance window moved to Sundays 02:00 PT.</span><span class="tag note">Note</span></li>
+      </ul>
+    </section>
+  </aside>
+
+  <!-- Right: auth -->
+  <section class="right-pane">
+    <div class="form-card">
+      <span class="lab" id="formStep">Step 1 / 1 — Authentication</span>
+      <h3 id="formTitle">Sign in</h3>
+      <p class="sub" id="formSub">Use your SanDisk Windows credentials.</p>
+
+      <div class="error-msg" id="errorMsg" role="alert" aria-live="polite"></div>
+
+      <form id="loginForm" onsubmit="return doLogin(event)">
+        <div class="field" style="margin-bottom:14px;">
+          <label for="username">Username</label>
+          <div class="field-wrap">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+            <input class="input with-icon" id="username" type="text" placeholder="e.g. jsmith or jane.smith@sandisk.com" autocomplete="username" autofocus>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+          <div class="row-between" style="margin-bottom:6px;">
+            <label for="password" style="margin:0;">Password</label>
+            <a href="#" class="link" style="font-size:11px;font-family:var(--font-mono);" onclick="showSigninHelp(); return false;">Trouble signing in?</a>
+          </div>
+          <div class="field-wrap">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input class="input with-icon" id="password" type="password" placeholder="Windows password" autocomplete="current-password">
+            <button type="button" class="reveal" onclick="togglePw()" id="revealBtn">SHOW</button>
+          </div>
+        </div>
+        <div class="row-between" style="margin-bottom:14px;">
+          <label class="check"><input type="checkbox" id="remember"> Keep me signed in</label>
+          <span class="micro">SSO &middot; SanDisk sign-in</span>
+        </div>
+        <button class="btn btn-accent" type="submit" id="loginBtn">Sign in</button>
+      </form>
+
+      <div class="help-line">
+        <div class="glyph">?</div>
+        <div>Not in the PLM group yet? <a class="link" href="#" onclick="document.getElementById('username').focus(); return false;">Sign in with your AD credentials</a> — if you're not yet a member, you'll be prompted to request access on the next screen.</div>
+      </div>
+
+      <div class="row-between" style="margin-top:4px;">
+        <span class="micro">© 2026 PLM Engineering</span>
+        <span class="micro">End-to-end TLS &middot; 1.3</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Pulls in WHATS_NEW_RELEASES so the left-pane "What's new" panel shows the
+     same data the in-app modal does. AuthFilter allows .js pre-auth. -->
+<script src="ui-modal.js?v=20260513a"></script>
+<script src="whats-new.js"></script>
+<script src="instance-badge.js?v=20260617"></script>
+<script>
+var pendingUserInfo = null;
+
+function loginEscHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
+  });
+}
+
+/* ----- Trouble signing in? popup -----
+   Common confusion: people use email instead of login ID. Spell out both. */
+function showSigninHelp() {
+  if (document.getElementById('signinHelpOverlay')) return;
+  var o = document.createElement('div');
+  o.className = 'help-overlay';
+  o.id = 'signinHelpOverlay';
+  o.onclick = function(e) { if (e.target === o) closeSigninHelp(); };
+  o.innerHTML =
+    '<div class="help-modal" role="dialog" aria-modal="true" aria-labelledby="signinHelpTitle">' +
+      '<h3 id="signinHelpTitle">Trouble signing in?</h3>' +
+      '<p class="sub">A couple of things people often get wrong:</p>' +
+      '<dl>' +
+        '<dt>Username</dt>' +
+        '<dd>Use either your AD <strong>login ID</strong> (sometimes called <code>sAMAccountName</code> or employee number) <strong>or</strong> your work email address. ' +
+        'For example: <code>1000297275</code>, <code>jsmith</code>, or <code>jane.smith@sandisk.com</code> &mdash; all three work.</dd>' +
+        '<dt>Password</dt>' +
+        '<dd>The same password you use to log in to your laptop / Windows. This tool authenticates against your SanDisk sign-in; there\'s no separate password to remember.</dd>' +
+        '<dt>Still stuck?</dt>' +
+        '<dd>If your laptop password works but this tool rejects it, your AD account may not be in the <code>IT-APP-Agile-admin</code> access group yet. Sign in here once and you\'ll be prompted to request access on the next screen.</dd>' +
+      '</dl>' +
+      '<div class="actions"><button type="button" class="btn-close" onclick="closeSigninHelp()">Got it</button></div>' +
+    '</div>';
+  document.body.appendChild(o);
+  document.addEventListener('keydown', _signinHelpEsc);
+}
+function closeSigninHelp() {
+  var o = document.getElementById('signinHelpOverlay');
+  if (o && o.parentNode) o.parentNode.removeChild(o);
+  document.removeEventListener('keydown', _signinHelpEsc);
+}
+function _signinHelpEsc(e) { if (e.key === 'Escape') closeSigninHelp(); }
+
+function togglePw() {
+  var pw = document.getElementById('password');
+  var btn = document.getElementById('revealBtn');
+  if (pw.type === 'password') { pw.type = 'text'; btn.textContent = 'HIDE'; }
+  else { pw.type = 'password'; btn.textContent = 'SHOW'; }
+}
+
+function showError(msg, group) {
+  var e = document.getElementById('errorMsg');
+  e.textContent = msg;
+  e.style.display = 'block';
+  e.className = 'error-msg' + (group ? ' group-error' : '');
+}
+function clearError() { document.getElementById('errorMsg').style.display = 'none'; }
+
+function doLogin(e) {
+  e.preventDefault();
+  var username = document.getElementById('username').value.trim();
+  var password = document.getElementById('password').value;
+  var btn = document.getElementById('loginBtn');
+
+  if (!username || !password) { showError('Please enter both username and password.'); return false; }
+
+  clearError();
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-small"></span> Authenticating…';
+
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: username, password: password })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      // Honor ?returnTo=<encoded path+query> from AuthFilter so a deep-linked
+      // email click (e.g. /index.html?tab=ims-review&asDO=true) lands back on
+      // the original URL after auth. Open-redirect guard: only accept same-
+      // origin paths (must start with "/" and must NOT start with "//" or
+      // contain "://"). Anything else falls through to the default landing.
+      var returnTo = '';
+      try {
+        var qp = new URLSearchParams(window.location.search);
+        var rt = qp.get('returnTo') || '';
+        if (rt && rt.charAt(0) === '/' && rt.charAt(1) !== '/' && rt.indexOf('://') < 0) {
+          returnTo = rt;
+        }
+      } catch (e) { /* IE fallback — leave returnTo empty */ }
+
+      if (returnTo) {
+        // Merge login=1 + src=… into the deep-link URL so the post-login
+        // banner / source pill still surfaces on the destination page.
+        var sep = (returnTo.indexOf('?') >= 0) ? '&' : '?';
+        var merged = returnTo + sep + 'login=1';
+        if (data.loginSource) merged += '&src=' + data.loginSource;
+        window.location.href = merged;
+      } else {
+        var p = 'login=1';
+        if (data.loginSource) p += '&src=' + data.loginSource;
+        window.location.href = '/index.html?' + p;
+      }
+    } else if (data.groupCheckFailed) {
+      pendingUserInfo = { username: data.username, displayName: data.displayName, email: data.email, missingGroup: data.missingGroup };
+      showAccessRequestForm();
+    } else {
+      showError(data.message || 'Authentication failed.');
+      btn.disabled = false; btn.textContent = 'Sign in';
+    }
+  })
+  .catch(function() {
+    showError('Connection error. Please try again.');
+    btn.disabled = false; btn.textContent = 'Sign in';
+  });
+  return false;
+}
+
+function showAccessRequestForm() {
+  document.getElementById('loginForm').style.display = 'none';
+  clearError();
+  document.getElementById('formStep').textContent = 'Step 2 / 2 — Request access';
+  document.getElementById('formTitle').textContent = 'Request access';
+  document.getElementById('formSub').textContent =
+    'Hi ' + (pendingUserInfo.displayName || pendingUserInfo.username) +
+    ', your credentials are valid but you need access to the PLM Toolkit group.';
+
+  var html =
+    '<div id="accessRequestForm">' +
+      '<div class="error-msg group-error" style="display:block; margin-bottom:14px;">' +
+        'You are not a member of <strong>' + (pendingUserInfo.missingGroup || 'the required group') + '</strong>. ' +
+        'Submit a request below and the admin team will be notified.' +
+      '</div>' +
+      '<div class="field" style="margin-bottom:12px;"><label>Your name</label>' +
+        '<input class="input" type="text" disabled value="' + (pendingUserInfo.displayName || '').replace(/"/g, '&quot;') + '"></div>' +
+      '<div class="field" style="margin-bottom:12px;"><label>Your email</label>' +
+        '<input class="input" type="text" disabled value="' + (pendingUserInfo.email || '').replace(/"/g, '&quot;') + '"></div>' +
+      '<div class="field" style="margin-bottom:14px;"><label for="justification">Justification *</label>' +
+        '<textarea class="input" id="justification" rows="3" placeholder="Why do you need access to the PLM Toolkit?"></textarea></div>' +
+      '<button class="btn btn-accent" type="button" id="requestBtn" onclick="submitAccessRequest()">Submit request</button>' +
+      '<div class="help-line" style="margin-top:14px; align-items:flex-start;">' +
+        '<div class="glyph">i</div>' +
+        '<div><strong style="color:var(--ink);">How it works</strong><ol style="margin:6px 0 0 16px; line-height:1.7;">' +
+          '<li>You submit this request with a justification</li>' +
+          '<li>The PLM admin team is notified by email</li>' +
+          '<li>An admin reviews and adds you to the required group</li>' +
+          '<li>Within 10 minutes you\'ll get a confirmation email</li>' +
+          '<li>You can then sign in and start using the tool</li>' +
+        '</ol></div>' +
+      '</div>' +
+      '<p style="text-align:center; margin-top:14px;"><a href="#" class="link" style="font-size:13px;" onclick="backToLogin(); return false;">← Back to sign in</a></p>' +
+    '</div>';
+  document.getElementById('loginForm').insertAdjacentHTML('afterend', html);
+}
+
+function backToLogin() {
+  var f = document.getElementById('accessRequestForm');
+  if (f) f.remove();
+  document.getElementById('loginForm').style.display = '';
+  document.getElementById('formStep').textContent = 'Step 1 / 1 — Authentication';
+  document.getElementById('formTitle').textContent = 'Sign in';
+  document.getElementById('formSub').textContent = 'Use your SanDisk Windows credentials.';
+  var btn = document.getElementById('loginBtn');
+  btn.disabled = false; btn.textContent = 'Sign in';
+  document.getElementById('password').value = '';
+}
+
+function submitAccessRequest() {
+  var j = document.getElementById('justification').value.trim();
+  if (!j) { appAlert('Please enter a justification.'); return; }
+  var btn = document.getElementById('requestBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner-small"></span> Submitting…';
+
+  fetch('/api/auth/request-access', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: pendingUserInfo.username,
+      displayName: pendingUserInfo.displayName,
+      email: pendingUserInfo.email,
+      justification: j
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      document.getElementById('accessRequestForm').innerHTML =
+        '<div style="text-align:center; padding:8px 0 16px;">' +
+          '<div style="width:48px;height:48px;border-radius:50%;background:var(--good-bg);color:var(--good-ink);display:grid;place-items:center;margin:0 auto 12px;font-size:22px;font-weight:600;">✓</div>' +
+          '<h3 style="font-family:var(--font-serif);font-weight:500;font-size:22px;margin-bottom:6px;">Request submitted</h3>' +
+          '<p style="color:var(--ink-3);font-size:13px;line-height:1.6;">The PLM admin team has been notified. Once you are added to the required group, you will receive a confirmation email at <strong style="color:var(--ink-2);">' + (pendingUserInfo.email || '') + '</strong> within 10 minutes.</p>' +
+          '<p style="margin-top:14px;"><a href="#" class="link" onclick="backToLogin(); return false;">← Back to sign in</a></p>' +
+        '</div>';
+    } else {
+      btn.disabled = false; btn.textContent = 'Submit request';
+      appAlert(data.message || 'Failed to submit request.');
+    }
+  })
+  .catch(function(err) {
+    btn.disabled = false; btn.textContent = 'Submit request';
+    appAlert('Failed: ' + err.message);
+  });
+}
+
+/* ----- left-pane hydration -----
+   - /api/auth/build-info  : real version + JAR build timestamp (always available)
+   - /api/system/status    : optional, future KPI hookup (silently 401s today)
+   - WHATS_NEW_RELEASES    : globals from whats-new.js (loaded above), drives the
+                             What's new panel from the same source as the in-app modal
+   All paths fail safely so the static placeholders remain if anything is missing. */
+(function hydrateLeftPane() {
+  // Build info (version + JAR timestamp) — feeds the buildPill in the left pane and
+  // the version chip in the topbar. /api/auth/* is whitelisted in AuthFilter so this
+  // works pre-login.
+  fetch('/api/auth/build-info').then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+    if (!d) return;
+    var pill = document.getElementById('buildPill');
+    if (pill && d.buildLabel) {
+      // buildLabel already formatted server-side, e.g. "v1.0.1 · 2026-05-07 12:46 PM PDT"
+      pill.textContent = d.buildLabel;
+    } else if (pill && d.version && d.buildTimestamp) {
+      pill.textContent = 'v' + d.version + ' · ' + d.buildTimestamp;
+    }
+    // Topbar stays compact: just "v<X> · prod" — the full build timestamp lives
+    // in the buildPill below.
+    var topV = document.getElementById('topbarVersion');
+    if (topV && d.version) {
+      topV.textContent = 'v' + d.version + ' · prod';
+    }
+  }).catch(function(){});
+
+  // Optional KPI stats — endpoint doesn't exist yet; leaves placeholders if absent.
+  fetch('/api/system/status').then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+    if (!d) return;
+    if (d.cacheHitPct != null)  document.getElementById('statCache').innerHTML = d.cacheHitPct + '<small>%</small>';
+    if (d.p50Ms != null)        document.getElementById('statP50').innerHTML  = d.p50Ms + '<small>ms</small>';
+    if (d.partsIndexed != null) document.getElementById('statParts').textContent = d.partsIndexed.toLocaleString();
+    if (d.lastSyncAgo)          document.getElementById('statPartsSync').textContent = 'last sync · ' + d.lastSyncAgo;
+  }).catch(function(){});
+
+  // What's new — read directly from WHATS_NEW_RELEASES (loaded by whats-new.js).
+  // Show top 3 release titles with date and a tag derived from the first non-admin
+  // item's badge. Falls back to the static <li>s if the global isn't available.
+  if (typeof WHATS_NEW_RELEASES !== 'undefined' && Array.isArray(WHATS_NEW_RELEASES) && WHATS_NEW_RELEASES.length) {
+    var ul = document.getElementById('whatsNewList');
+    if (ul) {
+      var BADGE_MAP = { 'new': { label: 'New', cls: 'new' },
+                        'improve': { label: 'Improved', cls: 'fix' },
+                        'fix': { label: 'Fix', cls: 'fix' },
+                        'note': { label: 'Note', cls: 'note' } };
+      ul.innerHTML = WHATS_NEW_RELEASES.slice(0, 3).map(function(rel) {
+        // "May 7, 2026" -> "May 7"
+        var when = (rel.date || '').split(',')[0].trim();
+        // First user-facing item drives the tag; admin-only releases fall back to Note
+        var firstUser = (rel.items || []).filter(function(i){ return !i.admin; })[0];
+        var key = (firstUser && firstUser.badge) || 'note';
+        var meta = BADGE_MAP[key] || BADGE_MAP['note'];
+        // Strip any HTML tags the title might carry, THEN decode HTML
+        // entities (titles routinely use &middot;, &ldquo;/&rdquo;, &rsquo;,
+        // &mdash;, etc. for typography — every other whats-new render path
+        // decodes them natively because it sets innerHTML directly. This
+        // path uses loginEscHtml so we have to decode first and let escape
+        // handle the now-literal "&" and "<" if any remain. Without this,
+        // the welcome card showed raw "&middot;" / "&ldquo;" text.)
+        var title = String(rel.title || '').replace(/<[^>]+>/g, '');
+        var _decoder = document.createElement('textarea');
+        _decoder.innerHTML = title;
+        title = _decoder.value;
+        return '<li><span class="when">' + loginEscHtml(when) + '</span>' +
+               '<span>' + loginEscHtml(title) + '</span>' +
+               '<span class="tag ' + meta.cls + '">' + meta.label + '</span></li>';
+      }).join('');
+    }
+  }
+})();
+</script>
+</body>
+</html>

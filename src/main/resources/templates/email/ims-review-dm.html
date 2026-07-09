@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light dark">
+<title>Manager Approval — IMS Document Review</title>
+</head>
+<body style="margin:0; padding:0; background:#FAFAF7; font-family:'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAF7;">
+  <tr><td align="center" style="padding:24px 12px;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border:1px solid #E8E6DF; border-radius:8px; color:#0F1720;">
+
+      <tr><td style="padding:12px 20px; font-size:12px; color:#6B7280; border-bottom:1px solid #E8E6DF;">
+        Agile PLM / IMS Document Review
+        <span style="float:right;"><span style="background:#e8f0fe; color:#1a3a5c; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">Manager Approval</span></span>
+      </td></tr>
+
+      ${dmFallbackBanner}
+
+      <tr><td style="padding:24px 20px 12px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#6B7280;">IMS Document Review &middot; Manager Approval</div>
+        <h1 style="font-family:'IBM Plex Serif',Georgia,serif; font-size:22px; font-weight:700; color:#0F1720; margin:6px 0 4px;">${statusHeadline}</h1>
+        <p style="color:#6B7280; margin:0; font-size:13px;">Hi ${greetingName} &mdash; <strong style="color:#1a4d2a;">${doDisplayName}</strong> (Document Owner) confirmed <em>No Change Needed</em> on ${doResponseDate}. Approve to close the change request.</p>
+      </td></tr>
+
+      <tr><td style="padding:0 20px 8px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;">
+          <tr><td style="padding:8px 0; color:#6B7280; width:35%; font-weight:600;">Document</td>
+              <td style="padding:8px 0; font-family:'IBM Plex Mono',Consolas,monospace;">${docNumber}</td></tr>
+          <tr><td style="padding:8px 0; color:#6B7280; font-weight:600;">Description</td>
+              <td style="padding:8px 0;">${docDescription}</td></tr>
+          <tr><td style="padding:8px 0; color:#6B7280; font-weight:600;">Next Review Date</td>
+              <td style="padding:8px 0; font-family:'IBM Plex Mono',Consolas,monospace;">${nextReviewDate}</td></tr>
+          <tr><td style="padding:8px 0; color:#6B7280; font-weight:600;">Document file</td>
+              <td style="padding:8px 0;">${fileSection}</td></tr>
+          <tr><td style="padding:8px 0; color:#6B7280; font-weight:600;">Change request</td>
+              <td style="padding:8px 0; font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;">${drrNumber}</td></tr>
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:16px 20px 4px;">
+        <div style="text-transform:uppercase; letter-spacing:0.5px; color:#6B7280; font-size:11px; font-weight:600; margin-bottom:10px;">Your decision</div>
+
+        <!-- Primary action: full-width green button -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr><td>
+            <a href="${responseUrlApprove}" style="display:block; background:#1F8A4C; color:#fff; padding:14px 16px; border-radius:6px; font-weight:600; text-decoration:none; font-size:14px; text-align:center;">
+              &#10003;&nbsp;&nbsp;Confirm No Change
+            </a>
+            <div style="font-size:11.5px; color:#6B7280; margin:5px 0 14px; text-align:center;">Closes the change request with both signed PDFs attached. ~30 sec.</div>
+          </td></tr>
+        </table>
+
+        <!-- Secondary action: outline button (full-width still, since it's the only secondary) -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr><td>
+            <a href="${responseUrlSendBack}" style="display:block; background:#ffffff; color:#5B21B6; padding:11px 14px; border-radius:6px; font-weight:600; text-decoration:none; font-size:13px; text-align:center; border:1px solid #5B21B6;">
+              &larr;&nbsp;&nbsp;Send Back to Document Owner
+            </a>
+            <div style="font-size:11px; color:#6B7280; margin-top:4px; text-align:center;">The Document Owner needs to revise. No PDF generated for send-back. ~15 sec.</div>
+          </td></tr>
+        </table>
+
+        <div style="font-size:11.5px; color:#6B7280; text-align:center; margin-top:14px;">
+          &#x1F512; Both buttons open a secure response page. We confirm with your AD password. Link is single-use and expires in 30 days.
+        </div>
+        <div style="font-size:11.5px; color:#6B7280; text-align:center; margin-top:4px;">
+          &#x1F310; You need to be on the <strong>SanDisk network or VPN</strong> (Cisco AnyConnect) for the buttons to open. If a button doesn't load, connect to VPN and try again.
+        </div>
+      </td></tr>
+
+      <tr><td style="border-top:1px solid #E8E6DF; padding:14px 20px; font-size:11px; color:#6B7280; background:#FAFAF7;">
+        <span>PLM Toolkit &middot; IMS Dashboard</span>
+        ${accountStatusFooter}
+        <div style="margin-top:6px;">This is an automated notification. Please do not reply to this email.</div>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

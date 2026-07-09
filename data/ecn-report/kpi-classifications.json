@@ -1,0 +1,636 @@
+{
+ "source": "D029-00006 (KPI Classifications Master)",
+ "generatedFrom": "Matrix sheet",
+ "entries": [
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Additional Plant Extension",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Alternate Linkage",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "DM/IDM BOM Update SDSM",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Factory Changes",
+   "changeType": "IDM/DM",
+   "comments": "Not managed by PCM"
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "DM/IDM BOM Update SDSS",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Factory Changes",
+   "changeType": "IDM/DM",
+   "comments": "Not managed by PCM"
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Data Attribute Update-SAP/PDH Alignment",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Description Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "ESS FW Linkage/Update",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Firmware Release/Update With SDA",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Dedicated Process ECN's",
+   "changeType": "Firmware/Test",
+   "comments": "Process requires check out process by PETE and generally takes 3 weeks."
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Firmware Release/Update Without SDA",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Dedicated Process ECN's",
+   "changeType": "Firmware/Test",
+   "comments": "Process requires check out process by PETE and generally takes 3 weeks."
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Firmware/Test Program Update",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "INAND/MCP FW Release/Update Request",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "MFG ID Update",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Mechanical Change (Housing, Component, Etc.)",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Memory Die Test Program Linkage/Lifecycle Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Memory Test Program Release/Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Nodal Sku/Planning BOM",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "PCB/Substrate/Electrical Component Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Packaging Change (Box, Shipping Labels, Tray, Etc.)",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Procedure/Spec Document Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Product Label Release/Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Part/BOM Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Supplier Addition/Status Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Supplier Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "BOM/Component Update",
+   "requestSubclass": "Test Program Revision Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "CCB Matrix Change request",
+   "requestSubclass": "Attribute Verification Approvals-SOX",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "CCB ECN's",
+   "changeType": "Data Alignment",
+   "comments": "CCB ECNs are not tracked as part of general production KPIs"
+  },
+  {
+   "requestClassification": "CCB Matrix Change request",
+   "requestSubclass": "CCB Matrix Approval Addition",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "CCB ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "CCB Matrix Change request",
+   "requestSubclass": "CCB Matrix Approver Maintenance",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "CCB ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "CCB Matrix Change request",
+   "requestSubclass": "CCB Matrix New Product Matrix",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "CCB ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "CCB Matrix Change request",
+   "requestSubclass": "CCB Matrix Removal Only",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "CCB ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "CCB Matrix Change request",
+   "requestSubclass": "CCB Matrix Remove and Replace",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "CCB ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "CCB Matrix Change request",
+   "requestSubclass": "New CCB Matrix Program",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "CCB ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Life Cycle Change",
+   "requestSubclass": "ACT Release",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Lifecycel Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Life Cycle Change",
+   "requestSubclass": "C-ACT Release",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Lifecycel Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Life Cycle Change",
+   "requestSubclass": "Dev/Proto Release",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Lifecycel Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Life Cycle Change",
+   "requestSubclass": "EOL/OBS/OBS-Sku Release",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Lifecycel Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Life Cycle Change",
+   "requestSubclass": "PPROD/CPROD Release",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Lifecycel Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Life Cycle Change",
+   "requestSubclass": "Qual/FA Release",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Lifecycel Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "Alternate Linkage",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "ESS FW Drop",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "MRB/Stranded Die Structuring",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "Memory Test Program Release/Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "New Derivative Configuration",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "New Electrical Component Release",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Dedicated Process ECN's",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "New Technology Configuration",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "Nodal Sku/Planning BOM",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "PCB/Substrate/Component Release/Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "Packaging (Label, Box, Tray, etc\u2026) Release/Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "Product Label Release/Change",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "Wafer/Die Part Creation/Update",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "New Part/BOM Creation",
+   "requestSubclass": "iNAND/MCP FW Drop",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Firmware/Test",
+   "comments": ""
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-New Channel SKU Release",
+   "standard": 15,
+   "urgent": 10,
+   "ecnClassification": "PDR ECN's",
+   "changeType": "New SKU Creation",
+   "comments": "New SKU"
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-New OEM SKU Release",
+   "standard": 15,
+   "urgent": 10,
+   "ecnClassification": "PDR ECN's",
+   "changeType": "New SKU Creation",
+   "comments": "New SKU"
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-New Planning SKU Release",
+   "standard": 15,
+   "urgent": 10,
+   "ecnClassification": "PDR ECN's",
+   "changeType": "New SKU Creation",
+   "comments": "New SKU"
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-New Product Customization SKU Release",
+   "standard": 15,
+   "urgent": 10,
+   "ecnClassification": "PDR ECN's",
+   "changeType": "New SKU Creation",
+   "comments": "New SKU"
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-New Refurbished SKU Release",
+   "standard": 15,
+   "urgent": 10,
+   "ecnClassification": "PDR ECN's",
+   "changeType": "New SKU Creation",
+   "comments": "New SKU"
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-New Retail SKU Release",
+   "standard": 15,
+   "urgent": 10,
+   "ecnClassification": "PDR ECN's",
+   "changeType": "New SKU Creation",
+   "comments": "New SKU"
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-Product EOL/OBS",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "Lifecycel Change",
+   "comments": ""
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-Speedbump/Brand Refresh/Bulk Update",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Dedicated Process ECN's",
+   "changeType": "Bulk Production Updates",
+   "comments": ""
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-SKU HV Creation/Update",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "PDR Request",
+   "requestSubclass": "PDR-SKU LV Creation/Update",
+   "standard": 10,
+   "urgent": 6,
+   "ecnClassification": "General ECNs",
+   "changeType": "New Part/BOM Creation",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Agile Bulk Update SOX Fields",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Agile CCB Application Matrix Update",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Agile IT Enhancement",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Agile New Part Class Request",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Agile Report Request",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Agile System Errors/Bug Issues",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Data Attribute Update-PDH/SAP Alignment",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Data Alignment",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "New Material Group Request",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "PLM Automated Attachment Update",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Part Class Creator Access",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Production Project/Bulk BOM Updates",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Dedicated Process ECN's",
+   "changeType": "Bulk Production Updates",
+   "comments": ""
+  },
+  {
+   "requestClassification": "Project Request",
+   "requestSubclass": "Restart Agile Service",
+   "standard": "NA",
+   "urgent": "NA",
+   "ecnClassification": "Project ECN's",
+   "changeType": "Enhancement/Project",
+   "comments": ""
+  }
+ ]
+}

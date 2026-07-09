@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="refresh" content="30">
+<title>PLM Toolkit · Maintenance in progress</title>
+<style>
+  body {
+    margin:0; padding:0; background:#FAFAF7; color:#0F1720;
+    font-family:'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:580px; width:92%; margin:32px auto; text-align:center; }
+  .pill {
+    display:inline-block; border:1px solid #ececec; border-radius:20px;
+    padding:5px 14px; font-size:11px; color:#6B7280;
+    letter-spacing:0.04em; background:#fff; margin-bottom:28px;
+  }
+  .card {
+    background:#fff; border:1px solid #E8E6DF; border-radius:8px;
+    padding:52px 40px; box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .dots {
+    display:inline-block; font-size:24px; letter-spacing:6px; color:#4a6fa5;
+    margin-bottom:18px; animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:0.35; } 50% { opacity:1; } }
+  .eyebrow {
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:#C7801B; margin-bottom:14px;
+  }
+  h1 {
+    font-family:'IBM Plex Serif',Georgia,serif; font-size:32px; font-weight:600;
+    margin:0 0 16px; color:#2c3e50; line-height:1.2;
+  }
+  .sub {
+    font-size:15px; color:#6B7280; line-height:1.55; margin:0 0 32px;
+  }
+  .quip {
+    font-size:14px; color:#0F1720; padding:16px 20px; line-height:1.5;
+    background:#FAFAF7; border-left:3px solid #4a6fa5;
+    border-radius:0 6px 6px 0; text-align:left; margin:0 0 24px;
+  }
+  .meta {
+    font-family:'IBM Plex Mono',Consolas,monospace; font-size:11px;
+    color:#6B7280; margin-top:14px;
+  }
+  .footer {
+    font-size:11px; color:#6B7280; margin-top:24px; line-height:1.6;
+  }
+  .footer a { color:#4a6fa5; text-decoration:none; }
+  .footer a:hover { text-decoration:underline; }
+  @media (prefers-color-scheme: dark) {
+    body { background:#0F1720; color:#E8E6DF; }
+    .card { background:#1a2332; border-color:#2c3e50; box-shadow:none; }
+    .pill { background:#1a2332; border-color:#2c3e50; color:#9ca3af; }
+    h1 { color:#E8E6DF; }
+    .sub, .footer, .meta { color:#9ca3af; }
+    .quip { background:#0F1720; color:#E8E6DF; border-left-color:#7C3AED; }
+    .eyebrow { color:#F39C12; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="pill">sandisk · PLM Toolkit</div>
+    <div class="card">
+      <div class="dots">&bull; &bull; &bull;</div>
+      <div class="eyebrow">Maintenance in progress</div>
+      <h1>Making your life better.<br>Stay tuned.</h1>
+      <p class="sub">PLM Toolkit is in the workshop getting a quick tune-up. We&rsquo;ll be right back.</p>
+      <div class="quip" id="quip">Currently teaching the toolkit some new tricks.</div>
+      <div class="meta">This page auto-refreshes every 30 seconds &mdash; you&rsquo;ll land on the login page as soon as we&rsquo;re back.</div>
+    </div>
+    <div class="footer">
+      If this page is up for more than 15 minutes, ping
+      <a href="mailto:vikas.jindal@sandisk.com">vikas.jindal@sandisk.com</a>.
+    </div>
+  </div>
+
+<script>
+  var QUIPS = [
+    "Currently teaching the toolkit some new tricks.",
+    "Sneaking in a quick upgrade \u2014 back before your coffee gets cold \u2615",
+    "Tightening some bolts, polishing some bits.",
+    "Adding extra horsepower to the BOM Explorer.",
+    "Convincing Oracle to be a little faster today.",
+    "Re-reading every ECN comment so the AI gets it right this time.",
+    "Making the spinners spin a bit smoother.",
+    "Untangling some YAML so you don\u2019t have to.",
+    "Brief intermission \u2014 the next act starts shortly.",
+    "Just one more deploy, we promise. (Probably.)",
+    "Shipping fresh changes from the What\u2019s New tab.",
+    "Lubricating the rejection-tracker pipeline.",
+    "Caching the things, indexing the other things."
+  ];
+  try {
+    var pick = QUIPS[Math.floor(Math.random() * QUIPS.length)];
+    var quipEl = document.getElementById('quip');
+    if (quipEl) quipEl.textContent = pick;
+  } catch (e) { /* no-op */ }
+</script>
+</body>
+</html>

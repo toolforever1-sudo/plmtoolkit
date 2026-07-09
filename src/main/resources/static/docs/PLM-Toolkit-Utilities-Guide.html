@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PLM Toolkit — Utilities Plugin Guide</title>
+<style>
+  body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 0 30px; color: #1a1a1a; line-height: 1.7; font-size: 11pt; }
+  h1 { font-size: 24pt; color: #0f1720; border-bottom: 3px solid #0f1720; padding-bottom: 8px; margin-top: 40px; }
+  h2 { font-size: 16pt; color: #0f1720; border-bottom: 1px solid #d0d0d0; padding-bottom: 4px; margin-top: 36px; }
+  h3 { font-size: 13pt; color: #2c6fbb; margin-top: 24px; }
+  h4 { font-size: 11pt; color: #444; margin-top: 18px; }
+  code { font-family: 'Consolas', 'Courier New', monospace; background: #f4f4f4; padding: 1px 5px; border-radius: 3px; font-size: 10pt; color: #333; }
+  pre { font-family: 'Consolas', monospace; background: #1a1d22; color: #cdd1d7; padding: 16px 20px; border-radius: 6px; font-size: 9.5pt; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; }
+  pre .g { color: #5eb77e; }
+  pre .w { color: #e9a84c; }
+  pre .r { color: #ff8873; }
+  pre .b { color: #6ba4e6; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; }
+  th { background: #0f1720; color: white; padding: 8px 12px; text-align: left; font-size: 10pt; letter-spacing: 0.04em; }
+  td { padding: 8px 12px; border: 1px solid #ddd; font-size: 10pt; vertical-align: top; }
+  tr:nth-child(even) { background: #f8f8f8; }
+  .note { background: #eef3fa; border-left: 3px solid #2c6fbb; padding: 10px 16px; margin: 14px 0; border-radius: 0 4px 4px 0; font-size: 10pt; }
+  .warn { background: #faf3e5; border-left: 3px solid #c7801b; padding: 10px 16px; margin: 14px 0; border-radius: 0 4px 4px 0; font-size: 10pt; }
+  .danger { background: #faeae9; border-left: 3px solid #b8342b; padding: 10px 16px; margin: 14px 0; border-radius: 0 4px 4px 0; font-size: 10pt; }
+  .step { background: #f5f3ed; border: 1px solid #e0e0e0; border-radius: 6px; padding: 14px 18px; margin: 12px 0; }
+  .step .num { display: inline-block; width: 24px; height: 24px; background: #0f1720; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 10pt; font-weight: bold; margin-right: 8px; }
+  .badge { display: inline-block; font-family: Consolas, monospace; font-size: 9pt; padding: 2px 7px; border-radius: 3px; font-weight: 600; letter-spacing: 0.04em; }
+  .badge-py { background: #eef6f1; color: #1f8a4c; }
+  .badge-jar { background: #eef3fa; color: #2c6fbb; }
+  .badge-java { background: #faf3e5; color: #856404; }
+  .toc { background: #f8f8f8; border: 1px solid #e0e0e0; padding: 16px 24px; border-radius: 6px; margin: 20px 0; }
+  .toc a { color: #2c6fbb; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc li { margin: 4px 0; }
+  .header-meta { font-family: Consolas, monospace; font-size: 9pt; color: #888; margin-bottom: 30px; }
+  .example-box { border: 1px solid #d0d0d0; border-radius: 6px; overflow: hidden; margin: 14px 0; }
+  .example-box .ex-head { background: #f5f3ed; padding: 8px 14px; font-family: Consolas, monospace; font-size: 9pt; color: #666; border-bottom: 1px solid #e0e0e0; }
+  .example-box .ex-body { padding: 14px; }
+  .file-tree { font-family: Consolas, monospace; font-size: 9.5pt; line-height: 1.8; color: #333; }
+  .file-tree .dir { color: #2c6fbb; font-weight: 600; }
+  .file-tree .file { color: #333; }
+  .file-tree .note { color: #888; font-style: italic; background: none; border: none; padding: 0; margin: 0; display: inline; }
+  @media print { pre { background: #f4f4f4 !important; color: #333 !important; } }
+</style>
+</head>
+<body>
+
+<h1>PLM Toolkit — Utilities Plugin Guide</h1>
+<div class="header-meta">
+  Version 2.0 &middot; April 19, 2026 &middot; For IT / PLM Admin team<br>
+  Author: PLM Toolkit Team &middot; Confidential — SanDisk internal use only
+</div>
+
+<div class="toc">
+  <strong>Table of Contents</strong>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#supported-types">Supported Script Types</a></li>
+    <li><a href="#upload-wizard">Uploading a New Plugin (3-Step Wizard)</a></li>
+    <li><a href="#ai-analysis">AI Script Analysis</a></li>
+    <li><a href="#env-vars">Environment Variables</a></li>
+    <li><a href="#supporting-files">Supporting Files (Config &amp; Input)</a></li>
+    <li><a href="#dep-jars">Dependency JARs</a></li>
+    <li><a href="#jdk8">JDK 1.8 for Agile SDK</a></li>
+    <li><a href="#entry-points">JAR Entry Points</a></li>
+    <li><a href="#running">Running a Utility</a></li>
+    <li><a href="#editing">Editing a Utility</a></li>
+    <li><a href="#monitoring">Monitoring &amp; Live Stream</a></li>
+    <li><a href="#email">Email Notifications</a></li>
+    <li><a href="#path-validation">Properties File Path Validation</a></li>
+    <li><a href="#file-structure">Server File Structure</a></li>
+    <li><a href="#example-python">Example: Python Script (BOM Extract Delta)</a></li>
+    <li><a href="#example-jar">Example: JAR File (Change Creator)</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+    <li><a href="#permissions">Permissions &amp; Ownership</a></li>
+    <li><a href="#config">Server Configuration</a></li>
+  </ol>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="overview">1. Overview</h2>
+
+<p>The <strong>Utilities tab</strong> in PLM Toolkit allows PLM admins to upload and run custom scripts directly from the browser. Scripts can be Python (<code>.py</code>), Java source (<code>.java</code>), or compiled JAR files (<code>.jar</code>). Each uploaded script becomes a "utility" that can be run on-demand with live output streaming, email notifications, and run history tracking.</p>
+
+<p>The Utilities tab is organized into three groups:</p>
+
+<table>
+  <tr><th>Group</th><th>Description</th><th>Examples</th></tr>
+  <tr><td><strong>Built-in Reports</strong></td><td>Reports engineered into the app by IT</td><td>ECN Change Order Report, What's New Digest</td></tr>
+  <tr><td><strong>Uploaded Scripts</strong></td><td>Custom scripts uploaded by admins</td><td>BOM Extract Delta, Change Creator</td></tr>
+  <tr><td><strong>System Diagnostics</strong></td><td>Server tools for admin use</td><td>Download Server Log, Activity Stats, Dry Run</td></tr>
+</table>
+
+<div class="note">
+  <strong>Who can use this?</strong> Only members of the <code>pdl-plm-admin</code> AD group can upload, edit, and delete utilities. All admin users can run any utility. Non-admin users can only see utilities they have access to.
+</div>
+
+<!-- ================================================================ -->
+<h2 id="supported-types">2. Supported Script Types</h2>
+
+<table>
+  <tr><th>Type</th><th>Extension</th><th>How it runs</th><th>Best for</th></tr>
+  <tr>
+    <td><span class="badge badge-py">.py</span></td>
+    <td>Python script</td>
+    <td><code>python script.py [args]</code></td>
+    <td>Data queries, Oracle DB scripts, file processing</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-java">.java</span></td>
+    <td>Java source</td>
+    <td>Compiled with <code>javac</code>, then <code>java ClassName [args]</code></td>
+    <td>Simple one-file Java tools</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-jar">.jar</span></td>
+    <td>Java archive</td>
+    <td><code>java -cp file.jar;lib/*.jar MainClass [args]</code></td>
+    <td>Complex Java apps with dependencies (Agile SDK, etc.)</td>
+  </tr>
+</table>
+
+<div class="warn">
+  <strong>Python path:</strong> The server uses the Python executable configured in <code>application.properties</code> as <code>app.reports.python</code>. On the production server this is <code>D:\python\python.exe</code>. Ensure your scripts are compatible with this Python version.
+</div>
+
+<!-- ================================================================ -->
+<h2 id="upload-wizard">3. Uploading a New Plugin (3-Step Wizard)</h2>
+
+<p>Click the <strong>"Upload Script"</strong> button at the top of the Utilities tab. This opens a 3-step wizard:</p>
+
+<div class="step">
+  <span class="num">1</span> <strong>File &amp; Entry Point</strong>
+  <ul>
+    <li>Select your <code>.py</code>, <code>.java</code>, or <code>.jar</code> file</li>
+    <li>AI automatically analyzes the script (see <a href="#ai-analysis">Section 4</a>)</li>
+    <li>For JARs with multiple <code>main()</code> methods: pick which class to run</li>
+    <li>Click <strong>Next</strong> when ready</li>
+  </ul>
+</div>
+
+<div class="step">
+  <span class="num">2</span> <strong>Supporting Files</strong>
+  <ul>
+    <li>Upload config files (<code>.properties</code>, <code>.xml</code>, <code>.json</code>)</li>
+    <li>Upload input data files (<code>.txt</code>, <code>.csv</code>, <code>.xlsx</code>)</li>
+    <li>Upload dependency JARs (libraries needed on the classpath)</li>
+    <li>Properties files are auto-validated for path mismatches (see <a href="#path-validation">Section 14</a>)</li>
+  </ul>
+</div>
+
+<div class="step">
+  <span class="num">3</span> <strong>Details</strong>
+  <ul>
+    <li><strong>Name:</strong> A human-friendly name (AI suggests one)</li>
+    <li><strong>Description:</strong> What the script does (AI suggests this too)</li>
+    <li><strong>CLI Arguments:</strong> Command-line flags (e.g., <code>--verbose --output report.xlsx</code>)</li>
+    <li><strong>Environment Variables:</strong> Key-value pairs injected into the process environment</li>
+    <li>Click <strong>Upload</strong> to save</li>
+  </ul>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="ai-analysis">4. AI Script Analysis</h2>
+
+<p>When you select a file in Step 1, the system sends it to <strong>Claude AI</strong> for analysis. The AI reads the source code and detects:</p>
+
+<table>
+  <tr><th>Detected</th><th>What it finds</th><th>Example</th></tr>
+  <tr><td>Environment variables</td><td><code>os.environ.get()</code>, <code>System.getenv()</code></td><td><code>AGILE_DB_PASSWORD</code></td></tr>
+  <tr><td>Config properties</td><td><code>.getProperty()</code> calls</td><td><code>email.smtp.host=mailrelay.sandisk.com</code></td></tr>
+  <tr><td>Dependencies</td><td><code>import</code> statements (external packages)</td><td><code>oracledb</code>, <code>Apache POI</code></td></tr>
+  <tr><td>CLI arguments</td><td><code>argparse</code>, <code>args[]</code> patterns</td><td><code>--out</code>, <code>--no-email</code>, <code>--dry-run</code></td></tr>
+  <tr><td>File arguments</td><td>Arguments expecting file paths</td><td><code>&lt;properties_file&gt; &lt;items_file&gt;</code></td></tr>
+  <tr><td>Entry points</td><td>Classes with <code>public static void main</code></td><td><code>com.sandisk.ccbdetails.BatchCreateMCO</code></td></tr>
+  <tr><td>Sensitive values</td><td>Keys containing PASSWORD, SECRET, TOKEN</td><td>Rendered as password fields with 🔒</td></tr>
+</table>
+
+<div class="note">
+  <strong>Fallback:</strong> If AI is unavailable, a regex-based parser still detects env vars, imports, and argparse flags. The analysis badge shows <span class="badge badge-py">AI</span> or <span class="badge" style="background:#f0f0f0;color:#888;">REGEX</span> to indicate which was used.
+</div>
+
+<h3>JAR-specific analysis</h3>
+<p>For <code>.jar</code> files, the system:</p>
+<ol>
+  <li>Reads <code>META-INF/MANIFEST.MF</code> for the <code>Main-Class</code></li>
+  <li>Lists all <code>.java</code> source files inside the JAR (if bundled)</li>
+  <li>If <code>.java</code> files exist: AI reads them and runs full analysis</li>
+  <li>If only <code>.class</code> files exist: shows "BYTECODE ONLY" with manual config prompts</li>
+  <li>Detects all classes with <code>main()</code> methods as potential entry points</li>
+</ol>
+
+<!-- ================================================================ -->
+<h2 id="env-vars">5. Environment Variables</h2>
+
+<p>Environment variables are key-value pairs injected into the script's process at runtime. They are <strong>not</strong> the same as Java <code>.properties</code> files — they are OS-level environment variables accessed via <code>os.environ</code> (Python) or <code>System.getenv()</code> (Java).</p>
+
+<div class="example-box">
+  <div class="ex-head">Example: Python script using env vars</div>
+  <div class="ex-body">
+<pre>
+<span class="b">import</span> os
+
+db_user = os.environ.get(<span class="g">"AGILE_DB_USER"</span>, <span class="g">"agile"</span>)
+db_pass = os.environ.get(<span class="g">"AGILE_DB_PASSWORD"</span>)  <span class="w"># required</span>
+db_dsn  = os.environ.get(<span class="g">"AGILE_DB_DSN"</span>, <span class="g">"uls-dp-oraagile.wdc.com:1521/AGILEPROD"</span>)
+</pre>
+  </div>
+</div>
+
+<p>Env vars are stored in <code>./data/utilities/{id}/env.json</code> on the server:</p>
+<pre>
+{
+  "AGILE_DB_USER": "agile",
+  "AGILE_DB_PASSWORD": "s3cret",
+  "AGILE_DB_DSN": "uls-dp-oraagile.wdc.com:1521/AGILEPROD"
+}
+</pre>
+
+<p>To edit env vars after upload: click <strong>⋯ → Edit script &amp; env</strong> on the utility row.</p>
+
+<!-- ================================================================ -->
+<h2 id="supporting-files">6. Supporting Files (Config &amp; Input)</h2>
+
+<p>Supporting files are additional files your script needs to run — config files, input data, templates, etc. They are stored alongside the script in the utility's directory and can be swapped before each run.</p>
+
+<table>
+  <tr><th>Type</th><th>Extensions</th><th>Example</th><th>Behavior</th></tr>
+  <tr><td><strong>Config</strong></td><td><code>.properties</code>, <code>.xml</code>, <code>.json</code>, <code>.cfg</code>, <code>.ini</code>, <code>.yaml</code></td><td><code>mco_batch.properties</code></td><td>Rarely changes between runs</td></tr>
+  <tr><td><strong>Input</strong></td><td><code>.txt</code>, <code>.csv</code>, <code>.xlsx</code>, everything else</td><td><code>items.txt</code></td><td>Often swapped per run</td></tr>
+</table>
+
+<h3>Auto-passing as CLI arguments</h3>
+<p>If your script expects supporting files as command-line arguments and you haven't set CLI arguments explicitly, the system <strong>auto-passes all supporting files as positional arguments</strong> in order:</p>
+
+<pre>
+<span class="b"># If supporting files are: mco_batch.properties, inputitems.txt</span>
+<span class="g"># And CLI args field is empty, the command becomes:</span>
+java -cp SandiskCCBDetails.jar com.sandisk.ccbdetails.BatchCreateMCO <span class="w">mco_batch.properties inputitems.txt</span>
+</pre>
+
+<h3>Swapping files before a run</h3>
+<p>When you click <strong>"Run with files..."</strong>, a drawer opens showing all stored files. You can:</p>
+<ul>
+  <li>Run with current files (no changes)</li>
+  <li>Replace any file by picking a new one from your computer</li>
+  <li>The replaced file becomes the new default for next time</li>
+</ul>
+
+<h3>Managing files after upload</h3>
+<p>In the <strong>Edit</strong> modal (⋯ → Edit script &amp; env):</p>
+<ul>
+  <li>Each file has a <strong>↓ download</strong> link to view the current version on the server</li>
+  <li>Each file has an <strong>×</strong> button to remove it</li>
+  <li>Pick a new file in the file chooser to replace it</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="dep-jars">7. Dependency JARs</h2>
+
+<p>Java utilities often need external libraries on the classpath. Dependency JARs are stored in a <code>lib/</code> subdirectory and automatically added to the <code>-cp</code> classpath when the utility runs.</p>
+
+<div class="example-box">
+  <div class="ex-head">Common dependency JARs for PLM scripts</div>
+  <div class="ex-body">
+    <table>
+      <tr><th>JAR</th><th>Purpose</th><th>Where to find it</th></tr>
+      <tr><td><code>AgileAPI.jar</code></td><td>Agile PLM SDK</td><td><code>/apps/agile/agile936/integration/sdk/lib/</code></td></tr>
+      <tr><td><code>SandiskTools936.jar</code></td><td>SanDisk common Agile utilities</td><td><code>/Users/vikasjindal/git/commoncodebase/</code></td></tr>
+      <tr><td><code>log4j-1.2.jar</code></td><td>Logging</td><td>Bundled in most projects</td></tr>
+      <tr><td><code>ojdbc8.jar</code></td><td>Oracle JDBC driver</td><td>Oracle installation</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="danger">
+  <strong>Version mismatch:</strong> The Agile SDK JAR version must match the Agile server version. Using <code>AgileAPI936.jar</code> against an Agile 9.3.6 server is correct; using it against 9.3.3 will cause <code>NoSuchFieldError</code> or <code>NoSuchMethodError</code>.
+</div>
+
+<p>To add or replace dependency JARs: <strong>⋯ → Edit script &amp; env → Dependency JARs section</strong>.</p>
+
+<!-- ================================================================ -->
+<h2 id="jdk8">8. JDK 1.8 for Agile SDK</h2>
+
+<p>The Agile SDK requires <strong>JDK 1.8</strong>. The server may have a newer default JDK (e.g., JDK 17). For utilities that use the Agile SDK, check the <strong>"Use JDK 1.8"</strong> checkbox in the Edit modal.</p>
+
+<div class="note">
+  <strong>How it works:</strong> The checkbox tells the system to use the JDK 1.8 path configured in <code>application.properties</code> (<code>app.reports.java8</code>) instead of the default <code>java</code> on PATH. On the production server, this is:<br>
+  <code>C:\Program Files\Java\jdk1.8.0_162\bin\java.exe</code>
+</div>
+
+<p>The live stream will show which Java is being used:</p>
+<pre>
+<span class="w">⚙ Using custom Java: C:\Program Files\Java\jdk1.8.0_162\bin\java.exe</span>
+<span class="g">▶</span> C:\Program Files\Java\jdk1.8.0_162\bin\java.exe -cp SandiskCCBDetails.jar;lib\AgileAPI.jar ...
+</pre>
+
+<!-- ================================================================ -->
+<h2 id="entry-points">9. JAR Entry Points</h2>
+
+<p>A JAR file can contain multiple classes with <code>public static void main(String[] args)</code>. During upload, the system detects all entry points and lets you pick which one to run.</p>
+
+<div class="example-box">
+  <div class="ex-head">Example: SandiskCCBDetails.jar — 3 entry points</div>
+  <div class="ex-body">
+    <table>
+      <tr><th>Class</th><th>Source</th><th>Purpose</th></tr>
+      <tr><td><code>com.sandisk.ccbdetails.CreateReportFromTemplate</code></td><td><span class="badge badge-py">SOURCE</span></td><td>Generates CCB status Excel report</td></tr>
+      <tr><td><code>com.sandisk.ccbdetails.BatchCreateMCO</code></td><td><span class="badge badge-py">SOURCE</span></td><td>Batch-creates MCOs from an items file</td></tr>
+      <tr><td><code>com.sandisk.ccbdetails.SampleSearch</code></td><td><span class="badge badge-py">SOURCE</span></td><td>Test utility — runs an Agile query</td></tr>
+    </table>
+    <p style="font-size:10pt;color:#666;margin-top:8px;">The selected entry point is stored in <code>reports.json</code> and used at runtime: <code>java -cp ... com.sandisk.ccbdetails.BatchCreateMCO</code></p>
+  </div>
+</div>
+
+<p>Classes with <code>.java</code> source bundled in the JAR show <span class="badge badge-py">SOURCE</span> — the AI can analyze them. Classes with only <code>.class</code> files show <span class="badge" style="background:#faf3e5;color:#c7801b;">BYTECODE ONLY</span>.</p>
+
+<!-- ================================================================ -->
+<h2 id="running">10. Running a Utility</h2>
+
+<h3>Action buttons</h3>
+<table>
+  <tr><th>Button</th><th>When shown</th><th>What it does</th></tr>
+  <tr><td><strong>Run &amp; email me</strong></td><td>Personal utilities</td><td>Runs the script and emails you the AI-analyzed summary + output file</td></tr>
+  <tr><td><strong>Run with files...</strong></td><td>Utilities with supporting files</td><td>Opens the drawer to optionally swap files before running</td></tr>
+  <tr><td><strong>Run &amp; send to N</strong></td><td>Broadcast utilities</td><td>Opens confirm modal, then sends to all recipients</td></tr>
+  <tr><td><strong>Download now</strong></td><td>Direct download utilities</td><td>Downloads file immediately (e.g., server log)</td></tr>
+</table>
+
+<h3>What happens at runtime</h3>
+<ol>
+  <li>The system builds the command (Python/Java + classpath + args)</li>
+  <li>Environment variables from <code>env.json</code> are injected</li>
+  <li>The working directory is set to the utility's folder</li>
+  <li>stdout/stderr are captured line-by-line for the live stream</li>
+  <li>Output <code>.xlsx</code> files are detected and offered for download</li>
+  <li>If "email me" was selected: AI analyzes the log and sends a summary email</li>
+</ol>
+
+<!-- ================================================================ -->
+<h2 id="editing">11. Editing a Utility</h2>
+
+<p>Click <strong>⋯ → Edit script &amp; env</strong> on any uploaded utility. The Edit modal lets you change:</p>
+
+<table>
+  <tr><th>Field</th><th>What you can do</th></tr>
+  <tr><td><strong>Name</strong></td><td>Rename the utility</td></tr>
+  <tr><td><strong>Script file</strong></td><td>Replace with an updated version (e.g., bug fix)</td></tr>
+  <tr><td><strong>Supporting files</strong></td><td>Replace, download, or remove config/input files</td></tr>
+  <tr><td><strong>CLI Arguments</strong></td><td>Change command-line flags</td></tr>
+  <tr><td><strong>Use JDK 1.8</strong></td><td>Toggle for Agile SDK utilities</td></tr>
+  <tr><td><strong>Dependency JARs</strong></td><td>Add, replace, or remove library JARs</td></tr>
+  <tr><td><strong>Environment Variables</strong></td><td>Edit credentials, paths, or settings</td></tr>
+</table>
+
+<p>Changes are saved to <code>reports.json</code> and <code>env.json</code> on the server immediately. No restart required.</p>
+
+<!-- ================================================================ -->
+<h2 id="monitoring">12. Monitoring &amp; Live Stream</h2>
+
+<p>When a utility is running, click <strong>"view stream"</strong> to see real-time output in a terminal-style panel:</p>
+
+<pre>
+<span class="g">▶</span> D:\python\python.exe bom_extract_delta.py
+<span class="w">⚙</span> Env: 7 vars loaded (AGILE_DB_USER, AGILE_DB_PASSWORD, ...)
+13:18:41  INFO     Connecting to uls-dq-oraagile.wdc.com:1521/agqa as agile
+13:18:41  INFO     Connected.
+13:20:15  INFO     Fetched Agile released BOM: 6,547,231 rows in 94.2s
+13:22:18  INFO     Writing bom_extract_delta_20260419.xlsx
+13:22:19  INFO     Wrote workbook (847,291 bytes).
+13:22:19  INFO     Email sent.
+<span class="g">✓</span> Completed successfully
+<span class="b">✉</span> Run summary emailed to Vikas.Jindal@sandisk.com
+</pre>
+
+<p>The panel also shows <strong>Run Details</strong> (Run ID, elapsed time, delivery mode) in a side card.</p>
+
+<h3>Server log</h3>
+<p>Every run is logged with full diagnostic detail in the server log:</p>
+<pre>
+[REPORTS] ──────────────────────────────────────────
+[REPORTS] Utility: BOM Extract Delta
+[REPORTS] ID: util-1776627599448
+[REPORTS] Command: D:\python\python.exe ... bom_extract_delta.py
+[REPORTS] CLI args: --no-email
+[REPORTS] Env vars: 7 keys: AGILE_DB_USER, AGILE_DB_PASSWORD, ...
+[REPORTS] Support files: (none)
+[REPORTS] User: Vikas Jindal (Vikas.Jindal@sandisk.com)
+[REPORTS] ──────────────────────────────────────────
+</pre>
+
+<!-- ================================================================ -->
+<h2 id="email">13. Email Notifications</h2>
+
+<p>When "Email me the output" is selected, the system sends an AI-analyzed summary email after the utility completes (success or failure):</p>
+
+<ul>
+  <li><strong>Subject:</strong> <code>✓ BOM Extract Delta · 92s · completed</code> (or <code>✗ ... · failed</code>)</li>
+  <li><strong>KPI tiles:</strong> Status, Log lines, Output file info</li>
+  <li><strong>AI callout:</strong> Claude reads the log and writes a 3-5 sentence summary of what worked, what failed, and next steps</li>
+  <li><strong>Log preview:</strong> Last 15 lines of output inline in the email</li>
+  <li><strong>Attachment:</strong> Output <code>.xlsx</code> file (if generated)</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="path-validation">14. Properties File Path Validation</h2>
+
+<p>When you upload or replace a <code>.properties</code> file, the system automatically checks every value that looks like a file path:</p>
+
+<ul>
+  <li><strong>Platform mismatch:</strong> Linux paths (<code>/apps/agile/...</code>) on a Windows server → suggests Windows equivalent</li>
+  <li><strong>Path existence:</strong> Absolute paths that don't exist on the server</li>
+  <li><strong>Auto-fix:</strong> Click <strong>"Fix all &amp; re-upload"</strong> to automatically rewrite paths — the corrected file replaces the original</li>
+</ul>
+
+<div class="example-box">
+  <div class="ex-head">Example: Linux → Windows path correction</div>
+  <div class="ex-body">
+    <table>
+      <tr><th>Property</th><th>Original (Linux)</th><th>Suggested (Windows)</th></tr>
+      <tr><td><code>template.input.path</code></td><td><code>/apps/agile/oas101340/config/template.xlsx</code></td><td><code>D:\agile\oas101340\config\template.xlsx</code></td></tr>
+      <tr><td><code>log.file.path</code></td><td><code>/apps/agile/batch/logs/enhstatus.log</code></td><td><code>D:\plm-toolkit\enhstatus.log</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="file-structure">15. Server File Structure</h2>
+
+<p>Each utility is stored in its own directory under <code>./data/utilities/</code>:</p>
+
+<div class="file-tree">
+<pre style="background:#fff;color:#333;border:1px solid #ddd;">
+./data/
+├── reports.json              <span class="note">← all utility definitions</span>
+├── report-statuses.json      <span class="note">← run history (persists across restarts)</span>
+└── utilities/
+    ├── <span class="dir">util-1776581452950/</span>      <span class="note">← BOM Extract Delta</span>
+    │   ├── bom_extract_delta.py  <span class="note">← the script</span>
+    │   └── env.json              <span class="note">← environment variables</span>
+    │
+    └── <span class="dir">util-1776589027892/</span>      <span class="note">← Change Creator</span>
+        ├── SandiskCCBDetails.jar  <span class="note">← the JAR</span>
+        ├── mco_batch.properties   <span class="note">← supporting config file</span>
+        ├── inputitems.txt         <span class="note">← supporting input file</span>
+        ├── env.json               <span class="note">← environment variables</span>
+        └── <span class="dir">lib/</span>
+            ├── AgileAPI.jar       <span class="note">← dependency JAR</span>
+            └── SandiskTools936.jar
+</pre>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="example-python">16. Example: Python Script (BOM Extract Delta)</h2>
+
+<h3>Script: <code>bom_extract_delta.py</code></h3>
+<p>Compares Agile PLM's released-BOM view against <code>CUSTOM_USER.BOM_EXTRACT</code> and generates an Excel report of the deltas.</p>
+
+<h4>Step 1: Upload</h4>
+<ol>
+  <li>Click <strong>Upload Script</strong> → select <code>bom_extract_delta.py</code></li>
+  <li>AI detects: 7 env vars (<code>AGILE_DB_USER</code>, <code>AGILE_DB_PASSWORD</code>, <code>AGILE_DB_DSN</code>, <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>MAIL_FROM</code>, <code>MAIL_TO</code>), 2 dependencies (<code>oracledb</code>, <code>openpyxl</code>), 3 CLI flags (<code>--out</code>, <code>--no-email</code>, <code>--dry-run</code>)</li>
+  <li>Click <strong>Next</strong> → no supporting files needed (uses env vars)</li>
+  <li>Click <strong>Next</strong> → fill in env vars, set CLI args to <code>--no-email</code>, click <strong>Upload</strong></li>
+</ol>
+
+<h4>Step 2: Run</h4>
+<ol>
+  <li>Click <strong>Run &amp; email me</strong></li>
+  <li>Watch the live stream: connecting to Oracle, fetching data, writing Excel</li>
+  <li>When complete: download the <code>.xlsx</code> output + receive AI-analyzed email</li>
+</ol>
+
+<h4>Step 3: Fix if needed</h4>
+<ul>
+  <li>Wrong password? → <strong>⋯ → Edit</strong> → update <code>AGILE_DB_PASSWORD</code> → Save</li>
+  <li>Wrong CLI args? → <strong>⋯ → Edit</strong> → change CLI Arguments → Save</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="example-jar">17. Example: JAR File (Change Creator)</h2>
+
+<h3>Script: <code>SandiskCCBDetails.jar</code></h3>
+<p>Batch-creates MCOs from an items file using the Agile SDK.</p>
+
+<h4>Step 1: Upload</h4>
+<ol>
+  <li>Click <strong>Upload Script</strong> → select <code>SandiskCCBDetails.jar</code></li>
+  <li>AI reads the bundled <code>.java</code> source files and detects 3 entry points</li>
+  <li>Select <code>com.sandisk.ccbdetails.BatchCreateMCO</code></li>
+  <li>Click <strong>Next</strong></li>
+  <li>Upload supporting files:
+    <ul>
+      <li><code>mco_batch.properties</code> — Agile credentials + config</li>
+      <li><code>inputitems.txt</code> — list of item numbers to process</li>
+    </ul>
+  </li>
+  <li>Upload dependency JARs:
+    <ul>
+      <li><code>AgileAPI.jar</code> — Agile SDK</li>
+      <li><code>SandiskTools936.jar</code> — common utilities</li>
+    </ul>
+  </li>
+  <li>Click <strong>Next</strong> → set name, description → <strong>Upload</strong></li>
+</ol>
+
+<h4>Step 2: Configure</h4>
+<ol>
+  <li><strong>⋯ → Edit</strong> → check <strong>☑ Use JDK 1.8</strong> (required for Agile SDK)</li>
+  <li>Verify CLI args: <code>mco_batch.properties inputitems.txt</code></li>
+  <li>Save</li>
+</ol>
+
+<h4>Step 3: Run with different input</h4>
+<ol>
+  <li>Click <strong>Run with files...</strong></li>
+  <li>In the drawer: keep <code>mco_batch.properties</code> as-is</li>
+  <li>Replace <code>inputitems.txt</code> with a new file for today's batch</li>
+  <li>Check <strong>☑ Email me the output</strong></li>
+  <li>Click <strong>Run now</strong></li>
+</ol>
+
+<!-- ================================================================ -->
+<h2 id="troubleshooting">18. Troubleshooting</h2>
+
+<table>
+  <tr><th>Error</th><th>Cause</th><th>Fix</th></tr>
+  <tr>
+    <td><code>NoClassDefFoundError: sandisk/agile/AgileChange</code></td>
+    <td>Missing dependency JAR</td>
+    <td>⋯ → Edit → Add the JAR containing the missing class to Dependency JARs</td>
+  </tr>
+  <tr>
+    <td><code>NoSuchFieldError: APDM_LOSEDUPREDLINE_WARNING</code></td>
+    <td>Wrong AgileAPI JAR version</td>
+    <td>Replace <code>AgileAPI.jar</code> with the version matching your Agile server</td>
+  </tr>
+  <tr>
+    <td><code>ConnectException: t3 got an error or timed out</code></td>
+    <td>Wrong Agile server URL or network issue</td>
+    <td>Check <code>agile.url</code> in your properties file</td>
+  </tr>
+  <tr>
+    <td><code>Usage: java ... &lt;properties_file&gt; &lt;items_file&gt;</code></td>
+    <td>CLI arguments not set</td>
+    <td>⋯ → Edit → set CLI Arguments to <code>config.properties items.txt</code></td>
+  </tr>
+  <tr>
+    <td><code>Script exited with code 2</code></td>
+    <td>Python missing a package</td>
+    <td>Install the package on the server: <code>pip install oracledb</code></td>
+  </tr>
+  <tr>
+    <td>Linux paths in properties on Windows</td>
+    <td>Properties file from wrong platform</td>
+    <td>Upload the file → path validation auto-detects → click "Fix all"</td>
+  </tr>
+  <tr>
+    <td><code>Class not found</code> for Java utilities</td>
+    <td>Server using JDK 17, script needs JDK 1.8</td>
+    <td>⋯ → Edit → check ☑ Use JDK 1.8</td>
+  </tr>
+  <tr>
+    <td>Output file not found (404 on download)</td>
+    <td>Script ran with <code>--dry-run</code> or didn't generate output</td>
+    <td>Check CLI args — remove <code>--dry-run</code></td>
+  </tr>
+</table>
+
+<!-- ================================================================ -->
+<h2 id="permissions">19. Permissions &amp; Ownership</h2>
+
+<table>
+  <tr><th>Action</th><th>Who can do it</th></tr>
+  <tr><td>View utilities</td><td>All users (filtered by access)</td></tr>
+  <tr><td>Run a utility</td><td>All admin users</td></tr>
+  <tr><td>Upload a new utility</td><td>Admin users (<code>pdl-plm-admin</code>)</td></tr>
+  <tr><td>Edit a utility (env vars, CLI, files)</td><td>Admin users</td></tr>
+  <tr><td>Delete a utility</td><td><strong>Owner only</strong> — the admin who uploaded it</td></tr>
+</table>
+
+<div class="warn">
+  <strong>Owner-only delete:</strong> Even other admins cannot delete a utility they didn't upload. The Delete option is hidden from the ⋯ menu and the server rejects DELETE requests from non-owners.
+</div>
+
+<!-- ================================================================ -->
+<h2 id="config">20. Server Configuration</h2>
+
+<p>Relevant properties in <code>application.properties</code>:</p>
+
+<table>
+  <tr><th>Property</th><th>Default</th><th>Description</th></tr>
+  <tr><td><code>app.reports.python</code></td><td><code>python</code></td><td>Python executable path</td></tr>
+  <tr><td><code>app.reports.java</code></td><td><code>java</code></td><td>Default Java executable path</td></tr>
+  <tr><td><code>app.reports.java8</code></td><td><code>C:\Program Files\Java\jdk1.8.0_162\bin\java.exe</code></td><td>JDK 1.8 path (for "Use JDK 1.8" checkbox)</td></tr>
+  <tr><td><code>app.reports.javac</code></td><td><code>javac</code></td><td>Java compiler path (for <code>.java</code> files)</td></tr>
+  <tr><td><code>app.reports.timeout</code></td><td><code>600</code></td><td>Max runtime in seconds before timeout</td></tr>
+  <tr><td><code>ai.help.api-key</code></td><td>(required)</td><td>Anthropic API key for AI analysis</td></tr>
+  <tr><td><code>ai.help.enabled</code></td><td><code>true</code></td><td>Enable/disable AI features</td></tr>
+</table>
+
+<hr style="margin-top:40px;">
+<p style="text-align:center;color:#888;font-size:9pt;font-family:Consolas,monospace;">
+  PLM Toolkit · Utilities Plugin Guide · v2.0 · April 2026<br>
+  SanDisk · Confidential
+</p>
+
+</body>
+</html>

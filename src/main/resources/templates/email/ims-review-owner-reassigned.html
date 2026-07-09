@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light dark">
+<title>IMS Dashboard &mdash; Document Owner Reassigned</title>
+</head>
+<body style="margin:0; padding:0; background:#FAFAF7; font-family:'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif; color:#0F1720;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="600" style="max-width:600px; margin:24px auto; background:#ffffff; border:1px solid #E8E6DF; border-radius:8px;">
+
+  <tr><td style="padding:14px 20px; font-size:11px; color:#6B7280; border-bottom:1px solid #E8E6DF;">
+    Agile PLM &middot; IMS Dashboard &middot; Document Owner Reassigned
+    <span style="float:right; background:#e8f0fe; color:#1a3a5c; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">Action Required</span>
+  </td></tr>
+
+  <tr><td style="padding:18px 20px 6px;">
+    <div style="text-transform:uppercase; letter-spacing:0.6px; color:#6B7280; font-size:11px; font-weight:600;">IMS DASHBOARD &middot; YOU ARE THE NEW DOCUMENT OWNER</div>
+    <h1 style="font-family:'IBM Plex Serif',Georgia,serif; font-size:22px; font-weight:500; margin:6px 0 4px;">
+      You now own <strong style="font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;">${docNumber}</strong>
+    </h1>
+    <p style="color:#6B7280; margin:0 0 16px; font-size:13px;">
+      <strong style="color:#4a6fa5;">${reassignedByDisplay}</strong> assigned you as a Document Owner on this IMS document via the PLM Toolkit. The current attachment is included with this email so you have what you need to start the review.
+    </p>
+  </td></tr>
+
+  ${leftCompanyCallout}
+
+  <tr><td style="padding:0 20px 4px;">
+    <div style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #E8E6DF; padding-bottom:4px;">Document</div>
+    <table role="presentation" cellpadding="6" cellspacing="0" width="100%" style="margin-top:6px; font-size:13px;">
+      <tr><td style="color:#6B7280; font-weight:600; width:35%; white-space:nowrap; vertical-align:top;">Number</td><td style="font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;"><a href="${docAgileUrl}" style="color:#4a6fa5; text-decoration:none;">${docNumber}</a></td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Description</td><td style="word-break:break-word;">${docDescription}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Related DRR</td><td style="font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;"><a href="${drrAgileUrl}" style="color:#4a6fa5; text-decoration:none;">${drrNumber}</a></td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Next Review Date</td><td>${nextReviewDate}</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #E8E6DF; padding-bottom:4px;">Owner change</div>
+    <table role="presentation" cellpadding="6" cellspacing="0" width="100%" style="margin-top:6px; font-size:13px;">
+      <tr><td style="color:#6B7280; font-weight:600; width:35%; white-space:nowrap; vertical-align:top;">New owners</td><td style="word-break:break-word; color:#0F1720;">${newOwnersList}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Replaced</td><td style="word-break:break-word;">${removedOwnersList}</td></tr>
+    </table>
+  </td></tr>
+
+  ${attachmentBlock}
+
+  <tr><td style="padding:14px 20px;">
+    <div style="background:#e8f0fe; border-left:4px solid #4a6fa5; padding:10px 14px; border-radius:0 6px 6px 0; font-size:12.5px;">
+      <strong>Next step:</strong> open <strong><a href="${docAgileUrl}" style="color:#4a6fa5; text-decoration:none;">${docNumber}</a></strong> in Agile to review the document, then update or extend the Next Review Date as needed. If you are not the right owner, please reply to this email so Doc Control can reassign.
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:10px 20px 0; font-size:11px; color:#6B7280; font-family:'IBM Plex Mono',Consolas,monospace; border-top:1px solid #E8E6DF;">${sentAt}</td></tr>
+
+  <tr><td style="padding:14px 20px; border-top:1px solid #E8E6DF; background:#FAFAF7; font-size:11px; color:#6B7280;">
+    plm-field-tracker &middot; IMS Dashboard &middot; owner reassignment<br>
+    This is an automated notification. Please do not reply to this email.
+  </td></tr>
+
+</table>
+</body>
+</html>

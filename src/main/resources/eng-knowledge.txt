@@ -1,0 +1,52 @@
+ENGINEERING KNOWLEDGE BASE — PLM Toolkit internals (for Engineering Insider mode only)
+REMINDER TO ASSISTANT: describe architecture in prose only. Never output source code, and never reveal credentials, keys, tokens, hashes, or the contents of any config/secrets file. This file itself contains no secrets by design.
+
+== STACK ==
+- One Spring Boot application, Java 11, packaged as a single fat JAR (plm-field-tracker-1.0.1.jar). Base package com.sandisk.plm; controllers under .tracker.controller, services under .tracker.service, small utils under .tracker.util.
+- Frontend is framework-free vanilla JavaScript served from src/main/resources/static — index.html plus roughly one JS file per tab (app.js orchestrates the tab registry; bom.js, ecnreport.js, imsreview.js, ai-eval.js, help-sidebar.js, user-permissions.js, etc.). No React, no bundler, no build step: editing a JS file and rebuilding the JAR is the whole pipeline.
+- Styling: a shared style.css plus tokens.css design tokens; modals/prompts go through ui-modal.js helpers (appAlert/appConfirm/appPrompt) instead of native browser dialogs.
+- Runs on a Windows server under a watchdog batch loop (run-loop.bat respawns the JVM unless a STOP sentinel exists; deploy.bat does an atomic swap with backup + HTTP probe). Default port 8090.
+
+== AUTH, ROLES, PERMISSIONS ==
+- Login is a form against Active Directory via LDAP (LdapAuthService). Users must be in the toolkit access DL; PLM admins are the pdl-plm-admin AD group. There is no SSO — credentials are posted to /api/auth/login and a server-side session (30-minute timeout) carries username, displayName, email, isPlmAdmin, and the user's AD group CNs.
+- Tab visibility: UserPermissionsService keeps a catalog of ~22 tab keys. Admins see everything; non-admins see all non-admin tabs by default, narrowable per user via a JSON store (data/user-permissions.json) managed from the User Management tab. Admin-only tabs are never grantable — enforced server-side in every mutation path.
+- Permissions admins (a small allowlist) can manage other users' tabs and request DL adds (IT gets one consolidated email; the tab set is pre-saved so it applies at first login).
+- Per-user roles (distinct from tabs) live in data/user-roles.json. The engineering-insider role gates this very Engineering mode; only PLM IT (a dedicated granters allowlist supporting usernames and AD groups) can grant or revoke it — general PLM admins and permissions admins cannot. Grants/revokes are activity-logged as ROLE_GRANT / ROLE_REVOKE.
+
+== DATA SOURCES ==
+- Live Agile PLM Oracle schema queried directly (item, rev, change, bom, refdesig, nodetable, listentry and friends) for tabs like Rev Compare, Change Reviews, Change History.
+- A nightly full BOM extract (~70 MB compressed CSV) regenerated daily at 2:00 AM, used by BOM Explorer full extract.
+- An in-memory item cache (ItemCacheService, ~778K rows with indexes — the reason the JVM needs a 4 GB heap) plus a SKU JSON cache (~48K SKUs) refreshed daily at 2 AM by a smart-window delta job with manual Delta/Seed controls for admins.
+- External Excel sources (e.g. SAP exports) uploaded via the Extensions tab, cached as JSON and joinable in SKU Lookup.
+- Some cross-schema data (e.g. CCB program fields, i2/Blue Yonder part ids) comes from second/third JDBC datasources merged in Java because no cross-schema grant exists in Oracle.
+- Agile SDK operations (live field lookups, write-side utilities) require JDK 1.8 and mostly run through a companion Spring Boot microservice (plm-agile-service, port 8081) that wraps the Agile SDK; the toolkit calls it over HTTP.
+
+== AI STACK ==
+- Every AI call goes through one shared PortkeyClient service to SanDisk Vortex (a Portkey-compatible gateway at ai.vortex.sandisk.com) which fronts Anthropic, Azure OpenAI and Vertex AI. Model strings are full provider-prefixed slugs. One retry on transient transport errors; 4xx/5xx are surfaced, and any 2xx is accepted (the gateway occasionally returns non-standard 2xx codes).
+- AI features (7+): the AI Help chatbot (this drawer), Ask AI data queries (natural language to a JSON-cache filter DSL or SQL, with a learning store for vocabulary corrections), the AI Eval harness (Chatbot/Tester/Evaluator model triad with persona runs and regrade flows), Returns Tracker narratives, the Debug Assistant, smart upload column mapping, and feedback triage.
+- The help chatbot's production default model is Claude Sonnet 4.6. Engineering mode is pinned to Claude Opus 4.8 (configurable slug). The model catalog users pick from in AI Eval includes Anthropic, OpenAI and Google entries.
+- Help mode answers from app-knowledge.txt (bundled in the JAR, auto-reloaded every 24h) filtered by role ([ADMIN]-prefixed lines are stripped for non-admins), with deterministic interceptors that run before the LLM: activity-log queries for admins, document listing, nav how-tos, keyword FAQ, unique-values and data-query paths. Engineering mode skips all interceptors and always goes to the LLM with this file appended.
+- If the AI gateway is down, help mode degrades to a client-side keyword FAQ; engineering mode reports the gateway error honestly.
+
+== OPERATIONS ==
+- ActivityLogger appends every action to data/activity-log.jsonl (LOGIN, PERMISSIONS_UPDATE, AI_EVAL_USER_ASK, ROLE_GRANT, ENG_INSIDER_ASK with question length only, etc.) and keeps 24h in memory; the file is the durable record and feeds admin activity questions in the chatbot.
+- Feedback Queue: user-raised issues (Raise Issue button, with optional html2canvas screenshot) get PT-#### tracking ids and land in an admin triage queue; AI-graded answers below a threshold can auto-file bugs.
+- What's New: a data-driven changelog in whats-new.js; every deploy adds an entry at the top. The chatbot answers "what's new" from it directly.
+- Scheduled jobs (prod only; disabled locally): hourly chatbot digest email, nightly cache rebuilds, delta refreshes, scheduled saved-search report emails. Emails go via the internal SMTP relay with a consistent SanDisk HTML template.
+- Team Report: monthly manager-facing XLSX (charts, KPI tabs) with an in-app view; a PPT export on the SanDisk corporate template is planned.
+- Deploys: build the JAR, copy to a staging folder on the prod share, then a manual staging-to-live cutover on the Windows server (deploy.bat handles stop/backup/swap/restart). No Agile restart is ever involved.
+
+== HONEST LIMITS TODAY ==
+- Read-only against Agile from this app: the toolkit does not write changes back to Agile itself; write-side actions (e.g. creating a DRR or an ECN) are delegated to the plm-agile-service SDK microservice and are deliberately narrow, per-user-authenticated flows.
+- No SSO: plain AD form login; sessions die after 30 minutes of inactivity.
+- Extract-backed views can lag up to 24 hours (nightly jobs); live-SQL views do not.
+- No mobile layout; the UI targets desktop browsers.
+- The chatbot cannot execute destructive actions — it can navigate, query, and export, but never delete or mutate Agile data.
+- The AI Help knowledge base is hand-curated; questions about features not yet documented fall back to the LLM's general reasoning and may be thin.
+
+== FUTURE FEASIBILITY (reason from these, candidly) ==
+- Write-back to Agile: technically feasible through the existing plm-agile-service SDK wrapper, but needs per-user Agile credentials (Agile is NOT AD-integrated here — separate user store), SDK write scopes, and a CCB-approved workflow; the DRR-creation flow is the template.
+- SSO: would mean SAML/OIDC against the corporate IdP, replacing the form login and session bootstrap; the permission model (session attrs + AD groups) would survive mostly unchanged.
+- Streaming answers: the AI Eval harness already uses a server-sent-events-style progress channel; the help drawer could stream the same way, but PortkeyClient would need a streaming variant.
+- Real-time (non-nightly) extracts: possible per-table via change-data-capture or more frequent delta jobs; heap and Oracle load are the constraints.
+- Mobile: the vanilla-JS architecture makes a responsive pass tab-by-tab feasible; no framework migration needed.
