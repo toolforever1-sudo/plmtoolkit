@@ -55,6 +55,23 @@ Changes applied on top of the uploaded `vortex-cowork-main` snapshot (see the
   `processToolCalls()` helper (which is also where the abort/malformed-args
   handling lives).
 
+## Round 2
+
+- **`read_file` can now actually see images** (fixes "my read_file tool only
+  gave me raw binary bytes" on PNGs): image files return a base64 data URL and
+  are injected into the transcript as a vision (`image_url`) message — the same
+  mechanism `computer_screenshot` already used, now generalized in
+  `buildToolResultEntries`. PDF/DOCX/XLSX/zip reads also route through the
+  attachment extractor, so the model gets extracted text instead of mojibake.
+  Images over 5 MB are rejected with a hint to resize first. The tool-call
+  panel in the UI already renders `dataUrl` results as an inline image.
+- **Drag & drop attachments**: drop files anywhere on the chat panel to attach
+  them (same pipeline as the paperclip button — PDF, DOCX, XLSX, images, code,
+  zip). Uses `webUtils.getPathForFile` in the preload with a `File.path`
+  fallback, shows a drop overlay, and blocks Electron's default
+  navigate-to-dropped-file behavior. Attachment state moved from `InputBar` up
+  to `ChatPanel` so the whole panel can be the drop zone.
+
 ## Known issues not addressed (candidates for a follow-up)
 
 - Tool calls/results are shown live but not persisted into the API transcript

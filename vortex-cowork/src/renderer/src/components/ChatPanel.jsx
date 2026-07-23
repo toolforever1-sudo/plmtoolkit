@@ -73,10 +73,9 @@ function WorkspaceSwitcher() {
 }
 
 // ── Input bar ─────────────────────────────────────────────────────────────────
-function InputBar({ conversationId, isStreaming }) {
+function InputBar({ conversationId, isStreaming, attachments, setAttachments }) {
   const { sendMessage, stopGeneration, state } = useApp()
   const [value, setValue] = useState('')
-  const [attachments, setAttachments] = useState([])
   const [attLoading, setAttLoading] = useState(false)
   const textareaRef = useRef(null)
 
@@ -90,7 +89,7 @@ function InputBar({ conversationId, isStreaming }) {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
     }
-  }, [value, attachments, canSubmit, conversationId, sendMessage])
+  }, [value, attachments, canSubmit, conversationId, sendMessage, setAttachments])
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -118,7 +117,7 @@ function InputBar({ conversationId, isStreaming }) {
     } finally {
       setAttLoading(false)
     }
-  }, [])
+  }, [setAttachments])
 
   const activeWs = (state.workspaces || []).find(w => w.id === state.activeWorkspaceId)
 
@@ -227,6 +226,55 @@ export default function ChatPanel({ conversation }) {
   const scrollContainerRef = useRef(null)
   const [copied, setCopied] = useState(false)
 
+  // Attachments live here (not in InputBar) so the whole panel can be a drop zone
+  const [attachments, setAttachments] = useState([])
+  const [dragActive, setDragActive] = useState(false)
+  const dragDepthRef = useRef(0)
+
+  // Without this, dropping a file anywhere the handlers below don't cover makes
+  // Electron navigate the window to the file itself.
+  useEffect(() => {
+    const prevent = (e) => e.preventDefault()
+    window.addEventListener('dragover', prevent)
+    window.addEventListener('drop', prevent)
+    return () => {
+      window.removeEventListener('dragover', prevent)
+      window.removeEventListener('drop', prevent)
+    }
+  }, [])
+
+  const handleDragEnter = useCallback((e) => {
+    if (!Array.from(e.dataTransfer?.types || []).includes('Files')) return
+    dragDepthRef.current += 1
+    setDragActive(true)
+  }, [])
+
+  // dragleave fires on every child boundary — track depth so the overlay only
+  // clears when the cursor actually leaves the panel
+  const handleDragLeave = useCallback(() => {
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+    if (dragDepthRef.current === 0) setDragActive(false)
+  }, [])
+
+  const handleDrop = useCallback(async (e) => {
+    e.preventDefault()
+    dragDepthRef.current = 0
+    setDragActive(false)
+    const files = Array.from(e.dataTransfer?.files || [])
+    if (!files.length) return
+    const read = []
+    for (const f of files) {
+      const p = window.electron.getPathForFile(f)
+      if (!p) continue
+      try {
+        read.push(await window.electron.readAttachment(p))
+      } catch (err) {
+        console.error('Failed to read dropped file:', err)
+      }
+    }
+    if (read.length) setAttachments(prev => [...prev, ...read])
+  }, [])
+
   // Jump straight to the bottom when switching conversations
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView()
@@ -252,7 +300,24 @@ export default function ChatPanel({ conversation }) {
   const hasMessages = conversation.messages.length > 0 || conversation.streaming
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full relative"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
+    >
+      {/* Drag & drop overlay */}
+      {dragActive && (
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm border-2 border-dashed border-accent flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <Paperclip size={28} className="mx-auto mb-2 text-accent" />
+            <p className="text-sm font-medium text-gray-200">Drop files to attach</p>
+            <p className="text-xs text-gray-500 mt-1">PDF, DOCX, XLSX, images, code…</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="h-12 flex items-center justify-between px-6 border-b border-surface-600 flex-shrink-0" style={{ paddingTop: '2px' }}>
         <div className="flex items-center gap-2 pt-6">
@@ -398,6 +463,8 @@ export default function ChatPanel({ conversation }) {
         <InputBar
           conversationId={conversation.id}
           isStreaming={conversation.streaming}
+          attachments={attachments}
+          setAttachments={setAttachments}
         />
       </div>
     </div>

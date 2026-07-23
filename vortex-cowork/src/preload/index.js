@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron')
+const { contextBridge, ipcRenderer, webUtils } = require('electron')
 
 const validReceiveChannels = [
   'chat:token',
@@ -63,6 +63,11 @@ contextBridge.exposeInMainWorld('electron', {
   // ── File Attachments ────────────────────────────────────────────────────────
   pickAttachments: () => ipcRenderer.invoke('attachment:pick'),
   readAttachment: (filePath) => ipcRenderer.invoke('attachment:read', filePath),
+  // Resolve the absolute path of a DOM File (drag & drop). webUtils is the
+  // supported API; File.path is the legacy fallback for older Electron.
+  getPathForFile: (file) => {
+    try { return webUtils.getPathForFile(file) } catch (e) { return file?.path || null }
+  },
 
   // ── Conversation Persistence ─────────────────────────────────────────────────
   loadConversations: () => ipcRenderer.invoke('conversations:load'),

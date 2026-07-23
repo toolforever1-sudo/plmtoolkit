@@ -150,7 +150,7 @@ const BUILTIN_TOOLS = [
     type: 'function',
     function: {
       name: 'read_file',
-      description: 'Read the contents of a file from the workspace. Use this to examine existing files.',
+      description: 'Read a file from the workspace. Text/code files return their content. Images (png, jpg, gif, webp...) are returned as an actual image you can look at. PDF, DOCX, and XLSX return extracted text.',
       parameters: {
         type: 'object',
         properties: {
@@ -579,6 +579,16 @@ This cannot connect to hosts that have not been explicitly registered — there 
   }
 ]
 
+// ─── Rich file reading ─────────────────────────────────────────────────────────
+const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'tiff', 'ico'])
+// Extensions read_file routes through readAttachmentFile instead of a raw UTF-8
+// read — images become vision messages, documents get their text extracted.
+const RICH_READ_EXTENSIONS = new Set([
+  ...IMAGE_EXTENSIONS,
+  'pdf', 'docx', 'doc', 'xlsx', 'xls', 'xlsm', 'ods', 'jar', 'zip',
+])
+const MAX_INLINE_IMAGE_BYTES = 5 * 1024 * 1024
+
 // ─── Path Safety ───────────────────────────────────────────────────────────────
 // Resolves a requested path against the workspace root using path.resolve (which
 // normalizes ".." segments), and reports whether the result still falls inside the
@@ -663,22 +673,26 @@ function filterToolsForControlMode(tools, conversationId) {
   return tools.filter(t => !COMPUTER_CONTROL_TOOL_NAMES.has(t.function.name))
 }
 
-// Tool-role messages must have string content, so a screenshot's image can't just be
+// Tool-role messages must have string content, so an image can't just be
 // stringified into the tool result — it's dropped in as a separate image_url message
 // right after, which is what actually lets a vision-capable model see it.
+// Applies to computer_screenshot and to read_file on an image file.
 function buildToolResultEntries(tc, result) {
-  if (tc.function.name === 'computer_screenshot' && result?.dataUrl) {
+  if (result?.dataUrl && (result.type === 'image' || tc.function.name === 'computer_screenshot')) {
+    const label = tc.function.name === 'computer_screenshot'
+      ? 'Screenshot from computer_screenshot'
+      : `Image: ${result.fileName || 'file'}`
     return {
       toolMessage: {
         role: 'tool',
         tool_call_id: tc.id,
-        content: JSON.stringify({ success: true, note: 'Screenshot captured — see the image in the following message.' }),
+        content: JSON.stringify({ success: true, note: 'Image loaded — see the image in the following message.' }),
       },
       imageMessage: {
         role: 'user',
         content: [
           { type: 'image_url', image_url: { url: result.dataUrl } },
-          { type: 'text', text: '[Screenshot from computer_screenshot]' },
+          { type: 'text', text: `[${label}]` },
         ],
       },
     }
@@ -696,6 +710,20 @@ async function executeTool(name, args, workspacePath) {
       case 'read_file': {
         const { absolutePath } = resolveWorkspacePath(workspacePath, args.path)
         if (!fs.existsSync(absolutePath)) return { error: `File not found: ${args.path}` }
+        const ext = path.extname(absolutePath).toLowerCase().replace('.', '')
+        // Binary formats go through the attachment reader — the model gets a
+        // real image (vision) or extracted document text instead of the
+        // mojibake produced by reading binary bytes as UTF-8.
+        if (RICH_READ_EXTENSIONS.has(ext)) {
+          if (IMAGE_EXTENSIONS.has(ext) && fs.statSync(absolutePath).size > MAX_INLINE_IMAGE_BYTES) {
+            return { error: `Image is larger than ${Math.round(MAX_INLINE_IMAGE_BYTES / 1024 / 1024)}MB — too large to inline. Resize it first (e.g. run_bash: sips -Z 1600 <file> --out <smaller.png>) and read the smaller copy.` }
+          }
+          const att = await readAttachmentFile(absolutePath)
+          if (att.type === 'image') {
+            return { type: 'image', fileName: att.fileName, sizeKB: att.sizeKB, dataUrl: att.dataUrl }
+          }
+          return { content: att.content, lines: att.lines, extractedFrom: att.fileName }
+        }
         const content = fs.readFileSync(absolutePath, 'utf-8')
         return { content, lines: content.split('\n').length }
       }
@@ -1509,7 +1537,7 @@ async function readAttachmentFile(filePath) {
   }
 
   // Images → base64 data URL
-  if (['png','jpg','jpeg','gif','webp','bmp','tiff','ico'].includes(ext)) {
+  if (IMAGE_EXTENSIONS.has(ext)) {
     const buf = fs.readFileSync(filePath)
     const mime = ext === 'jpg' ? 'image/jpeg'
       : ext === 'svg' ? 'image/svg+xml'
