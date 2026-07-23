@@ -1,0 +1,16 @@
+node_modules/
+out/
+dist/
+.env
+*.pptx
+*.pdf
+*.jpg
+*.zip
+*.txt
+*.sh.bak
+pg_debug*
+io_pg*
+io_stg*
+sl_lt*
+run_pg*
+ziamdNAc
