@@ -74,7 +74,7 @@ function WorkspaceSwitcher() {
 
 // ── Input bar ─────────────────────────────────────────────────────────────────
 function InputBar({ conversationId, isStreaming }) {
-  const { sendMessage, state } = useApp()
+  const { sendMessage, stopGeneration, state } = useApp()
   const [value, setValue] = useState('')
   const [attachments, setAttachments] = useState([])
   const [attLoading, setAttLoading] = useState(false)
@@ -159,13 +159,23 @@ function InputBar({ conversationId, isStreaming }) {
           className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-100 placeholder-gray-600 leading-relaxed max-h-48"
           style={{ scrollbarWidth: 'none' }}
         />
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-          className="p-2 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0 mb-0.5"
-        >
-          <Send size={15} className="text-white" />
-        </button>
+        {isStreaming ? (
+          <button
+            onClick={() => stopGeneration(conversationId)}
+            className="p-2 rounded-xl bg-surface-500 hover:bg-red-500/80 transition-all flex-shrink-0 mb-0.5"
+            title="Stop generating"
+          >
+            <Square size={15} className="text-white" fill="currentColor" />
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className="p-2 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0 mb-0.5"
+          >
+            <Send size={15} className="text-white" />
+          </button>
+        )}
       </div>
 
       {/* Footer row: workspace switcher + model info */}
@@ -214,11 +224,21 @@ function EmptyState({ conversationTitle }) {
 export default function ChatPanel({ conversation }) {
   const { clearConversation, dispatch, state, setComputerControl } = useApp()
   const messagesEndRef = useRef(null)
+  const scrollContainerRef = useRef(null)
   const [copied, setCopied] = useState(false)
 
-  // Auto scroll to bottom when messages change
+  // Jump straight to the bottom when switching conversations
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView()
+  }, [conversation.id])
+
+  // Auto scroll on new content — but only when already near the bottom, so
+  // scrolling up to reread something isn't fought by the incoming stream
+  useEffect(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120
+    if (nearBottom) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [conversation.messages, conversation.streamingContent, conversation.toolEvents])
 
   const handleCopyLast = useCallback(() => {
@@ -350,7 +370,7 @@ export default function ChatPanel({ conversation }) {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" ref={scrollContainerRef}>
         {!hasMessages ? (
           <EmptyState conversationTitle={conversation.title} />
         ) : (

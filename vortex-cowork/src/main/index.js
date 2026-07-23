@@ -616,22 +616,31 @@ function classifyToolRisk(name, args, workspacePath) {
   return 'safe'
 }
 
-// Pending approvals keyed by tool_call id — resolved by the renderer's response.
+// Pending approvals keyed by tool_call id — resolved by the renderer's response,
+// by a stop request for the conversation, or by the safety timeout (auto-deny).
 const pendingApprovals = new Map()
+const APPROVAL_TIMEOUT_MS = 5 * 60 * 1000
+
+function resolveApproval(toolCallId, approved) {
+  const pending = pendingApprovals.get(toolCallId)
+  if (!pending) return
+  clearTimeout(pending.timer)
+  pendingApprovals.delete(toolCallId)
+  pending.resolve(approved)
+}
 
 function requestApproval(event, conversationId, toolCallId, toolName, args) {
   event.sender.send('chat:tool-confirm-request', { conversationId, toolCallId, toolName, args })
   return new Promise((resolve) => {
-    pendingApprovals.set(toolCallId, resolve)
+    // Auto-deny if the user never answers (e.g. the renderer reloaded with the
+    // modal open) so the agentic loop can't hang forever on a lost approval.
+    const timer = setTimeout(() => resolveApproval(toolCallId, false), APPROVAL_TIMEOUT_MS)
+    pendingApprovals.set(toolCallId, { resolve, timer, conversationId })
   })
 }
 
 ipcMain.handle('tool:respond-approval', (_, { toolCallId, approved }) => {
-  const resolve = pendingApprovals.get(toolCallId)
-  if (resolve) {
-    resolve(approved)
-    pendingApprovals.delete(toolCallId)
-  }
+  resolveApproval(toolCallId, approved)
   return true
 })
 
@@ -978,8 +987,15 @@ async function executeTool(name, args, workspacePath) {
       case 'run_bash': {
         const cwd = workspacePath || process.cwd()
         const timeout = args.timeout_ms || 30000
-        const { stdout, stderr } = await execAsync(args.command, { cwd, timeout })
-        return { stdout: stdout || '', stderr: stderr || '', exit_code: 0 }
+        try {
+          const { stdout, stderr } = await execAsync(args.command, { cwd, timeout, maxBuffer: 10 * 1024 * 1024 })
+          return { stdout: stdout || '', stderr: stderr || '', exit_code: 0 }
+        } catch (e) {
+          // A non-zero exit throws — still surface stdout/stderr and the real
+          // exit code so the model can react to the failure instead of a bare error.
+          if (e.killed) return { error: `Command timed out after ${timeout}ms`, stdout: e.stdout || '', stderr: e.stderr || '' }
+          return { stdout: e.stdout || '', stderr: e.stderr || '', exit_code: typeof e.code === 'number' ? e.code : 1 }
+        }
       }
 
       case 'git_status': {
@@ -1234,6 +1250,10 @@ ipcMain.handle('mcp:connect', async (_, serverConfig) => {
 
     await new Promise(r => setTimeout(r, 800))
 
+    // Per the MCP spec the client must send notifications/initialized after the
+    // initialize handshake — some servers silently ignore tools/list without it.
+    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n')
+
     // List tools
     const tools = await new Promise((resolve) => {
       const tid = 'list_tools_1'
@@ -1241,7 +1261,10 @@ ipcMain.handle('mcp:connect', async (_, serverConfig) => {
       proc.stdin.write(JSON.stringify({
         jsonrpc: '2.0', id: tid, method: 'tools/list', params: {}
       }) + '\n')
-      setTimeout(() => resolve([]), 5000)
+      setTimeout(() => {
+        connection.pendingRequests.delete(tid)
+        resolve([])
+      }, 5000)
     })
 
     connection.tools = tools
@@ -1319,20 +1342,29 @@ ipcMain.handle('workspace:open-in-finder', () => {
 })
 
 // ─── File System IPC ───────────────────────────────────────────────────────────
+// These handlers back the sidebar file explorer, which only ever needs the
+// selected workspace. Unlike the model's tools (which route escapes through the
+// approval gate), there is no legitimate reason for these to leave the
+// workspace, so ".."-style escapes are rejected outright.
+function requireWorkspacePathInside(requestedPath) {
+  const { absolutePath, insideWorkspace } = resolveWorkspacePath(settings.workspacePath, requestedPath)
+  if (!insideWorkspace) throw new Error(`Path is outside the workspace: ${requestedPath}`)
+  return absolutePath
+}
+
 ipcMain.handle('fs:read', (_, filePath) => {
-  const { absolutePath } = resolveWorkspacePath(settings.workspacePath, filePath)
-  return fs.readFileSync(absolutePath, 'utf-8')
+  return fs.readFileSync(requireWorkspacePathInside(filePath), 'utf-8')
 })
 
 ipcMain.handle('fs:write', (_, filePath, content) => {
-  const { absolutePath } = resolveWorkspacePath(settings.workspacePath, filePath)
+  const absolutePath = requireWorkspacePathInside(filePath)
   fs.mkdirSync(path.dirname(absolutePath), { recursive: true })
   fs.writeFileSync(absolutePath, content, 'utf-8')
   return true
 })
 
 ipcMain.handle('fs:list', (_, dirPath) => {
-  const { absolutePath: full } = resolveWorkspacePath(settings.workspacePath, dirPath || '.')
+  const full = requireWorkspacePathInside(dirPath || '.')
   if (!fs.existsSync(full)) return []
   return fs.readdirSync(full, { withFileTypes: true }).map(item => ({
     name: item.name,
@@ -1342,13 +1374,11 @@ ipcMain.handle('fs:list', (_, dirPath) => {
 })
 
 ipcMain.handle('fs:open', (_, filePath) => {
-  const { absolutePath } = resolveWorkspacePath(settings.workspacePath, filePath)
-  shell.openPath(absolutePath)
+  shell.openPath(requireWorkspacePathInside(filePath))
 })
 
 ipcMain.handle('fs:delete', (_, filePath) => {
-  const { absolutePath } = resolveWorkspacePath(settings.workspacePath, filePath)
-  fs.rmSync(absolutePath, { recursive: true, force: true })
+  fs.rmSync(requireWorkspacePathInside(filePath), { recursive: true, force: true })
   return true
 })
 
@@ -1497,7 +1527,8 @@ async function readAttachmentFile(filePath) {
   // PDF → extract text using pdftotext if available, else raw
   if (ext === 'pdf') {
     try {
-      const { stdout } = await execAsync(`pdftotext "${filePath}" -`, { maxBuffer: 50 * 1024 * 1024 })
+      // execFile (not exec) — filenames with quotes/$() must not hit a shell
+      const { stdout } = await execFileAsync('pdftotext', [filePath, '-'], { maxBuffer: 50 * 1024 * 1024 })
       return { type: 'text', fileName, ext, sizeKB, content: stdout, lines: stdout.split('\n').length }
     } catch (e) {
       // fallback: try to read as binary and note it
@@ -1629,6 +1660,92 @@ ipcMain.handle('attachment:read', async (_, filePath) => {
 })
 
 // ─── Chat Streaming IPC ────────────────────────────────────────────────────────
+const MAX_AGENT_ITERATIONS = 15
+
+// One AbortController per in-flight conversation so the renderer's Stop button
+// can cancel the API stream and halt the agentic loop between tool calls.
+const activeChatControllers = new Map()
+
+ipcMain.on('chat:stop', (_, { conversationId }) => {
+  const controller = activeChatControllers.get(conversationId)
+  if (controller) controller.abort()
+  // Deny any approval modals still waiting on this conversation so the loop
+  // isn't left hanging on a question the user no longer cares about.
+  for (const [toolCallId, pending] of [...pendingApprovals.entries()]) {
+    if (pending.conversationId === conversationId) resolveApproval(toolCallId, false)
+  }
+})
+
+function isAbortError(error) {
+  return error?.name === 'AbortError' || error?.name === 'APIUserAbortError'
+    || /abort/i.test(error?.message || '')
+}
+
+// Executes one batch of tool calls (shared by the streaming and non-streaming
+// paths) and returns the transcript messages to append.
+async function processToolCalls(event, conversationId, toolCalls, signal) {
+  const resultMessages = []
+  for (const tc of toolCalls) {
+    let result
+    if (signal?.aborted) {
+      // Every tool_call still needs a tool result message or the next request
+      // is rejected — answer the remaining ones with a stop notice.
+      result = { error: 'Generation stopped by user' }
+      resultMessages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) })
+      continue
+    }
+
+    let args = {}
+    let parseError = null
+    try { args = JSON.parse(tc.function.arguments || '{}') } catch (e) { parseError = e.message }
+
+    event.sender.send('chat:tool-executing', {
+      conversationId, toolId: tc.id,
+      toolName: tc.function.name, args
+    })
+
+    if (parseError) {
+      // Tell the model its arguments were malformed instead of silently running
+      // the tool with {} — lets it retry with valid JSON.
+      result = { error: `Invalid JSON in tool arguments: ${parseError}` }
+    }
+
+    if (!result) {
+      const risk = classifyToolRisk(tc.function.name, args, settings.workspacePath)
+      if (risk === 'confirm' && settings.confirmRiskyTools !== false) {
+        const approved = await requestApproval(event, conversationId, tc.id, tc.function.name, args)
+        if (!approved) result = { error: 'User denied this action' }
+      }
+    }
+
+    if (!result) {
+      if (COMPUTER_CONTROL_TOOL_NAMES.has(tc.function.name) && !controlEnabledByConversation.get(conversationId)) {
+        result = { error: 'Screen control was turned off — action skipped.' }
+      } else if (tc.function.name.startsWith('mcp__')) {
+        const parts = tc.function.name.split('__')
+        const serverId = parts[1]
+        const mcpToolName = parts.slice(2).join('__')
+        const conn = mcpConnections.get(serverId)
+        result = conn
+          ? await callMcpTool(conn, mcpToolName, args)
+          : { error: `MCP server "${serverId}" not connected` }
+      } else {
+        result = await executeTool(tc.function.name, args, settings.workspacePath)
+      }
+    }
+
+    event.sender.send('chat:tool-result', {
+      conversationId, toolId: tc.id,
+      toolName: tc.function.name, result
+    })
+
+    const { toolMessage, imageMessage } = buildToolResultEntries(tc, result)
+    resultMessages.push(toolMessage)
+    if (imageMessage) resultMessages.push(imageMessage)
+  }
+  return resultMessages
+}
+
 ipcMain.on('chat:send', async (event, { messages, conversationId, computerControlEnabled }) => {
   controlEnabledByConversation.set(conversationId, !!computerControlEnabled)
 
@@ -1707,9 +1824,16 @@ ipcMain.on('chat:send', async (event, { messages, conversationId, computerContro
 
   let currentMessages = [...systemMessages, ...normalizedMessages]
 
+  // Replace any stale controller for this conversation (e.g. from a crashed turn)
+  activeChatControllers.get(conversationId)?.abort()
+  const controller = new AbortController()
+  activeChatControllers.set(conversationId, controller)
+
   try {
     // Agentic loop: keep going until no more tool calls
-    for (let iteration = 0; iteration < 15; iteration++) {
+    let hitIterationCap = true
+    for (let iteration = 0; iteration < MAX_AGENT_ITERATIONS; iteration++) {
+      if (controller.signal.aborted) { hitIterationCap = false; break }
       const tools = filterToolsForControlMode(baseTools, conversationId)
       const requestParams = {
         model: settings.model,
@@ -1724,7 +1848,7 @@ ipcMain.on('chat:send', async (event, { messages, conversationId, computerContro
 
       if (settings.streamingEnabled) {
         requestParams.stream = true
-        const stream = await client.chat.completions.create(requestParams)
+        const stream = await client.chat.completions.create(requestParams, { signal: controller.signal })
 
         let fullContent = ''
         let toolCalls = []
@@ -1766,116 +1890,61 @@ ipcMain.on('chat:send', async (event, { messages, conversationId, computerContro
           })
 
           event.sender.send('chat:tool-calls-start', { conversationId, toolCalls })
-
-          // Execute each tool
-          const toolResults = []
-          for (const tc of toolCalls) {
-            let args = {}
-            try { args = JSON.parse(tc.function.arguments) } catch (e) {}
-
-            event.sender.send('chat:tool-executing', {
-              conversationId, toolId: tc.id,
-              toolName: tc.function.name, args
-            })
-
-            let result
-            const risk = classifyToolRisk(tc.function.name, args, settings.workspacePath)
-            if (risk === 'confirm' && settings.confirmRiskyTools !== false) {
-              const approved = await requestApproval(event, conversationId, tc.id, tc.function.name, args)
-              if (!approved) result = { error: 'User denied this action' }
-            }
-
-            if (!result) {
-              if (COMPUTER_CONTROL_TOOL_NAMES.has(tc.function.name) && !controlEnabledByConversation.get(conversationId)) {
-                result = { error: 'Screen control was turned off — action skipped.' }
-              } else if (tc.function.name.startsWith('mcp__')) {
-                const parts = tc.function.name.split('__')
-                const serverId = parts[1]
-                const mcpToolName = parts.slice(2).join('__')
-                const conn = mcpConnections.get(serverId)
-                result = conn
-                  ? await callMcpTool(conn, mcpToolName, args)
-                  : { error: `MCP server "${serverId}" not connected` }
-              } else {
-                result = await executeTool(tc.function.name, args, settings.workspacePath)
-              }
-            }
-
-            event.sender.send('chat:tool-result', {
-              conversationId, toolId: tc.id,
-              toolName: tc.function.name, result
-            })
-
-            const { toolMessage, imageMessage } = buildToolResultEntries(tc, result)
-            toolResults.push(toolMessage)
-            if (imageMessage) toolResults.push(imageMessage)
-          }
-
+          const toolResults = await processToolCalls(event, conversationId, toolCalls, controller.signal)
           currentMessages.push(...toolResults)
+
+          if (controller.signal.aborted) { hitIterationCap = false; break }
           // Continue loop for Claude's follow-up
           continue
         }
 
         // No tool calls → done
+        hitIterationCap = false
         break
 
       } else {
         // Non-streaming fallback
-        const response = await client.chat.completions.create(requestParams)
+        const response = await client.chat.completions.create(requestParams, { signal: controller.signal })
         const msg = response.choices[0]?.message
-        if (!msg) break
+        if (!msg) { hitIterationCap = false; break }
 
         if (msg.tool_calls?.length > 0) {
           currentMessages.push({ role: 'assistant', content: msg.content || null, tool_calls: msg.tool_calls })
           event.sender.send('chat:tool-calls-start', { conversationId, toolCalls: msg.tool_calls })
-
-          const toolResults = []
-          for (const tc of msg.tool_calls) {
-            let args = {}
-            try { args = JSON.parse(tc.function.arguments) } catch (e) {}
-            event.sender.send('chat:tool-executing', { conversationId, toolId: tc.id, toolName: tc.function.name, args })
-
-            let result
-            const risk = classifyToolRisk(tc.function.name, args, settings.workspacePath)
-            if (risk === 'confirm' && settings.confirmRiskyTools !== false) {
-              const approved = await requestApproval(event, conversationId, tc.id, tc.function.name, args)
-              if (!approved) result = { error: 'User denied this action' }
-            }
-
-            if (!result) {
-              if (COMPUTER_CONTROL_TOOL_NAMES.has(tc.function.name) && !controlEnabledByConversation.get(conversationId)) {
-                result = { error: 'Screen control was turned off — action skipped.' }
-              } else if (tc.function.name.startsWith('mcp__')) {
-                const parts = tc.function.name.split('__')
-                const serverId = parts[1]
-                const mcpToolName = parts.slice(2).join('__')
-                const conn = mcpConnections.get(serverId)
-                result = conn
-                  ? await callMcpTool(conn, mcpToolName, args)
-                  : { error: `MCP server "${serverId}" not connected` }
-              } else {
-                result = await executeTool(tc.function.name, args, settings.workspacePath)
-              }
-            }
-
-            event.sender.send('chat:tool-result', { conversationId, toolId: tc.id, toolName: tc.function.name, result })
-            const { toolMessage, imageMessage } = buildToolResultEntries(tc, result)
-            toolResults.push(toolMessage)
-            if (imageMessage) toolResults.push(imageMessage)
-          }
+          const toolResults = await processToolCalls(event, conversationId, msg.tool_calls, controller.signal)
           currentMessages.push(...toolResults)
+
+          if (controller.signal.aborted) { hitIterationCap = false; break }
           continue
         }
 
         if (msg.content) {
           event.sender.send('chat:token', { conversationId, token: msg.content })
         }
+        hitIterationCap = false
         break
       }
     }
 
+    if (hitIterationCap) {
+      event.sender.send('chat:token', {
+        conversationId,
+        token: `\n\n⚠️ Stopped after ${MAX_AGENT_ITERATIONS} tool iterations — send another message to continue.`,
+      })
+    }
+
     event.sender.send('chat:done', { conversationId })
   } catch (error) {
-    event.sender.send('chat:error', { conversationId, error: error.message })
+    // A user-initiated stop surfaces as an abort error — end the turn cleanly
+    // (keeping the partial text) instead of showing an error bubble.
+    if (controller.signal.aborted || isAbortError(error)) {
+      event.sender.send('chat:done', { conversationId, stopped: true })
+    } else {
+      event.sender.send('chat:error', { conversationId, error: error.message })
+    }
+  } finally {
+    if (activeChatControllers.get(conversationId) === controller) {
+      activeChatControllers.delete(conversationId)
+    }
   }
 })

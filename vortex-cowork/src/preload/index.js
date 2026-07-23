@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electron', {
 
   // ── Chat (streaming via IPC events) ─────────────────────────────────────────
   sendChat: (data) => ipcRenderer.send('chat:send', data),
+  stopChat: (conversationId) => ipcRenderer.send('chat:stop', { conversationId }),
   respondToolApproval: (toolCallId, approved) =>
     ipcRenderer.invoke('tool:respond-approval', { toolCallId, approved }),
   setComputerControlEnabled: (conversationId, enabled) =>

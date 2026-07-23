@@ -394,11 +394,13 @@ export function AppProvider({ children }) {
     })
   }, [])
 
-  // Save whenever conversations change (but not during streaming)
+  // Save whenever conversations change. Runs even when the list is empty or
+  // has no completed messages — otherwise deleting the last conversation never
+  // rewrites the file and the deleted chats reappear on next launch.
   useEffect(() => {
     if (!state.settingsLoaded) return
-    const hasCompleted = state.conversations.some(c => c.messages.length > 0 && !c.streaming)
-    if (hasCompleted) scheduleSave(state.conversations)
+    if (state.conversations.some(c => c.streaming)) return // wait for stream to finish
+    scheduleSave(state.conversations)
   }, [state.conversations, state.settingsLoaded, scheduleSave])
 
   const newConversation = useCallback(() => {
@@ -441,6 +443,11 @@ export function AppProvider({ children }) {
   const respondToApproval = useCallback(async (toolCallId, approved) => {
     dispatch({ type: 'TOOL_CONFIRM_RESOLVED', toolCallId })
     await window.electron.respondToolApproval(toolCallId, approved)
+  }, [])
+
+  const stopGeneration = useCallback((conversationId) => {
+    // Main aborts the stream and answers with chat:done — partial text is kept.
+    window.electron.stopChat(conversationId)
   }, [])
 
   const setComputerControl = useCallback((conversationId, enabled) => {
@@ -544,6 +551,7 @@ export function AppProvider({ children }) {
       selectWorkspace,
       refreshWorkspaceFiles,
       sendMessage,
+      stopGeneration,
       switchWorkspace,
       respondToApproval,
       setComputerControl,
