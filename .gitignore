@@ -1,0 +1,31 @@
+target/
+.idea/
+*.iml
+.DS_Store
+cache/
+data/
+debug-output/
+
+# Secret config — bundled into the JAR but never committed.
+# See src/main/resources/application.properties for the import.
+src/main/resources/application-secret.properties
+
+# Loose properties files copied/downloaded during ops (often contain real
+# DB passwords and API keys — keep out of git).
+config*.properties
+config (*).properties
+
+# Logs (may contain credential strings from process arguments or stack traces)
+*.log
+EXCERPT_*.log
+
+# Local working artifacts that shouldn't ship to the repo
+.claude/
+.superpowers/
+backup-pre-rebrand/
+handoff/
+*.zip
+debug-report-*.md
+demo-prep-*.md
+config/application-prod.properties
+*.env

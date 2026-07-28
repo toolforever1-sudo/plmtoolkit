@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light dark">
+<title>IMS Document Review</title>
+</head>
+<body style="margin:0; padding:0; background:#FAFAF7; font-family:'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAF7;">
+  <tr><td align="center" style="padding:24px 12px;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border:1px solid #E8E6DF; border-radius:8px; color:#0F1720;">
+
+      <tr><td style="padding:12px 20px; font-size:12px; color:#6B7280; border-bottom:1px solid #E8E6DF;">
+        Agile PLM / IMS Document Review
+        <span style="float:right;">${importantPill}</span>
+      </td></tr>
+
+      ${doInactiveBanner}
+
+      <tr><td style="padding:24px 20px 12px;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#6B7280;">IMS Document Review</div>
+        <h1 style="font-family:'IBM Plex Serif',Georgia,serif; font-size:22px; font-weight:700; color:#0F1720; margin:6px 0 4px;">${statusHeadline}</h1>
+        <p style="color:#6B7280; margin:0; font-size:13px;">Hi ${greetingName} &mdash; the document below is due for review. Use the button below to open the secure response page, where you'll record your response and sign off.</p>
+      </td></tr>
+
+      <!-- Document details: same row set + ordering as the response page
+           the buttons open. Jimmy's PT-82 ask 2026-06-05: keep the email
+           and the response page identical so the recipient never has to
+           reconcile two different layouts. -->
+      <tr><td style="padding:0 20px 8px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px; background:#FAFAF7; border:1px solid #E8E6DF; border-radius:6px;">
+          <tr><td style="padding:10px 14px 6px 14px; color:#6B7280; width:35%; font-weight:600;">Number</td>
+              <td style="padding:10px 14px 6px 0; font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5; font-weight:600;">${docNumber}</td></tr>
+          <tr><td style="padding:6px 14px; color:#6B7280; font-weight:600;">Description</td>
+              <td style="padding:6px 14px 6px 0;">${docDescription}</td></tr>
+          <tr><td style="padding:6px 14px; color:#6B7280; font-weight:600;">Rev / Lifecycle</td>
+              <td style="padding:6px 14px 6px 0;">${docRev} / ${docLifecycle}</td></tr>
+          <tr><td style="padding:6px 14px; color:#6B7280; font-weight:600;">Next Review Date</td>
+              <td style="padding:6px 14px 6px 0; font-family:'IBM Plex Mono',Consolas,monospace;">${nextReviewDate}</td></tr>
+          <tr><td style="padding:6px 14px; color:#6B7280; font-weight:600;">Related DRR</td>
+              <td style="padding:6px 14px 6px 0; font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;">${drrNumber}</td></tr>
+          <tr><td style="padding:6px 14px 10px 14px; color:#6B7280; font-weight:600;">Document Owner</td>
+              <td style="padding:6px 14px 10px 0;">${documentOwner}</td></tr>
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:18px 20px 4px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td align="center">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+              <td align="center" bgcolor="#1F8A4C" style="border-radius:8px;">
+<!--[if mso]>
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+                  href="${responseUrl}" style="height:48px;v-text-anchor:middle;width:230px;" arcsize="17%" strokecolor="#1F8A4C" fillcolor="#1F8A4C">
+                  <w:anchorlock/>
+                  <center style="color:#ffffff;font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:bold;">Submit Response &rarr;</center>
+                </v:roundrect>
+                <![endif]-->
+                <!--[if !mso]><!-- -->
+                <a href="${responseUrl}" target="_blank" style="display:inline-block; padding:14px 40px; font-family:'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif; font-size:15px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:8px;">Submit Response&nbsp;&nbsp;&rarr;</a>
+                <!--<![endif]-->
+              </td>
+            </tr></table>
+          </td></tr>
+          <tr><td align="center" style="padding-top:10px; font-family:'IBM Plex Mono',Consolas,monospace; font-size:11px; color:#9aa1ab;">Single-use secure link &middot; valid ${linkExpiresIn}</td></tr>
+          <tr><td align="center" style="padding:6px 0 0; font-size:12px; color:#6B7280;">New to document reviews? <a href="${trainingDocUrl}" target="_blank" style="color:#4a6fa5;">View the training guide</a>.</td></tr>
+        </table>
+
+        <div style="font-size:12.5px; color:#0F1720; margin-top:18px; line-height:1.55;">
+          You'll choose your response &mdash; no change, start a change order, or get help &mdash; on the secure response page.
+          To manage the DRR directly within Agile, <a href="${drrAgileUrl}" target="_blank" style="color:#4a6fa5;">click here</a>.
+          If you need support at any time, please reach out to
+          <a href="mailto:PDL-IMS-DCC-Agile@sandisk.com" style="color:#4a6fa5;">PDL-IMS-DCC-Agile@sandisk.com</a>.
+        </div>
+
+        <div style="font-size:11.5px; color:#6B7280; margin-top:12px;">
+          &#x1F512; The response page confirms your AD password before submitting.
+        </div>
+        <div style="font-size:11.5px; color:#6B7280; margin-top:4px;">
+          &#x1F310; You need to be on the <strong>SanDisk network or VPN</strong> (Cisco AnyConnect) for the page to load.
+        </div>
+      </td></tr>
+
+      <tr><td style="padding:14px 20px 20px;">
+        <div style="${footerStyle} border-radius:0 6px 6px 0; padding:10px 14px; font-size:12.5px;">${footerCopy}</div>
+      </td></tr>
+
+      <tr><td style="border-top:1px solid #E8E6DF; padding:14px 20px; font-size:11px; color:#6B7280; background:#FAFAF7;">
+        <span>PLM Toolkit &middot; IMS Dashboard</span>
+        ${accountStatusFooter}
+        <div style="margin-top:6px;">This is an automated notification. Please do not reply to this email.</div>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

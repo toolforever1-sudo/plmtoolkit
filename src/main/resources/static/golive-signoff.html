@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>PLM Toolkit — Sign Off</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 0; background: #f0f0f0; font-family: 'IBM Plex Sans', 'Segoe UI', Calibri, Arial, sans-serif; color: #0F1720; -webkit-font-smoothing: antialiased; }
+  .stage { max-width: 920px; margin: 48px auto; }
+  .stage:last-child { margin-bottom: 64px; }
+
+  /* ============ Sign-off page styles ============ */
+  .gls-frame { background: #FAFAF7; border: 1px solid #E8E6DF; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px rgba(20,24,40,0.06), 0 2px 4px rgba(20,24,40,0.04); }
+  .gls-topbar { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 22px; background: #ffffff; border-bottom: 1px solid #E8E6DF; }
+  .gls-mark { width: 24px; height: 24px; border-radius: 5px; background: #0F1720; color: #FAFAF7; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700; text-align: center; line-height: 24px; letter-spacing: 0.03em; }
+  .gls-crumb { font-size: 13px; font-weight: 600; }
+  .gls-crumb span { color: #6B7280; font-weight: 400; }
+  .gls-tokenchip { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B7280; border: 1px solid #E8E6DF; background: #FAFAF7; border-radius: 3px; padding: 4px 9px; }
+  .gls-tokenchip b { color: #0F1720; font-weight: 600; }
+  .gls-body { padding: 28px 32px 32px; }
+  .gls-kicker { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; font-weight: 500; margin-bottom: 8px; }
+  .gls-h1 { font-family: 'IBM Plex Serif', Georgia, serif; font-size: 28px; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .gls-sub { font-size: 13px; color: #444; line-height: 1.55; margin: 0 0 24px; max-width: 580px; }
+  .gls-divider { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #B8342B; font-weight: 600; margin: 22px 0 10px; display: flex; align-items: center; gap: 10px; }
+  .gls-divider::after { content: ""; flex: 1; height: 1px; background: #eac8c5; }
+
+  .gls-card { background: #ffffff; border: 1px solid #E8E6DF; border-radius: 10px; box-shadow: 0 1px 2px rgba(20,24,40,0.04); margin-bottom: 14px; display: grid; grid-template-columns: 1fr 250px; }
+  .gls-card-main { padding: 18px 22px; border-right: 1px solid #ececec; }
+  .gls-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .gls-ecn { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: #4a6fa5; }
+  .gls-chip { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; }
+  .gls-chip.uat { background: #eef3fa; color: #2C6FBB; }
+  .gls-chip.wip { background: #f0ecfa; color: #6B4FBB; }
+  .gls-chip.analysis { background: #ececec; color: #444; }
+  .gls-chip.soon { background: #faf3e5; color: #C7801B; }
+  .gls-chip.over { background: #fdeaea; color: #B8342B; }
+  .gls-desc { font-size: 13px; color: #2a2f37; line-height: 1.55; margin: 0 0 12px; }
+  .gls-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+  .gls-meta-item .k { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; margin-bottom: 2px; }
+  .gls-meta-item .v { font-size: 12px; color: #0F1720; }
+  .gls-card-date { padding: 18px 22px; background: #FAFAF7; border-radius: 0 10px 10px 0; display: flex; flex-direction: column; gap: 8px; }
+  .gls-card-date .k { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; }
+  .gls-current { font-family: 'IBM Plex Serif', Georgia, serif; font-size: 19px; font-weight: 500; letter-spacing: -0.01em; }
+  .gls-card.is-overdue { border-color: #eac8c5; }
+  .gls-card.is-overdue .gls-current { color: #B8342B; }
+  .gls-card.is-overdue .gls-card-date { background: #fdf6f5; }
+  .gls-date-input { height: 34px; border: 1px solid #E8E6DF; border-radius: 6px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #0F1720; background: #fff; outline: none; width: 100%; box-sizing: border-box; }
+  .gls-date-input:focus { border-color: #4a6fa5; box-shadow: 0 0 0 2px rgba(74,111,165,0.18); }
+  .gls-date-input.is-required { border-color: #B8342B; box-shadow: 0 0 0 2px rgba(184,52,43,0.12); }
+  .gls-date-help { font-size: 11px; color: #6B7280; line-height: 1.45; }
+  .gls-card.is-overdue .gls-date-help { color: #8c4a44; }
+  .gls-flag { display: none; font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: #faf3e5; color: #C7801B; align-self: flex-start; }
+  .gls-card.is-changed .gls-flag { display: inline-block; }
+  .gls-card.is-changed { border-color: #e6cf9c; }
+  .gls-flag.req { display: inline-block; background: #fdeaea; color: #B8342B; }
+  .gls-card.is-overdue.is-changed { border-color: #e6cf9c; }
+
+  .gls-signoff { background: #ffffff; border: 1px solid #E8E6DF; border-radius: 10px; box-shadow: 0 1px 2px rgba(20,24,40,0.04); margin-top: 24px; }
+  .gls-signoff-head { padding: 16px 22px 14px; border-bottom: 1px solid #ececec; display: flex; align-items: baseline; gap: 12px; }
+  .gls-signoff-head h2 { font-family: 'IBM Plex Serif', Georgia, serif; font-size: 18px; font-weight: 500; margin: 0; }
+  .gls-summary { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B7280; text-align: right; }
+  .gls-signoff-body { padding: 18px 22px 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .gls-field label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; margin-bottom: 6px; }
+  .gls-input { height: 34px; border: 1px solid #E8E6DF; border-radius: 6px; padding: 0 10px; font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; color: #0F1720; background: #fff; outline: none; width: 100%; box-sizing: border-box; }
+  .gls-input[readonly] { background: #FAFAF7; color: #444; }
+  .gls-input:focus { border-color: #4a6fa5; box-shadow: 0 0 0 2px rgba(74,111,165,0.18); }
+  .gls-signoff-foot { padding: 0 22px 22px; display: flex; align-items: center; gap: 16px; }
+  .gls-submit { height: 38px; padding: 0 22px; background: #0F1720; color: #FAFAF7; border: 0; border-radius: 6px; font-family: 'IBM Plex Sans', sans-serif; font-size: 13.5px; font-weight: 500; letter-spacing: 0.01em; cursor: pointer; flex: none; }
+  .gls-submit:hover { background: #2a2f37; }
+  .gls-submit:disabled { background: #6B7280; cursor: not-allowed; opacity: 0.7; }
+  .gls-securenote { font-size: 11px; color: #6B7280; line-height: 1.5; max-width: 420px; }
+  .gls-blocknote { display: none; margin: 0 22px 18px; font-size: 12px; color: #B8342B; background: #fdeaea; border: 1px solid #eac8c5; border-radius: 6px; padding: 9px 12px; }
+  .gls-frame.has-block .gls-blocknote { display: block; }
+  .gls-errnote { display: none; margin: 0 22px 18px; font-size: 12px; color: #B8342B; background: #fdeaea; border: 1px solid #eac8c5; border-radius: 6px; padding: 9px 12px; }
+  .gls-errnote.is-on { display: block; }
+
+  .gls-success { display: none; padding: 36px 32px 40px; text-align: center; }
+  .gls-frame.is-done .gls-body { display: none; }
+  .gls-frame.is-done .gls-success { display: block; }
+  .gls-check { width: 44px; height: 44px; border-radius: 50%; background: #eef6f1; color: #1F8A4C; font-size: 20px; line-height: 44px; margin: 0 auto 14px; }
+  .gls-success h2 { font-family: 'IBM Plex Serif', Georgia, serif; font-size: 24px; font-weight: 500; margin: 0 0 6px; }
+  .gls-success .sub { font-size: 13px; color: #444; margin: 0 0 22px; }
+  .gls-result { max-width: 600px; margin: 0 auto; text-align: left; border: 1px solid #E8E6DF; border-radius: 8px; overflow: hidden; }
+  .gls-result-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #fff; border-bottom: 1px solid #ececec; font-size: 12.5px; }
+  .gls-result-row:last-child { border-bottom: 0; }
+  .gls-result-row .ecn { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #4a6fa5; width: 150px; flex: none; }
+  .gls-result-row .what { color: #444; }
+  .gls-result-row .ok { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; background: #eef6f1; color: #1F8A4C; flex: none; }
+  .gls-result-row .ok.err { background: #fdeaea; color: #B8342B; }
+  .gls-result-row .ok.over { background: #fff8e1; color: #C7801B; }
+  .gls-result-row .ok.upd { background: #eef3fa; color: #2C6FBB; }
+  .gls-mailnote { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B7280; margin-top: 18px; }
+  .gls-footer { padding: 13px 22px; background: #FAFAF7; border-top: 1px solid #ececec; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #6B7280; display: flex; gap: 18px; }
+
+  .gls-loading, .gls-fatal { padding: 48px 32px; text-align: center; }
+  .gls-loading .sp { display:inline-block; width:18px; height:18px; border:2px solid #E8E6DF; border-top-color:#4a6fa5; border-radius:50%; animation: glsspin 0.9s linear infinite; vertical-align:middle; margin-right:8px; }
+  @keyframes glsspin { to { transform: rotate(360deg); } }
+  .gls-fatal h2 { font-family: 'IBM Plex Serif', Georgia, serif; font-size: 22px; font-weight: 500; margin: 0 0 8px; color: #B8342B; }
+  .gls-fatal p { font-size: 13.5px; color: #4a4f58; margin: 0; }
+
+  @media (prefers-color-scheme: dark) {
+    body { background:#1a1d24; color:#E8E6DF; }
+    .gls-frame { background:#22262e; border-color:#3a3e47; }
+    .gls-topbar, .gls-card, .gls-signoff { background:#2a2e36; border-color:#3a3e47; }
+    .gls-card-date { background:#1f232a; }
+    .gls-h1, .gls-current { color:#E8E6DF; }
+    .gls-input, .gls-date-input { background:#1f232a; color:#E8E6DF; border-color:#3a3e47; }
+    .gls-result-row { background:#2a2e36; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="gls-frame" id="glsFrame">
+
+    <div class="gls-topbar">
+      <div class="gls-mark">PT</div>
+      <div class="gls-crumb">PLM Toolkit <span id="glsCrumbTail">/ Sign-Off</span></div>
+      <div class="gls-tokenchip" id="glsTokenChip">Signed link &middot; loading&hellip;</div>
+    </div>
+
+    <div class="gls-loading" id="glsLoading"><span class="sp"></span><span>Loading your sign-off page&hellip;</span></div>
+
+    <div class="gls-body" id="glsBody" style="display:none;">
+      <div class="gls-kicker" id="glsKicker">IT Enhancements</div>
+      <h1 class="gls-h1" id="glsHeading">Confirm your dates</h1>
+      <p class="gls-sub" id="glsSub"></p>
+
+      <div id="glsCards"></div>
+
+      <div class="gls-signoff">
+        <div class="gls-signoff-head">
+          <h2>Sign off</h2>
+          <div class="gls-summary" id="glsSummary"></div>
+        </div>
+        <div class="gls-signoff-body">
+          <div class="gls-field">
+            <label>Signing off as</label>
+            <input class="gls-input" type="text" id="glsLoginInput" placeholder="Your Agile loginid" autocomplete="username">
+          </div>
+          <div class="gls-field">
+            <label>Your Agile password</label>
+            <input class="gls-input gls-pass" type="password" id="glsPass" placeholder="Required to write to Agile as you" autocomplete="current-password">
+          </div>
+        </div>
+        <div class="gls-blocknote" id="glsBlockNote">Past-due items still need a new date before you can sign off.</div>
+        <div class="gls-errnote" id="glsErr"></div>
+        <div class="gls-signoff-foot">
+          <button class="gls-submit" type="button" id="glsSubmit">Confirm &amp; sign off</button>
+          <p class="gls-securenote">Your password is sent once, securely, to make the update in Agile under your account &mdash; it is never stored or logged. The ECN history will attribute the change to you.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="gls-success" id="glsSuccess">
+      <div class="gls-check">&#10003;</div>
+      <h2>Written to Agile</h2>
+      <p class="sub" id="glsSuccessSub">Signed off.</p>
+      <div class="gls-result" id="glsResultRows"></div>
+      <div class="gls-mailnote" id="glsMailNote"></div>
+    </div>
+
+    <div class="gls-fatal" id="glsFatal" style="display:none;">
+      <h2 id="glsFatalH">Link unavailable</h2>
+      <p id="glsFatalP">This sign-off link may have expired, already been used, or been revoked. Contact <b id="glsFatalContact">pdl-plm-admin@sandisk.com</b>.</p>
+    </div>
+
+    <div class="gls-footer">
+      <span>PLM Toolkit &middot; IT Enhancements</span>
+      <span id="glsFooterToken">Token &middot; single use</span>
+      <span style="margin-left:auto;">Questions? <span id="glsFooterContact">pdl-plm-admin@sandisk.com</span></span>
+    </div>
+  </div>
+</div>
+
+<script src="golive-signoff.js?v=20260612a"></script>
+</body>
+</html>

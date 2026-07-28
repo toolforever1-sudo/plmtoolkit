@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PLM Field Change Tracker - Service Guide</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.6; }
+h1 { color: #1a3a5c; border-bottom: 2px solid #1a3a5c; padding-bottom: 8px; }
+h2 { color: #2c3e50; margin-top: 30px; }
+h3 { color: #4a6fa5; }
+code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace; font-size: 13px; line-height: 1.5; }
+pre .comment { color: #6a9955; }
+pre .cmd { color: #dcdcaa; }
+.note { background: #e8f0fe; border-left: 4px solid #4a6fa5; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.warning { background: #fff3cd; border-left: 4px solid #856404; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+th { background: #2c3e50; color: white; padding: 10px 14px; text-align: left; }
+td { padding: 8px 14px; border: 1px solid #ddd; }
+tr:nth-child(even) { background: #f8f9fa; }
+.footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 12px; color: #999; }
+</style>
+</head>
+<body>
+
+<h1>PLM Field Change Tracker - Service Guide</h1>
+<p><strong>Version:</strong> 1.0.0<br>
+<strong>Last Updated:</strong> April 12, 2026</p>
+
+<h2>Prerequisites</h2>
+<table>
+<tr><th>Requirement</th><th>Details</th></tr>
+<tr><td>Java 8 (JDK)</td><td>Amazon Corretto 8 or any Java 1.8+ JDK</td></tr>
+<tr><td>Network</td><td>Access to Oracle Agile PLM database on port 1521</td></tr>
+<tr><td>Port</td><td>Port 8080 available (configurable)</td></tr>
+</table>
+
+<h2>File Locations</h2>
+<table>
+<tr><th>File</th><th>Purpose</th></tr>
+<tr><td><code>plm-field-tracker-1.0.0.jar</code></td><td>Application JAR (self-contained)</td></tr>
+<tr><td><code>config/application-prod.properties</code></td><td>Production database configuration</td></tr>
+</table>
+
+<h2>Configuration</h2>
+<p>Before first run, edit <code>config/application-prod.properties</code> with your database connection details:</p>
+<pre>
+<span class="comment"># Database</span>
+spring.datasource.url=jdbc:oracle:thin:@//your-db-host:1521/your-service-name
+spring.datasource.username=your_db_user
+spring.datasource.password=your_db_password
+
+<span class="comment"># Server port (default 8080)</span>
+server.port=8080
+</pre>
+
+<h2>Starting the Service</h2>
+
+<h3>Option 1: Foreground (see logs in terminal)</h3>
+<pre>
+java -jar plm-field-tracker-1.0.0.jar \
+  --spring.config.additional-location=config/application-prod.properties
+</pre>
+
+<h3>Option 2: Background (Linux/Mac)</h3>
+<pre>
+nohup java -jar plm-field-tracker-1.0.0.jar \
+  --spring.config.additional-location=config/application-prod.properties \
+  > plm-tracker.log 2>&1 &
+
+<span class="comment"># Save the process ID for later</span>
+echo $! > plm-tracker.pid
+</pre>
+
+<h3>Option 3: Background (Windows)</h3>
+<pre>
+start /B java -jar plm-field-tracker-1.0.0.jar ^
+  --spring.config.additional-location=config\application-prod.properties ^
+  > plm-tracker.log 2>&1
+</pre>
+
+<div class="note">
+<strong>Note:</strong> The application takes about 5-10 seconds to start. Look for <code>Started Application in X seconds</code> in the log output to confirm it's ready.
+</div>
+
+<h3>Verify the Service is Running</h3>
+<p>Open a browser and go to:</p>
+<pre>
+http://localhost:8080
+</pre>
+<p>Or from the command line:</p>
+<pre>
+curl http://localhost:8080/api/changes?field=Description&days=1
+</pre>
+<p>A JSON response confirms the service is up and connected to the database.</p>
+
+<h2>Stopping the Service</h2>
+
+<h3>If running in foreground</h3>
+<p>Press <code>Ctrl+C</code> in the terminal.</p>
+
+<h3>If running in background (Linux/Mac)</h3>
+<pre>
+<span class="comment"># Using the saved PID file</span>
+kill $(cat plm-tracker.pid)
+
+<span class="comment"># Or find and kill the process</span>
+ps aux | grep plm-field-tracker
+kill &lt;PID&gt;
+</pre>
+
+<h3>If running in background (Windows)</h3>
+<pre>
+<span class="comment">REM Find the Java process</span>
+tasklist | findstr java
+
+<span class="comment">REM Kill by PID</span>
+taskkill /PID &lt;PID&gt; /F
+</pre>
+
+<h2>Changing the Port</h2>
+<p>Add this to your properties file or pass it as a command-line argument:</p>
+<pre>
+<span class="comment"># In application-prod.properties</span>
+server.port=9090
+
+<span class="comment"># Or as a command-line argument</span>
+java -jar plm-field-tracker-1.0.0.jar --server.port=9090
+</pre>
+
+<h2>Troubleshooting</h2>
+
+<table>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+<tr><td>Port 8080 already in use</td><td>Another process is using the port</td><td>Change the port or stop the other process</td></tr>
+<tr><td>Database connection refused</td><td>Wrong DB host/port or network issue</td><td>Verify <code>spring.datasource.url</code> and network access</td></tr>
+<tr><td>Authentication failed</td><td>Wrong DB credentials</td><td>Verify username/password in properties file</td></tr>
+<tr><td>Page loads but search returns errors</td><td>DB query issue</td><td>Check <code>plm-tracker.log</code> for SQL errors</td></tr>
+</table>
+
+<div class="footer">
+PLM Field Change Tracker v1.0.0 &bull; SanDisk PLM Engineering
+</div>
+
+</body>
+</html>

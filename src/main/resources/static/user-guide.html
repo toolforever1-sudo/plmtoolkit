@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLM Toolkit - End User Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #333; line-height: 1.6; }
+        .header { background: #1a3a5c; color: white; padding: 24px 40px; }
+        .header h1 { font-size: 24px; font-weight: 600; }
+        .header p { opacity: 0.8; margin-top: 4px; font-size: 14px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 32px 24px 64px; }
+        .toc { background: white; border-radius: 8px; padding: 24px 32px; margin-bottom: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .toc h2 { font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: #1a3a5c; margin-bottom: 12px; }
+        .toc ol { padding-left: 20px; }
+        .toc li { margin: 6px 0; }
+        .toc a { color: #2c6fbb; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        .section { background: white; border-radius: 8px; padding: 28px 32px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .section h2 { font-size: 20px; color: #1a3a5c; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 16px; }
+        .section h3 { font-size: 16px; color: #2c3e50; margin: 20px 0 8px; }
+        .section p { margin: 8px 0; }
+        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 13px; color: #c7254e; }
+        kbd { display: inline-block; background: #f7f7f7; border: 1px solid #ccc; border-radius: 3px; padding: 2px 6px; font-size: 12px; font-family: monospace; box-shadow: 0 1px 0 #bbb; }
+        table.guide-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        table.guide-table th { background: #2c3e50; color: white; padding: 8px 12px; text-align: left; font-size: 13px; }
+        table.guide-table td { padding: 8px 12px; border-bottom: 1px solid #e9ecef; font-size: 13px; }
+        table.guide-table tr:nth-child(even) { background: #f8f9fa; }
+        .tip-box { background: #e8f4fd; border-left: 4px solid #2c6fbb; padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 12px 0; font-size: 14px; }
+        .tip-box strong { color: #1a3a5c; }
+        .warn-box { background: #fff8e1; border-left: 4px solid #f9a825; padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 12px 0; font-size: 14px; }
+        .warn-box strong { color: #e65100; }
+        ul { padding-left: 20px; margin: 8px 0; }
+        li { margin: 4px 0; }
+        .back-link { display: inline-block; margin-bottom: 16px; color: #2c6fbb; text-decoration: none; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .footer { text-align: center; color: #999; font-size: 12px; padding: 24px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PLM Toolkit - End User Guide</h1>
+    <p>Comprehensive guide covering Field Changes, BOM Explorer, Part Extract, Agile Lookup, Change History, Utilities, Data Compare, SKU Lookup, and Extensions.</p>
+</div>
+
+<div class="container">
+
+<a href="/" class="back-link">&larr; Back to PLM Toolkit</a>
+
+<div style="background:#fff8e1; border-left:4px solid #C7801B; border-radius:0 6px 6px 0; padding:12px 18px; margin:18px 0; font-size:13.5px; line-height:1.6;">
+    <strong>Heads-up: nav layout updated May 10, 2026.</strong> Several tabs are now grouped under parent tabs in the top navigation:
+    <ul style="margin:8px 0 4px 18px;">
+        <li><strong>Items</strong> tab &rarr; sub-tabs: <em>Field Changes</em>, <em>Part Extract</em>, <em>Agile Lookup</em>, <em>SKU Lookup</em>.</li>
+        <li><strong>BOM</strong> tab &rarr; sub-tabs: <em>Explorer</em>, <em>Compare</em>.</li>
+        <li><strong>User Management</strong> &mdash; was previously called "User Permissions".</li>
+        <li><strong>&#129514; Labs</strong> tab (admin-only, with a small "Admin" badge) &rarr; sub-tabs: <em>BOM Race</em> (new!), <em>AD Health</em>, <em>AI Eval</em>. AD Health and AI Eval used to be standalone admin top-level tabs / Admin-dropdown links &mdash; they moved into Labs.</li>
+        <li><strong>Admin dropdown</strong> is now slim &mdash; only <em>Maintenance</em> and <em>User Management</em>. The <em>Plugin Guide</em> moved to the <em>Help</em> dropdown; AD Health, AI Eval, BOM Race are reachable via the Labs tab.</li>
+    </ul>
+    The functionality of each sub-tab is unchanged from the descriptions below. When this guide says "the Field Changes tab", you'll find it under <em>Items &rarr; Field Changes</em>; when it says "BOM Explorer tab", look under <em>BOM &rarr; Explorer</em>; and so on.
+</div>
+
+<div style="background:#eef2f7; border-left:4px solid #4a6fa5; border-radius:0 6px 6px 0; padding:12px 18px; margin:18px 0; font-size:13.5px; line-height:1.6;">
+    <strong>New: voice input + voice commands (May 10, 2026).</strong> The chat inputs in the Help sidebar and Labs &rarr; AI Eval &rarr; Ask the AI form now have a &#127908; mic button. Click it (don't hold), allow mic access, speak, click again to stop &mdash; the transcript fills the input. A small dropdown next to the mic picks the language (10 supported: English, Mandarin, Malay, Hindi, Bengali, Tamil, Telugu, Kannada, Hebrew, Japanese). Press Enter to submit.
+    <br><br>Beyond plain Q&amp;A, the chat also recognizes <em>commands</em> &mdash; type or speak phrases like "go to BOM Race", "show me the BOM Explorer tab", "I want to run a where used", "export it" / "download the file", or chain them: "go to BOM Race, start a standard race, and export the output files". The chatbot does the action in-page instead of writing instructions for you. Note: the mic feature requires HTTPS &mdash; on plain HTTP intranet hosts the browser blocks it (the button greys out with a tooltip).
+</div>
+
+<div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+        <li><a href="#login">Logging In</a></li>
+        <li><a href="#field-changes">Field Changes Tab</a></li>
+        <li><a href="#bom-explorer">BOM Explorer Tab</a></li>
+        <li><a href="#part-extract">Part Extract Tab</a></li>
+        <li><a href="#agile-lookup">Agile Lookup Tab</a></li>
+        <li><a href="#change-history">Change History Tab</a></li>
+        <li><a href="#utilities">Utilities Tab</a></li>
+        <li><a href="#data-compare">Data Compare Tab</a></li>
+        <li><a href="#sku-lookup">SKU Lookup Tab</a></li>
+        <li><a href="#extensions">Extensions Tab (Admin Only)</a></li>
+        <li><a href="#shop-floor-docs">Shop-Floor Docs Tab</a></li>
+        <li><a href="#saved-searches">Saved Searches</a></li>
+        <li><a href="#scheduled-reports">Scheduled Reports</a></li>
+        <li><a href="#column-filters">Column Filter Syntax</a></li>
+        <li><a href="#export-email">Export and Email</a></li>
+        <li><a href="#help-support">Help and Support</a></li>
+        <li><a href="#feedback">Feedback</a></li>
+        <li><a href="#shortcuts">Keyboard Shortcuts and Tips</a></li>
+    </ol>
+</div>
+
+<!-- ================================================================ -->
+<!-- 1. Logging In -->
+<!-- ================================================================ -->
+<div class="section" id="login">
+    <h2>1. Logging In</h2>
+    <p>Navigate to the PLM Toolkit URL in your browser. You will be presented with a login page.</p>
+    <ul>
+        <li>Enter your <strong>corporate AD username</strong> (without the domain) and <strong>password</strong>.</li>
+        <li>You must be a member of the <code>IT-APP-Agile-admin</code> Active Directory group to access the tool.</li>
+        <li>If the corporate directory is temporarily unreachable, the tool will attempt to authenticate you using cached credentials from a previous successful login.</li>
+    </ul>
+
+    <h3>Access Request Workflow</h3>
+    <p>If you are not yet a member of the required AD group, the login page shows a self-service <strong>Request Access</strong> form instead of an error message.</p>
+    <ol>
+        <li>Fill in your name and email address on the access request form.</li>
+        <li>Submit the request. An email notification is sent to the PLM admin team.</li>
+        <li>The tool automatically checks every <strong>10 minutes</strong> whether your account has been added to the AD group.</li>
+        <li>Once access is granted, you receive a confirmation email with a link to log in.</li>
+    </ol>
+    <div class="tip-box">
+        <strong>Tip:</strong> After submitting an access request, you do not need to keep the page open. You will receive an email once your access has been granted.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 2. Field Changes Tab -->
+<!-- ================================================================ -->
+<div class="section" id="field-changes">
+    <h2>2. Field Changes Tab</h2>
+    <p>This is the default tab. It lets you search for field-level changes made to Agile PLM items within the last 1 to 7 days. Data comes from the <code>item_history</code> table.</p>
+
+    <h3>Search Filters</h3>
+    <table class="guide-table">
+        <tr><th>Filter</th><th>Description</th><th>Example</th></tr>
+        <tr><td>Field Name</td><td>Name of the PLM field that changed. Comma-separated values use OR logic.</td><td><code>Subcon, Description</code></td></tr>
+        <tr><td>Item Number</td><td>The part or item number. Supports <code>*</code> wildcard.</td><td><code>01-123*</code></td></tr>
+        <tr><td>Old Value Contains</td><td>Filter by what the field value was before the change. Comma = OR.</td><td><code>C039,C002</code></td></tr>
+        <tr><td>New Value Contains</td><td>Filter by what the field value changed to. Comma = OR.</td><td><code>C002,R010</code></td></tr>
+        <tr><td>Changed By</td><td>The user who made the change.</td><td><code>Zhu, Peter</code></td></tr>
+        <tr><td>Days Back</td><td>How far back to search (1, 3, 5, or 7 days).</td><td><code>7</code></td></tr>
+    </table>
+
+    <h3>Net-Change Filter</h3>
+    <p>Enabled by default. When on, changes that were subsequently reverted (value changed back to the original) are hidden. This lets you focus on the effective net changes. Toggle it off to see all intermediate changes.</p>
+
+    <h3>Filter Badge (Unique Item Count)</h3>
+    <p>When column filters are active, a <strong>yellow badge</strong> appears in the toolbar showing the number of <strong>unique items</strong> that match the current filters. This gives you a quick count of how many distinct items are affected, separate from the total row count.</p>
+
+    <h3>Expanding Rows</h3>
+    <p>Click any row in the results table to expand it. The expanded view shows:</p>
+    <ul>
+        <li>Full item number, field name, revision, timestamp, and user</li>
+        <li>An <strong>inline diff</strong> highlighting what was added (green) and removed (red) between old and new values</li>
+    </ul>
+    <p>Click the row again or press <kbd>Esc</kbd> to collapse all expanded rows.</p>
+
+    <h3>Sorting</h3>
+    <p>Click any column header with a sort icon to sort ascending or descending. The default sort is by timestamp (newest first).</p>
+
+    <h3>Toolbar Buttons</h3>
+    <table class="guide-table">
+        <tr><th>Button</th><th>Description</th></tr>
+        <tr><td><strong>Search</strong></td><td>Run the search with current filters</td></tr>
+        <tr><td><strong>Clear</strong></td><td>Reset all search fields</td></tr>
+        <tr><td><strong>&#9733; (Star)</strong></td><td>Save the current search for quick re-use later (see <a href="#saved-searches">Saved Searches</a>)</td></tr>
+        <tr><td><strong>&#128339; (Clock)</strong></td><td>Schedule this search to run automatically and email results (see <a href="#scheduled-reports">Scheduled Reports</a>)</td></tr>
+    </table>
+</div>
+
+<!-- ================================================================ -->
+<!-- 3. BOM Explorer Tab -->
+<!-- ================================================================ -->
+<div class="section" id="bom-explorer">
+    <h2>3. BOM Explorer Tab</h2>
+    <p>Explore bill-of-materials relationships in both directions. Data is queried live from the Oracle database.</p>
+
+    <h3>Explode (Top-Down)</h3>
+    <p>Enter an assembly number and click <strong>Explode</strong>. The tool recursively finds all components, sub-assemblies, and their components down to the specified depth (default 20 levels).</p>
+
+    <h3>Implode (Bottom-Up)</h3>
+    <p>Enter a component number and click <strong>Implode</strong>. The tool finds all parent assemblies that use the component, going upward through the BOM hierarchy.</p>
+
+    <h3>Batch Lookups</h3>
+    <p>You can look up multiple items at once in two ways:</p>
+    <ul>
+        <li><strong>Comma-separated:</strong> Type multiple item numbers in the input field separated by commas.</li>
+        <li><strong>File upload:</strong> Upload a <code>.txt</code> or <code>.csv</code> file with one item number per line. Items are processed in parallel (3 at a time) for speed.</li>
+    </ul>
+
+    <h3>Max Depth</h3>
+    <p>Control how many levels deep the BOM traversal goes. Options: 5, 10, 20 (default), or 50. Higher depths return more data but take longer.</p>
+
+    <h3>Results Table</h3>
+    <table class="guide-table">
+        <tr><th>Column</th><th>Description</th></tr>
+        <tr><td>Level</td><td>Depth in the BOM hierarchy (0 = root/direct)</td></tr>
+        <tr><td>Parent</td><td>The parent assembly number</td></tr>
+        <tr><td>Component</td><td>The component part number</td></tr>
+        <tr><td>Qty</td><td>Quantity of the component used</td></tr>
+        <tr><td>Description</td><td>Part description (hover for full text)</td></tr>
+        <tr><td>Item Type</td><td>Item classification (e.g., "A198-Card Retail Packaging")</td></tr>
+        <tr><td>BOM Notes</td><td>Notes associated with the BOM relationship (hover for full text)</td></tr>
+        <tr><td>Status</td><td>Item status: <span style="color:#28a745; font-weight:600;">ACT</span> (Active), <span style="color:#dc3545; font-weight:600;">OBS</span> (Obsolete), <span style="color:#4a6fa5; font-weight:600;">MKT</span> (Marketing), etc.</td></tr>
+        <tr><td>Lifecycle Phase</td><td>Current lifecycle phase of the item</td></tr>
+        <tr><td>Product Line</td><td>Product line assignment</td></tr>
+        <tr><td>Subcontractors</td><td>Assigned subcontractors</td></tr>
+        <tr><td>Build Plant</td><td>Actual build plant location</td></tr>
+        <tr><td>Path</td><td>Full BOM path from root to this component</td></tr>
+        <tr><td>Rev</td><td>Revision number</td></tr>
+        <tr><td>Ref Des</td><td>Reference designator</td></tr>
+        <tr><td>Find #</td><td>BOM find/sequence number</td></tr>
+    </table>
+    <p>All sortable columns can be clicked to sort ascending or descending. Use column filters to narrow results further.</p>
+
+    <h3>Large Result Sets (10K Render Cap)</h3>
+    <p>When a BOM query returns more than <strong>10,000 rows</strong>, the table renders only the first 10,000 rows to keep the browser responsive. A banner indicates that results have been capped. The full dataset is still available via <strong>Export Excel</strong> or <strong>Email Me</strong>, which always include all rows regardless of the render limit.</p>
+
+    <h3>Top-Level Badges (Implode)</h3>
+    <p>When running an Implode search, components that are <strong>top-level assemblies</strong> (not used as a component in any other BOM) are marked with a badge. This helps identify finished goods or end-level products in the hierarchy.</p>
+
+    <h3>BOM Notes Extract</h3>
+    <p>The <strong>BOM Notes Extract</strong> button generates an Excel file containing all BOM relationships that have notes attached. This is an asynchronous operation &mdash; the extract is generated in the background and you are notified when it is ready for download.</p>
+
+    <h3>Full BOM Extract</h3>
+    <p>The <strong>Full Extract</strong> button (in the toolbar) downloads the complete BOM database extract as a compressed CSV file (<code>.csv.zip</code>). This is the entire <code>BOM_EXTRACT</code> table with all BOM relationships.</p>
+    <ul>
+        <li>The extract is regenerated automatically every day at <strong>2:00 AM</strong>.</li>
+        <li>If a file is available, clicking the button shows the file size and date, then starts the download.</li>
+        <li>If no file exists yet (e.g., on a fresh deployment), clicking the button triggers generation automatically. You'll see a message confirming generation has started.</li>
+        <li>If generation is already in progress, you'll see a message asking you to check back in a few minutes.</li>
+    </ul>
+    <div class="warn-box">
+        <strong>Note:</strong> The full extract file can be large (typically 50-100 MB compressed). The download time depends on your connection speed.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 4. Part Extract Tab -->
+<!-- ================================================================ -->
+<div class="section" id="part-extract">
+    <h2>4. Part Extract Tab</h2>
+    <p>Look up part master data from the <code>item_extract</code> table. This tab gives you full control over which columns to display.</p>
+
+    <h3>Column Picker</h3>
+    <p>The dual-list picker lets you choose and order columns. Column names are shown with <strong>friendly labels</strong> (e.g., "Product Line" instead of the raw database column name).</p>
+    <ul>
+        <li><strong>Available Fields</strong> (left): All columns you can add</li>
+        <li><strong>Displayed Fields</strong> (right): Columns that will appear in the results, in order</li>
+        <li>Use the arrow buttons to move fields between lists</li>
+        <li>Use the up/down buttons to reorder displayed fields</li>
+    </ul>
+
+    <h3>On-Screen vs. Export Columns</h3>
+    <p>To keep the on-screen table readable, a maximum of <strong>8 columns</strong> are displayed at once. If you select more than 8 columns, the additional columns are still included in the <strong>Excel export</strong> and <strong>Email Me</strong> output, so you always get the full dataset in your exports.</p>
+
+    <h3>Date Format</h3>
+    <p>All date values are displayed consistently in <strong>MM-DD-YYYY</strong> format across the results table and exports.</p>
+
+    <h3>Search Options</h3>
+    <ul>
+        <li><strong>Item Number:</strong> Enter one or more part numbers (comma-separated) or use <code>*</code> wildcards. You can also drag and drop a <code>.txt</code> or <code>.csv</code> file onto the upload area.</li>
+        <li><strong>Release Date Range:</strong> Filter by released date. You can combine this with an item number or use it alone to find all parts released in a date range.</li>
+    </ul>
+
+    <h3>Progress Indicator</h3>
+    <p>During a search, a progress indicator shows the number of rows retrieved so far, giving you real-time feedback on large queries.</p>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> Leave the item number blank and set a date range to discover all parts released during a specific period.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 5. Agile Lookup Tab -->
+<!-- ================================================================ -->
+<div class="section" id="agile-lookup">
+    <h2>5. Agile Lookup Tab</h2>
+    <p>Look up live Agile PLM field values for a list of items using the Agile SDK API. Unlike the other tabs which query database extracts, this tab queries Agile directly for the most current data.</p>
+
+    <h3>Mode 1: Excel Upload</h3>
+    <ol>
+        <li>Prepare an Excel file (<code>.xlsx</code>) with the following format:
+            <ul>
+                <li><strong>Column A:</strong> Item numbers (one per row, starting from row 2)</li>
+                <li><strong>Row 1, columns B onwards:</strong> Field names you want to look up (e.g., <code>Subcontractors</code>, <code>Actual Build Plant</code>, <code>Description</code>)</li>
+            </ul>
+        </li>
+        <li>Upload the file using the file picker or drag and drop</li>
+        <li>Click <strong>Look Up</strong></li>
+    </ol>
+
+    <h3>Mode 2: Manual Input</h3>
+    <p>Instead of uploading an Excel file, you can build a lookup manually:</p>
+    <ol>
+        <li>Switch to <strong>Manual Input</strong> mode</li>
+        <li><strong>Fields:</strong> Start typing a field name in the typeahead input. The autocomplete draws from a list of <strong>1,250+ Agile field names</strong>. Select fields and they appear as draggable tags that you can reorder.</li>
+        <li><strong>Items:</strong> Enter item numbers directly (comma-separated) or upload a file with one item per line.</li>
+        <li>Click <strong>Look Up</strong></li>
+    </ol>
+
+    <h3>Field Search Scope</h3>
+    <p>The tool searches for fields across <strong>Title Block</strong>, <strong>Page Two</strong>, and <strong>Page Three</strong> of each item. Results appear in a table matching your selected fields and items.</p>
+
+    <h3>Limits</h3>
+    <p>Maximum items per lookup is shown below the upload area (default: 100). If your file has more items, only the first 100 will be processed.</p>
+
+    <h3>Handling Special Cases</h3>
+    <ul>
+        <li><strong>"Field Not Present"</strong>: Displayed when a field name does not exist on any page of the item type. This is different from a blank value, which means the field exists but has no data.</li>
+        <li>If a field name has a typo, the tool tries to warn you with a close match suggestion.</li>
+        <li>Results can be exported to Excel or emailed, just like other tabs.</li>
+    </ul>
+
+    <h3>Admin: Update Field Names</h3>
+    <p>Administrators can upload a CSV file of Agile field names to update the typeahead autocomplete list. This is done via the <strong>Update Field Names</strong> button (visible only to admins).</p>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> The Agile Lookup tab connects to a separate Java 8 microservice. If you see connection errors, the Agile service may be down or restarting.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 6. Change History Tab -->
+<!-- ================================================================ -->
+<div class="section" id="change-history">
+    <h2>6. Change History Tab</h2>
+    <p>View revision and change order history for Agile PLM items. Data comes from the <code>AGILE</code> schema, providing a complete audit trail of revisions, change orders, and lifecycle transitions.</p>
+
+    <h3>Search Options</h3>
+    <ul>
+        <li><strong>Item Number:</strong> Enter one or more item numbers (comma-separated) or upload a file with one item per line (drag and drop supported).</li>
+        <li><strong>Date Filter:</strong> Use the date dropdown to limit results to a specific time period.</li>
+    </ul>
+
+    <h3>Results Table</h3>
+    <p>Results are <strong>grouped by item number</strong> for easy scanning. Each row shows the revision, change order number, change type, release date, and associated details.</p>
+
+    <h3>Lifecycle Journey Analysis</h3>
+    <p>Each item in the results includes a visual lifecycle analysis that shows how the item moved through its lifecycle phases over time:</p>
+    <ul>
+        <li><strong>Color-coded timeline bar:</strong> A horizontal bar showing each lifecycle phase as a colored segment, proportional to the time spent in each phase.</li>
+        <li><strong>Phase table:</strong> A detailed table listing each phase with start/end dates and duration displayed in a human-readable format (years, months, and days).</li>
+        <li><strong>Regression detection:</strong> If an item moved backward in its lifecycle (e.g., from Production back to Prototype), the regression is highlighted so you can spot unusual transitions.</li>
+    </ul>
+
+    <h3>Excel Export with Lifecycle Analysis</h3>
+    <p>When you export or email results from this tab, the Excel file includes a dedicated <strong>"Lifecycle Analysis"</strong> tab in addition to the raw change history data. This tab contains the phase-by-phase breakdown with durations for each item.</p>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> The lifecycle journey is especially useful for understanding how long items spend in each phase and for identifying items that regressed through lifecycle stages.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 7. Utilities Tab -->
+<!-- ================================================================ -->
+<div class="section" id="utilities">
+    <h2>7. Utilities Tab</h2>
+    <p>The Utilities tab (formerly "Reports") is a central place to run server-side scripts, built-in reports, and system diagnostics. Utilities are organized into three groups:</p>
+
+    <h3>Three Groups</h3>
+    <table class="guide-table">
+        <tr><th>Group</th><th>Description</th></tr>
+        <tr><td><strong>Built-in Reports</strong></td><td>Pre-configured reports maintained by the PLM team (e.g., lifecycle aging, BOM integrity checks). These are always available and cannot be removed.</td></tr>
+        <tr><td><strong>Uploaded Scripts</strong></td><td>Custom Python, Java, or JAR scripts uploaded by PLM admins. These appear alongside built-in reports and run the same way.</td></tr>
+        <tr><td><strong>System Diagnostics</strong></td><td>Health checks and diagnostic tools for the PLM Toolkit environment (e.g., Agile connectivity test, cache status).</td></tr>
+    </table>
+
+    <h3>Finding a Utility</h3>
+    <p>Use the <strong>search bar</strong> at the top of the tab to filter utilities by name or description. The <strong>Mine / All</strong> toggle lets you switch between showing only utilities you have run before ("Mine") and the full list ("All").</p>
+
+    <h3>Running a Utility</h3>
+    <p>Each utility card shows a name, description, and one or more action buttons:</p>
+    <table class="guide-table">
+        <tr><th>Button</th><th>What It Does</th></tr>
+        <tr><td><strong>Run &amp; email me</strong></td><td>Executes the utility on the server and emails you a summary with any output files attached. You can close the browser while it runs.</td></tr>
+        <tr><td><strong>Run with files&hellip;</strong></td><td>Opens a drawer where you can upload supporting input files (e.g., a configuration file or a list of item numbers) before running. Not all utilities require this.</td></tr>
+        <tr><td><strong>Download now</strong></td><td>Downloads the output from the most recent run directly to your browser, without re-running the utility.</td></tr>
+    </table>
+
+    <h3>Viewing Run History</h3>
+    <p>Click any utility row to expand it and see a history of past runs. Each history entry shows the run date, who ran it, the status (success or error), and links to download the output file and the server log for that run.</p>
+
+    <h3>Access Control</h3>
+    <p>Some utilities may be restricted to specific users. If you do not see a utility you expect, contact your PLM admin to be added to its allowed-users list. Admins can upload custom scripts to the Utilities tab, but the upload and configuration workflow is available only to admin users.</p>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> Use "Run &amp; email me" for long-running utilities. The email arrives when execution completes, including an AI-generated summary of the run and any output files.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 8. Data Compare Tab -->
+<!-- ================================================================ -->
+<div class="section" id="data-compare">
+    <h2>8. Data Compare Tab</h2>
+    <p>A guided 5-step wizard that compares data from an uploaded Excel or CSV file against live Agile PLM data. This is useful for reconciling external system exports (e.g., SAP) with Agile.</p>
+
+    <h3>Step-by-Step Workflow</h3>
+    <ol>
+        <li><strong>Upload:</strong> Upload your Excel (<code>.xlsx</code>) or CSV file</li>
+        <li><strong>Key Column:</strong> Select which column in your file contains the part/item number</li>
+        <li><strong>Map Columns:</strong> Map your file&rsquo;s columns to Agile field names. The tool auto-suggests mappings using fuzzy matching &mdash; you can override any suggestion</li>
+        <li><strong>Filter Rows (Optional):</strong> Optionally filter which rows to include in the comparison</li>
+        <li><strong>Compare:</strong> Run the comparison and view results</li>
+    </ol>
+
+    <h3>Result Color Coding</h3>
+    <table class="guide-table">
+        <tr><th>Color</th><th>Meaning</th></tr>
+        <tr><td><span style="color:#28a745; font-weight:600;">Green</span></td><td>Values match between your file and Agile</td></tr>
+        <tr><td><span style="color:#dc3545; font-weight:600;">Red</span></td><td>Values differ</td></tr>
+        <tr><td><span style="color:#856404; font-weight:600;">Amber</span></td><td>Partial match (e.g., case or whitespace difference only)</td></tr>
+        <tr><td><span style="color:#6c757d; font-weight:600;">Gray</span></td><td>Item not found in Agile</td></tr>
+    </table>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> The fuzzy column mapping works best when your Excel headers use names similar to Agile field names. You can always type a custom Agile field name if the auto-suggestion doesn&rsquo;t match.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 9. SKU Lookup Tab -->
+<!-- ================================================================ -->
+<div class="section" id="sku-lookup">
+    <h2>9. SKU Lookup Tab</h2>
+    <p>Instant lookup of SKU records against a pre-loaded JSON cache (~48,000 SKUs). The cache is refreshed automatically every day at <strong>2:00 AM</strong>.</p>
+
+    <h3>Search Options</h3>
+    <ul>
+        <li><strong>Item Number:</strong> Enter one or more item numbers (comma-separated, wildcards supported) or upload a <code>.txt</code>/<code>.csv</code> file</li>
+    </ul>
+
+    <h3>External Data Sources</h3>
+    <p>Optionally join data from one or more <strong>External Data Sources</strong> (e.g., SAP exports uploaded by admins). For each selected source, a column-checkbox grid appears so you can pick which external columns to include. The result table shows Agile columns first, followed by each source&rsquo;s columns (each source gets its own header color for easy identification).</p>
+
+    <h3>Cache Refresh (Admin)</h3>
+    <p>Admins see additional buttons for manual cache management:</p>
+    <ul>
+        <li><strong>Delta:</strong> Incremental refresh (~1-2 seconds)</li>
+        <li><strong>Seed:</strong> Full rebuild (~30 seconds)</li>
+    </ul>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> SKU Lookup uses a pre-built cache for instant results. If you need the very latest data that was just changed in Agile, ask an admin to run a Delta refresh first.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 10. Extensions Tab (Admin Only) -->
+<!-- ================================================================ -->
+<div class="section" id="extensions">
+    <h2>10. Extensions Tab (Admin Only)</h2>
+    <p>Manage external data sources used by the SKU Lookup tab. This tab is <strong>visible only to members of the <code>pdl-plm-admin</code> AD group</strong> and designated extension contributors.</p>
+
+    <h3>Adding a Data Source</h3>
+    <ol>
+        <li>Upload an Excel file (<code>.xlsx</code>)</li>
+        <li>Give the source a <strong>name</strong> (e.g., "SAP Master Data")</li>
+        <li>Select the <strong>key column</strong> that contains item/part numbers (used to join with Agile data)</li>
+        <li>Optionally set a <strong>schedule hour</strong> (0-23) for daily automatic refresh</li>
+        <li>The cache is auto-generated on upload</li>
+    </ol>
+
+    <h3>Managing Sources</h3>
+    <ul>
+        <li><strong>Generate:</strong> Rebuild the cache from the uploaded file</li>
+        <li><strong>Schedule:</strong> Set or change the daily refresh hour</li>
+        <li><strong>Remove:</strong> Delete the source entirely</li>
+    </ul>
+
+    <div class="warn-box">
+        <strong>Note:</strong> If you do not see this tab, you do not have admin or extension contributor access. Contact <a href="mailto:pdl-plm-admin@sandisk.com" style="color:#856404;">pdl-plm-admin@sandisk.com</a> to request access.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 10b. Shop-Floor Docs Tab -->
+<!-- ================================================================ -->
+<div class="section" id="shop-floor-docs">
+    <h2>10b. Shop-Floor Docs Tab</h2>
+    <p>The operator-view replacement for the legacy <strong>SDSM</strong> nightly Windows batch. Type or scan a part / document number and instantly see every controlled PDF (Work Instruction, Visual Inspection Criteria, Drawing, Quality Notice, etc.) tied to the part&rsquo;s latest released revision &mdash; live from <code>agprod</code>, no overnight wait. Designed to sit in front of a factory operator on the shop floor.</p>
+
+    <h3>What the operator sees</h3>
+    <ul>
+        <li><strong>Active Quality Notice banner</strong> at the top &mdash; lights up red when at least one QN deviation is in effect today (Status = Executed under the Quality Notice Workflow, with today between Effective From and Effective To). Lists the deviation number, description, and through-date.</li>
+        <li><strong>Big input box</strong> &mdash; type a part number (e.g. <code>30-08-60003</code>) or a document number (e.g. <code>06-05-WW-02-00002</code>), or scan it with a barcode scanner. Press <kbd>Enter</kbd> or click <strong>Show Documents</strong>.</li>
+        <li><strong>Spec / step-code chips</strong> appear above the results when the documents span multiple specs &mdash; click a chip to narrow to docs that apply to the operator&rsquo;s current step code.</li>
+        <li><strong>Result cards</strong> &mdash; one per controlled PDF. Each card shows a color-coded Document Style badge (WI = green, VIC = teal, Drawing = blue, Quality Notice = red, etc.), file name, part / Rev / DCO or ECO number, file size, Product Group, Product, and the spec chips that this PDF applies to.</li>
+        <li><strong>View PDF</strong> opens a full-screen overlay with the PDF rendering inline (Chrome&rsquo;s built-in viewer). Has a Download button and a Close button. <kbd>Esc</kbd> or click outside also closes.</li>
+    </ul>
+
+    <h3>What gets returned</h3>
+    <ul>
+        <li>Only PDFs whose Document Style is in the SDSM whitelist: <strong>WI / VAR / VIC / FPS / Guideline / Checklist / Drawing</strong> (plus <strong>Quality Notice</strong> for active deviations).</li>
+        <li>Each item is pinned to its latest <strong>Implemented DCO</strong> (Documents) or <strong>Implemented ECO</strong> (Parts). Older revisions are not shown.</li>
+        <li>Products with an OBS / OBS-SKU lifecycle are excluded from the displayed Product list.</li>
+        <li>Files containing &quot;FAI&quot; in the name and zero-byte files are skipped.</li>
+    </ul>
+
+    <h3>How the PDF is fetched</h3>
+    <p>Two-tier resolution &mdash; the toolkit tries the local share first, then the Agile SDK fallback:</p>
+    <ol>
+        <li><strong>Local share (tier 1)</strong>: looks for the staged copy that the legacy SDSM batch left behind (e.g. <code>D:\sdsm\Files\&lt;part&gt;_&lt;rev&gt;_&lt;filename&gt;.pdf</code>). Filesystem read &mdash; fast, no SDK call.</li>
+        <li><strong>Agile SDK (tier 2)</strong>: if the file isn&rsquo;t on the local share, calls the <code>plm-agile-service</code> microservice which streams the bytes from the Agile File Vault.</li>
+    </ol>
+    <p>The response header <code>X-SDSM-Source: local</code> or <code>X-SDSM-Source: agile-sdk</code> tells you which tier handled the request. (Open Chrome devtools &rarr; Network &rarr; click the <code>/api/sdsm/file/&hellip;</code> request to see headers.)</p>
+
+    <h3>Visibility</h3>
+    <p>Visible to everyone by default. Admins can hide it per-user via <strong>More &rarr; User Management</strong>; uncheck the <em>Shop-Floor Docs</em> row.</p>
+
+    <div class="tip-box">
+        <strong>Vs. Work Instructions tab:</strong> Work Instructions searches the SanDisk PLM team&rsquo;s general-purpose internal docs library (uploaded PPTX / PDF / DOCX). Shop-Floor Docs returns Agile-managed controlled documents tied to a specific part revision. Different audience, different content.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 11. Saved Searches -->
+<!-- ================================================================ -->
+<div class="section" id="saved-searches">
+    <h2>11. Saved Searches</h2>
+    <p>You can save any search configuration for quick re-use later. Saved searches are available across the main search tabs: Field Changes, BOM Explorer, Part Extract, Agile Lookup, and Change History.</p>
+
+    <h3>Saving a Search</h3>
+    <ol>
+        <li>Fill in your search filters on any tab</li>
+        <li>Click the <strong>&#9733; (star)</strong> button next to Clear</li>
+        <li>Give the search a name (e.g., "Weekly Subcon Report")</li>
+        <li>Click OK</li>
+    </ol>
+    <p>The current values of all search fields are saved. You do not need to run the search first.</p>
+
+    <h3>Loading a Saved Search</h3>
+    <ol>
+        <li>Click <strong>&#9733; My Searches</strong> in the top navigation bar</li>
+        <li>A dropdown shows all your saved searches</li>
+        <li>Click a search to load it &mdash; the correct tab is selected, fields are populated, and the search runs automatically</li>
+    </ol>
+
+    <h3>Deleting a Saved Search</h3>
+    <p>In the My Searches dropdown, click the <strong>X</strong> next to any saved search to delete it.</p>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> Saved searches are stored per user. Other users cannot see your saved searches.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 12. Scheduled Reports -->
+<!-- ================================================================ -->
+<div class="section" id="scheduled-reports">
+    <h2>12. Scheduled Reports</h2>
+    <p>You can schedule the Field Changes search to run automatically and email you an Excel report on a recurring basis &mdash; without needing to log in to the tool.</p>
+
+    <h3>Creating a Schedule</h3>
+    <ol>
+        <li>On the <strong>Field Changes</strong> tab, fill in your desired search filters</li>
+        <li>Click the <strong>&#128339; (clock)</strong> button next to the star</li>
+        <li>The Schedule Report dialog opens, showing a summary of the search criteria that will be used</li>
+        <li>Choose a <strong>frequency</strong>:
+            <ul>
+                <li><strong>Daily:</strong> Report runs every day at the specified time</li>
+                <li><strong>Weekly:</strong> Report runs once a week on the selected day at the specified time</li>
+            </ul>
+        </li>
+        <li>If Weekly, select a <strong>day of the week</strong></li>
+        <li>Select a <strong>time</strong> (available in 30-minute intervals from 12:00 AM to 11:30 PM)</li>
+        <li>Click <strong>Save Schedule</strong></li>
+    </ol>
+    <p>The report is emailed to your corporate email address (the same one used for "Email Me").</p>
+
+    <h3>How It Works</h3>
+    <ul>
+        <li>The scheduler checks for due reports every 5 minutes. Your report runs at the next check after the scheduled time.</li>
+        <li>The time is based on the <strong>server's timezone</strong>.</li>
+        <li>If the search returns <strong>0 results</strong>, no email is sent (to avoid inbox noise). The run is logged on the server.</li>
+        <li>If the server is restarted, all schedules are preserved and will continue running.</li>
+    </ul>
+
+    <h3>Viewing and Deleting Schedules</h3>
+    <p>When you open the Schedule Report dialog, the bottom section shows <strong>"Your Scheduled Reports"</strong> &mdash; a table listing all your active schedules with their search summary, frequency, and time. Click the <strong>X</strong> next to any schedule to delete it.</p>
+
+    <h3>Email Format</h3>
+    <p>The scheduled email is identical to what you receive when clicking "Email Me" manually:</p>
+    <ul>
+        <li>Subject: <strong>PLM Field Changes Report - YYYY-MM-DD</strong></li>
+        <li>Body: greeting, filter summary, record count</li>
+        <li>Attachment: Excel file (<code>.xlsx</code>), auto-compressed to <code>.zip</code> if over 5 MB</li>
+    </ul>
+
+    <div class="warn-box">
+        <strong>Note:</strong> Scheduling does not require saving the search first. The search parameters are captured at the moment you click Save Schedule. If you want to change the search criteria for a schedule, delete the old schedule and create a new one.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 13. Column Filter Syntax -->
+<!-- ================================================================ -->
+<div class="section" id="column-filters">
+    <h2>13. Column Filter Syntax</h2>
+    <p>All result tables (Field Changes, BOM Explorer, Part Extract, Agile Lookup, Change History) have filter input boxes below the column headers. Filters are applied client-side with a <strong>300ms debounce</strong> for smooth typing.</p>
+
+    <table class="guide-table">
+        <tr><th>Syntax</th><th>Behavior</th><th>Example</th></tr>
+        <tr><td><code>value</code></td><td>Show rows where the column <strong>contains</strong> the text</td><td><code>subcon</code> matches "Subcontractor"</td></tr>
+        <tr><td><code>!value</code></td><td>Show rows where the column <strong>does not contain</strong> the text</td><td><code>!draft</code> hides draft items</td></tr>
+        <tr><td><code>a,b</code></td><td>Show rows containing <strong>a OR b</strong></td><td><code>C039,C002</code> matches either</td></tr>
+        <tr><td><code>!a,!b</code></td><td>Hide rows containing <strong>a AND b</strong> (both excluded)</td><td><code>!test,!draft</code> hides both</td></tr>
+        <tr><td><code>a,!b</code></td><td>Show rows containing <strong>a</strong> but <strong>not b</strong></td><td><code>released,!hold</code></td></tr>
+    </table>
+
+    <h3>Date Column Filter</h3>
+    <p>Date columns have a special <strong>checkbox dropdown</strong> filter. Click the date button to open a list of all dates in the results. Check or uncheck specific dates to show/hide them. Use "All" and "None" shortcuts for quick selection. This is available on the "When" column in Field Changes, the Release Date column in Part Extract, and the Release Date column in Change History.</p>
+
+    <h3>0-Dates Recovery</h3>
+    <p>If the date filter accidentally deselects all dates (resulting in 0 visible rows), a <strong>red recovery button</strong> appears with the text "click to restore". Clicking it resets the date filter to show all dates again, recovering the full result set without re-running the search.</p>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> Click the <strong>X</strong> icon in the first filter column to clear all column filters at once.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 14. Export and Email -->
+<!-- ================================================================ -->
+<div class="section" id="export-email">
+    <h2>14. Export and Email</h2>
+
+    <h3>Export Excel</h3>
+    <p>Click <strong>Export Excel</strong> to download the current results as an <code>.xlsx</code> file. The export respects any active column filters, so you get exactly what you see on screen. Available on all tabs.</p>
+
+    <h3>Email Me</h3>
+    <p>Click <strong>Email Me</strong> to send the same Excel report to your company email address (the one associated with your AD account). The email includes:</p>
+    <ul>
+        <li>A summary of your search criteria</li>
+        <li>The Excel file as an attachment</li>
+    </ul>
+    <p>If the attachment exceeds 5 MB, it is automatically compressed into a <code>.zip</code> file before sending. Available on all tabs.</p>
+    <p>All emails are sent from <code>PLM-Toolkit@sandisk.com</code>.</p>
+
+    <h3>BOM Notes Extract</h3>
+    <p>The <strong>BOM Notes Extract</strong> on the BOM Explorer tab generates an Excel file of all BOM relationships with notes. This is an asynchronous extract &mdash; see the <a href="#bom-explorer">BOM Explorer</a> section for details.</p>
+
+    <h3>Full BOM Extract Download</h3>
+    <p>The <strong>Full Extract</strong> button on the BOM Explorer tab downloads the entire BOM database as a compressed CSV. This is separate from the per-search Export Excel button. See the <a href="#bom-explorer">BOM Explorer</a> section for details.</p>
+
+    <h3>Change History with Lifecycle Analysis</h3>
+    <p>Exports from the Change History tab include a dedicated <strong>"Lifecycle Analysis"</strong> tab in the Excel file, with phase durations and timeline data for each item. See the <a href="#change-history">Change History</a> section for details.</p>
+</div>
+
+<!-- ================================================================ -->
+<!-- 15. Help and Support -->
+<!-- ================================================================ -->
+<div class="section" id="help-support">
+    <h2>15. Help and Support</h2>
+    <p>The PLM Toolkit includes a built-in <strong>AI-powered help assistant</strong> that can answer questions about any feature in the application.</p>
+
+    <h3>Floating Help Button</h3>
+    <p>A floating <strong>"?"</strong> button is always visible in the bottom-right corner of the screen. Click it to open the help sidebar.</p>
+
+    <h3>AI Help Chatbot</h3>
+    <p>The help sidebar opens a conversational chat interface. Type your question in plain English and the assistant will provide a relevant answer. The chatbot is <strong>tab-aware</strong> &mdash; it knows which tab you are currently viewing and tailors its answers accordingly. For example, asking "how do I export?" on the BOM Explorer tab will give you BOM-specific export instructions.</p>
+    <ul>
+        <li>The conversation <strong>resets automatically</strong> when you switch tabs, so the assistant always starts fresh with the right context.</li>
+        <li>Click anywhere <strong>outside</strong> the help sidebar to close it.</li>
+        <li>If your session expires while the sidebar is open, the chatbot displays a friendly message with a link to log back in.</li>
+    </ul>
+
+    <h3>Raise Issue (with Screenshot)</h3>
+    <p>If you encounter a problem, click the <strong>Raise Issue</strong> option in the help sidebar. The tool automatically <strong>captures a screenshot</strong> of your current screen and attaches it as a PNG image to the issue report. Describe the problem and submit &mdash; an email with your description and the screenshot is sent to the PLM admin team for investigation.</p>
+
+    <div class="tip-box">
+        <strong>Tip:</strong> The AI chatbot can answer most questions about PLM Toolkit features instantly. Try asking "What does the net-change filter do?" or "How do I schedule a report?" before reaching out to the admin team.
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 16. Feedback -->
+<!-- ================================================================ -->
+<div class="section" id="feedback">
+    <h2>16. Feedback</h2>
+    <p>We welcome your feedback on the PLM Toolkit. A <strong>Feedback</strong> link is available in the top navigation bar.</p>
+
+    <h3>Submitting Feedback</h3>
+    <ol>
+        <li>Click <strong>Feedback</strong> in the navigation bar</li>
+        <li>Select a <strong>category</strong> from the dropdown (e.g., Feature Request, Bug Report, General Feedback)</li>
+        <li>Type your feedback message</li>
+        <li>Click <strong>Submit</strong></li>
+    </ol>
+    <p>Your feedback is emailed to the PLM admin team. You will see a confirmation message once the feedback has been sent successfully.</p>
+</div>
+
+<!-- ================================================================ -->
+<!-- 17. Keyboard Shortcuts and Tips -->
+<!-- ================================================================ -->
+<div class="section" id="shortcuts">
+    <h2>17. Keyboard Shortcuts and Tips</h2>
+
+    <table class="guide-table">
+        <tr><th>Shortcut</th><th>Action</th></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Run the current search (when a search field is focused)</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Open the Quick Start Help dialog (when not typing in a field)</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Close any open dialog, or collapse all expanded rows</td></tr>
+    </table>
+
+    <h3>General Tips</h3>
+    <ul>
+        <li><strong>Drag and drop:</strong> All file upload areas support drag and drop. Simply drag a file from your desktop onto the upload area.</li>
+        <li>The tool shows a progress bar for searches that take more than a few seconds.</li>
+        <li>If the database is temporarily offline, cached data is shown with a yellow banner indicating when the data was last refreshed.</li>
+        <li>Comma-separated values in search fields always mean OR logic (match any of the values).</li>
+        <li>Wildcard <code>*</code> is supported in item number fields across all tabs.</li>
+        <li>File uploads accept <code>.txt</code> and <code>.csv</code> files up to 5 MB with one item number per line.</li>
+        <li>All search results can be sorted by clicking column headers. Click again to reverse the sort direction.</li>
+        <li>Hover over truncated Description or BOM Notes cells to see the full text in a tooltip.</li>
+        <li>Your saved searches and scheduled reports are tied to your login. They persist across sessions and server restarts.</li>
+        <li><strong>Session expiry:</strong> If your session times out, the tool automatically redirects you to the login page. Any unsaved work should be exported before stepping away.</li>
+        <li>This tool is currently in <strong>beta</strong>. Use the <strong>floating "?" button</strong> to ask the AI help chatbot any question about the tool, or use <strong>Raise Issue</strong> to report a problem with an automatic screenshot.</li>
+    </ul>
+</div>
+
+<div class="footer">
+    Agile PLM Toolkit &mdash; End User Guide
+</div>
+
+</div><!-- container -->
+</body>
+</html>

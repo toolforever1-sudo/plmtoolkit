@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLM Toolkit - Technical Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #333; line-height: 1.6; }
+        .header { background: #1a3a5c; color: white; padding: 24px 40px; }
+        .header h1 { font-size: 24px; font-weight: 600; }
+        .header p { opacity: 0.8; margin-top: 4px; font-size: 14px; }
+        .header .admin-badge { display: inline-block; background: #c0392b; color: white; font-size: 11px; padding: 2px 8px; border-radius: 3px; margin-left: 12px; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.5px; }
+        .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+        .toc { background: white; border-radius: 8px; padding: 24px 32px; margin-bottom: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .toc h2 { font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: #1a3a5c; margin-bottom: 12px; }
+        .toc ol { padding-left: 20px; }
+        .toc li { margin: 6px 0; }
+        .toc a { color: #2c6fbb; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        .section { background: white; border-radius: 8px; padding: 28px 32px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .section h2 { font-size: 20px; color: #1a3a5c; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 16px; }
+        .section h3 { font-size: 16px; color: #2c3e50; margin: 20px 0 8px; }
+        .section p { margin: 8px 0; }
+        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 13px; color: #c7254e; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 16px 20px; border-radius: 6px; overflow-x: auto; margin: 12px 0; font-size: 13px; line-height: 1.5; }
+        pre code { background: none; color: inherit; padding: 0; }
+        table.guide-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        table.guide-table th { background: #2c3e50; color: white; padding: 8px 12px; text-align: left; font-size: 13px; }
+        table.guide-table td { padding: 8px 12px; border-bottom: 1px solid #e9ecef; font-size: 13px; vertical-align: top; }
+        table.guide-table tr:nth-child(even) { background: #f8f9fa; }
+        .warn-box { background: #fff3cd; border-left: 4px solid #856404; padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 12px 0; font-size: 14px; }
+        .warn-box strong { color: #856404; }
+        .info-box { background: #e8f4fd; border-left: 4px solid #2c6fbb; padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 12px 0; font-size: 14px; }
+        .info-box strong { color: #1a3a5c; }
+        ul { padding-left: 20px; margin: 8px 0; }
+        li { margin: 4px 0; }
+        .back-link { display: inline-block; margin-bottom: 16px; color: #2c6fbb; text-decoration: none; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .footer { text-align: center; color: #999; font-size: 12px; padding: 24px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>PLM Toolkit - Technical Guide <span class="admin-badge">Admin Only</span></h1>
+    <p>Architecture, configuration, deployment, and troubleshooting reference for PLM administrators</p>
+</div>
+
+<div class="container">
+
+<a href="/" class="back-link">&larr; Back to PLM Toolkit</a>
+
+<div style="background:#fff8e1; border-left:4px solid #C7801B; border-radius:0 6px 6px 0; padding:12px 18px; margin:18px 0; font-size:13.5px; line-height:1.6;">
+    <strong>Nav layout note (May 10, 2026):</strong> Top-level tabs were consolidated. References below to "BOM Explorer", "BOM Compare", "Field Changes", "Part Extract", "Agile Lookup", "SKU Lookup", and "User Permissions" still describe the same panels and code paths; in the UI they now live under parent tabs:
+    <ul style="margin:8px 0 4px 18px;">
+        <li><strong>Items</strong> &rarr; Field Changes / Part Extract / Agile Lookup / SKU Lookup</li>
+        <li><strong>BOM</strong> &rarr; Explorer / Compare</li>
+        <li><strong>User Management</strong> = the renamed User Permissions tab</li>
+        <li><strong>&#129514; Labs</strong> (admin-only, May 10) &rarr; <em>BOM Race</em> (new) / <em>AD Health</em> / <em>AI Eval</em>. AD Health (was TAB 12) and AI Eval (was TAB 15) used to be standalone top-level admin tabs &mdash; now they're sub-screens of Labs, reparented at runtime via a small DOMContentLoaded script. Existing deep-links <code>switchTab('adhealth')</code> and <code>switchTab('aieval')</code> still resolve correctly.</li>
+        <li><strong>Admin dropdown</strong> slimmed (May 10): only <em>Maintenance</em> + <em>User Management</em> remain. <em>Plugin Guide</em>, <em>Tech Guide</em>, and <em>Debug</em> moved to the <em>Help</em> dropdown.</li>
+    </ul>
+    Per-tab permission keys in <code>TAB_CATALOG</code> (<code>fields</code>, <code>parts</code>, <code>agile</code>, <code>sku</code>, <code>bom</code>, <code>bomcompare</code>, <code>permissions</code>) are unchanged. Sub-tab buttons are hidden client-side when their key isn't in the user's <code>allowedTabs</code>.
+</div>
+
+<div style="background:#e8f0fe; border-left:4px solid #4a6fa5; border-radius:0 6px 6px 0; padding:12px 18px; margin:18px 0; font-size:13.5px; line-height:1.6;">
+    <strong>Shop-Floor Docs tab (May 13, 2026):</strong> new top-level tab <code>tabSdsm</code> (<code>switchTab('sdsm')</code>) replacing the legacy <code>~/documents/sdsm/call_run.bat</code> nightly Windows batch. Backend: <code>SdsmDocumentsService</code> / <code>SdsmPartsService</code> / <code>SdsmDeviationsService</code> + <code>SdsmLookups</code> + <code>SdsmFileService</code> + <code>SdsmController</code>. Endpoints: <code>GET /api/sdsm/search?q=&hellip;</code>, <code>GET /api/sdsm/active-deviations</code>, <code>GET /api/sdsm/file/{attachId}?fileName=&hellip;&amp;parentNumber=&hellip;&amp;rev=&hellip;</code>. SQL hits <code>agile.ITEM</code> + <code>PAGE_TWO/THREE</code> + <code>AGILE_FLEX</code> + <code>ATTACHMENT_FULL_MAP</code>; full schema discovery in <code>docs/SDSM-DB-REPLACEMENT.md</code>. File fetch is two-tier: local share (<code>sdsm.share.dir</code>, e.g. <code>D:/sdsm/Files</code>) first, falls back to <code>plm-agile-service</code>'s new <code>GET /api/sdsm-file/{attachId}</code> endpoint (<code>SdsmFileService</code> + <code>SdsmFileController</code> in plm-agile-service) which uses the Agile SDK to stream bytes from the file vault. Response header <code>X-SDSM-Source: local|agile-sdk</code> announces which tier handled the request. Permission key <code>sdsm</code> in <code>TAB_CATALOG</code>; default-allowed for everyone, hideable per-user via User Management.
+</div>
+
+<div style="background:#eef2f7; border-left:4px solid #4a6fa5; border-radius:0 6px 6px 0; padding:12px 18px; margin:18px 0; font-size:13px; line-height:1.55;">
+    <strong>New backend bits (May 10, 2026)</strong>:
+    <ul style="margin:6px 0 2px 18px;">
+        <li><code>BomRaceController</code> + <code>BomRaceService</code> + <code>AgileBomRaceClient</code> + <code>BomRaceRun</code> &mdash; race orchestration. <code>POST /api/bomrace/start</code>, <code>GET /api/bomrace/{runId}/stream</code> (SSE), <code>GET /api/bomrace/{runId}/download/{input|results}</code> (xlsx), <code>GET /api/bomrace/history?limit=N</code>. Pre-flight checks <code>plm-agile-service</code> health on port 8081 before staging a run.</li>
+        <li><code>bomrace_run</code> table in custom schema &mdash; auto-created on first boot via <code>BomRaceService.initHistoryTable()</code> (idempotent, swallows ORA-00955). Persisted on race-done for the leaderboard.</li>
+        <li><code>HttpsConnectorConfig</code> &mdash; optional second Tomcat connector for HTTPS, gated by <code>app.https.enabled=true</code>. Reads <code>app.https.{port,keystore,keystore-password,keystore-type,key-alias}</code>. Relative keystore paths resolve against the JVM working directory (not Tomcat's temp catalina.base, which would 404).</li>
+        <li>Settings additions: <code>app.bomrace.{max-items,sdk.item-timeout-ms,race-timeout-ms,run-ttl-ms}</code> &middot; <code>app.https.*</code> as above.</li>
+    </ul>
+</div>
+
+<div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+        <li><a href="#architecture">Architecture Overview</a></li>
+        <li><a href="#configuration">Configuration (application.properties)</a></li>
+        <li><a href="#database">Database Connections</a></li>
+        <li><a href="#ldap">LDAP / Active Directory Authentication</a></li>
+        <li><a href="#access-control">DL Group Access Control</a></li>
+        <li><a href="#access-requests">Access Request Workflow</a></li>
+        <li><a href="#email">Email Configuration</a></li>
+        <li><a href="#caching">Caching Strategy</a></li>
+        <li><a href="#scheduled-reports">Scheduled Reports</a></li>
+        <li><a href="#bom-extracts">BOM Extracts</a></li>
+        <li><a href="#agile-field-names">Agile Field Names</a></li>
+        <li><a href="#deployment">Deployment</a></li>
+        <li><a href="#help-sidebar">Help Sidebar and AI Chatbot</a></li>
+        <li><a href="#issue-tracking">Issue Tracking</a></li>
+        <li><a href="#feedback-system">Feedback System</a></li>
+        <li><a href="#delta-reports">Delta Reports and AI Insights</a></li>
+        <li><a href="#logging">Logging</a></li>
+        <li><a href="#performance">Performance</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+</div>
+
+<div class="section" id="architecture">
+    <h2>1. Architecture Overview</h2>
+    <p>The PLM Toolkit is a <strong>Spring Boot</strong> application with an embedded web server that provides a single-page web UI backed by REST APIs.</p>
+
+    <h3>Technology Stack</h3>
+    <table class="guide-table">
+        <tr><th>Component</th><th>Technology</th></tr>
+        <tr><td>Backend</td><td>Spring Boot 2.x with embedded Tomcat</td></tr>
+        <tr><td>Language</td><td>Java 11+ (runs on JRE 17)</td></tr>
+        <tr><td>Database</td><td>Oracle (3 datasources: primary Agile, custom BOM, Agile schema for change history)</td></tr>
+        <tr><td>Agile Lookup Microservice</td><td>Java 8 microservice on port 8081 (Agile SDK API proxy)</td></tr>
+        <tr><td>Authentication</td><td>LDAP / Active Directory</td></tr>
+        <tr><td>Frontend</td><td>Vanilla HTML/CSS/JavaScript (no framework)</td></tr>
+        <tr><td>Excel Export</td><td>Apache POI (SXSSFWorkbook for large extracts)</td></tr>
+        <tr><td>Email</td><td>JavaMail (SMTP)</td></tr>
+    </table>
+
+    <h3>Three-Datasource Architecture</h3>
+    <p>The application connects to three separate Oracle schemas:</p>
+    <ul>
+        <li><strong>Primary Agile schema</strong> (<code>spring.datasource.*</code>): Provides access to the <code>item_history</code> and <code>item</code> tables for field change tracking (Field Changes tab).</li>
+        <li><strong>Custom schema</strong> (<code>custom.datasource.*</code>): Provides access to <code>bom_extract</code>, <code>item_extract</code>, and <code>item_desc</code> tables for the BOM Explorer and Part Extract tabs.</li>
+        <li><strong>Agile schema</strong> (for Change History): Provides access to revision and change order tables in the <code>AGILE</code> schema for the Change History tab.</li>
+    </ul>
+
+    <h3>Agile Lookup Microservice</h3>
+    <p>The Agile Lookup tab proxies requests to a separate <strong>Java 8 microservice</strong> running on port <strong>8081</strong>. This microservice uses the Agile SDK to query live field values. The main application communicates with it via the <code>agile.service.url</code> property. The microservice must be running for Agile Lookup to function.</p>
+
+    <h3>REST API Endpoints</h3>
+    <table class="guide-table">
+        <tr><th>Endpoint</th><th>Method</th><th>Description</th></tr>
+        <tr><td><code>/api/auth/login</code></td><td>POST</td><td>Authenticate user via LDAP</td></tr>
+        <tr><td><code>/api/auth/logout</code></td><td>POST</td><td>Invalidate session</td></tr>
+        <tr><td><code>/api/auth/session</code></td><td>GET</td><td>Check current session status</td></tr>
+        <tr><td><code>/api/changes</code></td><td>GET</td><td>Search field changes</td></tr>
+        <tr><td><code>/api/changes/export</code></td><td>GET</td><td>Export changes as Excel</td></tr>
+        <tr><td><code>/api/changes/email</code></td><td>POST</td><td>Email changes report</td></tr>
+        <tr><td><code>/api/bom/explode</code></td><td>GET</td><td>BOM explosion (top-down)</td></tr>
+        <tr><td><code>/api/bom/implode</code></td><td>GET</td><td>BOM implosion (bottom-up)</td></tr>
+        <tr><td><code>/api/parts/search</code></td><td>GET</td><td>Part extract search</td></tr>
+        <tr><td><code>/api/parts/columns</code></td><td>GET</td><td>Available part extract columns</td></tr>
+        <tr><td><code>/api/parts/export</code></td><td>GET</td><td>Export parts as Excel</td></tr>
+        <tr><td><code>/api/parts/email</code></td><td>POST</td><td>Email parts report</td></tr>
+        <tr><td><code>/api/parts/progress</code></td><td>GET</td><td>Part extract progress (row count)</td></tr>
+        <tr><td><code>/api/schedules</code></td><td>GET</td><td>List scheduled reports for current user</td></tr>
+        <tr><td><code>/api/schedules</code></td><td>POST</td><td>Create a new scheduled report</td></tr>
+        <tr><td><code>/api/schedules</code></td><td>DELETE</td><td>Delete a scheduled report</td></tr>
+        <tr><td><code>/api/bom/full-extract-status</code></td><td>GET</td><td>Check full BOM extract file availability</td></tr>
+        <tr><td><code>/api/bom/full-extract-trigger</code></td><td>POST</td><td>Trigger full BOM extract generation</td></tr>
+        <tr><td><code>/api/bom/full-extract-download</code></td><td>GET</td><td>Download full BOM extract CSV</td></tr>
+        <tr><td><code>/api/bom/bom-notes-status</code></td><td>GET</td><td>Check BOM Notes extract status</td></tr>
+        <tr><td><code>/api/bom/bom-notes-trigger</code></td><td>POST</td><td>Trigger async BOM Notes extract</td></tr>
+        <tr><td><code>/api/bom/bom-notes-download</code></td><td>GET</td><td>Download BOM Notes extract XLSX</td></tr>
+        <tr><td><code>/api/history/search</code></td><td>GET</td><td>Search revision/change history</td></tr>
+        <tr><td><code>/api/history/upload</code></td><td>POST</td><td>Upload file of item numbers for history search</td></tr>
+        <tr><td><code>/api/history/export</code></td><td>GET</td><td>Export change history as Excel (with Lifecycle Analysis tab)</td></tr>
+        <tr><td><code>/api/history/email</code></td><td>POST</td><td>Email change history report</td></tr>
+        <tr><td><code>/api/agile-lookup/field-names</code></td><td>GET</td><td>Get Agile field name list for typeahead</td></tr>
+        <tr><td><code>/api/agile-lookup/upload-field-names</code></td><td>POST</td><td>Admin: upload CSV to update field names</td></tr>
+        <tr><td><code>/api/agile-lookup/manual-lookup</code></td><td>POST</td><td>Manual mode Agile field lookup</td></tr>
+        <tr><td><code>/api/auth/request-access</code></td><td>POST</td><td>Submit self-service access request</td></tr>
+        <tr><td><code>/api/help/status</code></td><td>GET</td><td>Check AI help service status (enabled, knowledge base loaded)</td></tr>
+        <tr><td><code>/api/help/ask</code></td><td>POST</td><td>Send a question to the AI help chatbot</td></tr>
+        <tr><td><code>/api/support/raise-issue</code></td><td>POST</td><td>Submit an issue report with screenshot (PNG attachment)</td></tr>
+        <tr><td><code>/api/support/feedback</code></td><td>POST</td><td>Submit user feedback (category + message)</td></tr>
+        <tr><td><code>/api/admin/send-delta-report</code></td><td>POST</td><td>Manually trigger an AI-powered delta report</td></tr>
+    </table>
+</div>
+
+<div class="section" id="configuration">
+    <h2>2. Configuration (application.properties)</h2>
+    <p>All configuration is in <code>src/main/resources/application.properties</code> (or supplied as command-line overrides at startup).</p>
+
+    <h3>Server Settings</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Description</th><th>Default</th></tr>
+        <tr><td><code>server.port</code></td><td>HTTP port the application listens on</td><td><code>8080</code></td></tr>
+        <tr><td><code>server.servlet.session.timeout</code></td><td>Session timeout duration</td><td><code>30m</code></td></tr>
+    </table>
+
+    <h3>Primary Datasource (Agile Schema)</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Description</th></tr>
+        <tr><td><code>spring.datasource.url</code></td><td>JDBC URL for the Agile Oracle database</td></tr>
+        <tr><td><code>spring.datasource.username</code></td><td>Database username</td></tr>
+        <tr><td><code>spring.datasource.password</code></td><td>Database password</td></tr>
+        <tr><td><code>spring.datasource.driver-class-name</code></td><td>JDBC driver class (typically <code>oracle.jdbc.OracleDriver</code>)</td></tr>
+    </table>
+
+    <h3>Custom Datasource (BOM Schema)</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Description</th></tr>
+        <tr><td><code>custom.datasource.url</code></td><td>JDBC URL for the custom BOM database</td></tr>
+        <tr><td><code>custom.datasource.username</code></td><td>Database username</td></tr>
+        <tr><td><code>custom.datasource.password</code></td><td>Database password</td></tr>
+    </table>
+
+    <h3>LDAP Settings</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Description</th></tr>
+        <tr><td><code>ldap.url</code></td><td>LDAP server URL (e.g., <code>ldaps://ad.company.com:636</code>)</td></tr>
+        <tr><td><code>ldap.domain</code></td><td>AD domain for user principal names</td></tr>
+        <tr><td><code>ldap.search.base</code></td><td>Base DN for user searches</td></tr>
+        <tr><td><code>ldap.service.username</code></td><td>Service account for group lookups</td></tr>
+        <tr><td><code>ldap.service.password</code></td><td>Service account password</td></tr>
+        <tr><td><code>ldap.required.groups</code></td><td>Comma-separated DL groups (user must be in at least one)</td></tr>
+    </table>
+
+    <h3>Email Settings</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Description</th></tr>
+        <tr><td><code>spring.mail.host</code></td><td>SMTP server hostname</td></tr>
+        <tr><td><code>spring.mail.port</code></td><td>SMTP port (typically 25 or 587)</td></tr>
+        <tr><td><code>spring.mail.from</code></td><td>From address for outgoing emails</td></tr>
+    </table>
+
+    <h3>Application Data and Services</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Description</th><th>Default</th></tr>
+        <tr><td><code>app.scheduled-reports.file</code></td><td>Path to scheduled reports JSON file</td><td><code>./data/scheduled-reports.json</code></td></tr>
+        <tr><td><code>app.access-requests.file</code></td><td>Path to access requests JSON file</td><td><code>./data/access-requests.json</code></td></tr>
+        <tr><td><code>app.agile-field-names.file</code></td><td>Path to Agile field names JSON file</td><td><code>./data/agile-field-names.json</code></td></tr>
+        <tr><td><code>agile.service.url</code></td><td>URL of the Agile Lookup Java 8 microservice</td><td><code>http://localhost:8081</code></td></tr>
+        <tr><td><code>ai.help.api-key</code></td><td>Anthropic API key for Haiku-powered AI help and delta report insights</td><td><em>(none)</em></td></tr>
+        <tr><td><code>ai.help.enabled</code></td><td>Enable or disable the AI help chatbot</td><td><code>true</code></td></tr>
+        <tr><td><code>app.activity-log.file</code></td><td>Path to the persistent activity log (JSONL format)</td><td><code>./data/activity-log.jsonl</code></td></tr>
+        <tr><td><code>app.log-file</code></td><td>Path to the application log file (read by delta report AI analysis)</td><td><code>./logs/app.log</code></td></tr>
+    </table>
+</div>
+
+<div class="section" id="database">
+    <h2>3. Database Connections</h2>
+
+    <h3>Agile Schema (Field Changes and Part Extract)</h3>
+    <p>The primary datasource connects to the Agile PLM Oracle schema. Two key tables are used:</p>
+    <ul>
+        <li><code>item_history</code>: Contains field-level audit records with item number, field name, old value, new value, user, timestamp, and revision.</li>
+        <li><code>item_extract</code>: Contains part master data with dozens of configurable columns representing PLM attributes.</li>
+    </ul>
+
+    <h3>Custom Schema (BOM Explorer)</h3>
+    <p>The custom datasource connects to a separate Oracle schema that contains BOM relationship tables. This schema provides parent-component relationships with quantities, reference designators, find numbers, and component metadata.</p>
+
+    <div class="info-box">
+        <strong>Note:</strong> Both datasources use Oracle's JDBC thin driver. Connection pooling is managed by HikariCP (Spring Boot default). The pool sizes can be tuned via <code>spring.datasource.hikari.*</code> and <code>custom.datasource.hikari.*</code> properties.
+    </div>
+</div>
+
+<div class="section" id="ldap">
+    <h2>4. LDAP / Active Directory Authentication</h2>
+    <p>Authentication is a two-step process:</p>
+    <ol>
+        <li><strong>User bind:</strong> The application attempts to bind to AD using the user's credentials (<code>username@domain</code>) to verify the password.</li>
+        <li><strong>Service account lookup:</strong> A service account then searches the directory for the user's full profile (display name, email, group memberships via <code>memberOf</code> attribute).</li>
+    </ol>
+
+    <h3>SSL/TLS</h3>
+    <p>The application uses a custom <code>TrustAllSSLSocketFactory</code> for LDAP connections, which accepts all server certificates. This is suitable for internal corporate environments where the AD certificate may not be in the default Java truststore.</p>
+
+    <h3>Credential Caching (Offline Fallback)</h3>
+    <p>After a successful AD authentication, the user's credentials are cached in memory (password stored as SHA-256 hash). If AD becomes unreachable on a subsequent login attempt, the cached hash is checked to allow offline access. Cache is in-memory only and cleared on application restart.</p>
+
+    <div class="warn-box">
+        <strong>Important:</strong> The credential cache does not store group membership. Users authenticating from cache will not have admin status (<code>isPlmAdmin</code> will be false).
+    </div>
+</div>
+
+<div class="section" id="access-control">
+    <h2>5. DL Group Access Control</h2>
+    <p>Access to the application is controlled via AD distribution list (DL) group membership.</p>
+
+    <h3>Required Groups</h3>
+    <p>The <code>ldap.required.groups</code> property defines one or more group names (comma-separated). A user must be a member of <strong>at least one</strong> of these groups to log in. Group names are compared case-insensitively.</p>
+
+    <h3>Admin Group</h3>
+    <p>Membership in <code>pdl-plm-admin</code> grants admin status. This controls visibility of the Tech Guide link in the navbar. Admin status is stored in the HTTP session and returned via the <code>/api/auth/session</code> endpoint as <code>isPlmAdmin</code>.</p>
+</div>
+
+<div class="section" id="access-requests">
+    <h2>6. Access Request Workflow</h2>
+    <p>Users not in the required AD group can submit a self-service access request from the login page.</p>
+
+    <h3>How It Works</h3>
+    <ol>
+        <li>User submits their name and email via <code>/api/auth/request-access</code>.</li>
+        <li>The request is saved to <code>./data/access-requests.json</code> and an email is sent to the PLM admin team.</li>
+        <li>The <code>AccessRequestService</code> polls LDAP every <strong>10 minutes</strong> to check if pending users have been added to the required AD group.</li>
+        <li>Once detected in the group, the user receives a confirmation email and the request is removed from the pending list.</li>
+    </ol>
+
+    <h3>Data File</h3>
+    <p>Pending requests are stored in <code>./data/access-requests.json</code>. This file is read/written by the service and must persist between deployments.</p>
+
+    <div class="warn-box">
+        <strong>Important:</strong> If the <code>./data/</code> directory is deleted or not mounted, pending access requests will be lost and users will not receive confirmation emails.
+    </div>
+</div>
+
+<div class="section" id="email">
+    <h2>7. Email Configuration</h2>
+    <p>The application sends Excel reports via email using JavaMail and SMTP.</p>
+
+    <h3>SMTP Setup</h3>
+    <p>Configure the SMTP server in <code>application.properties</code>. For internal corporate SMTP servers that do not require authentication, only <code>host</code>, <code>port</code>, and <code>from</code> address are needed.</p>
+
+    <h3>Auto-Zip for Large Attachments</h3>
+    <p>When the generated Excel file exceeds 5MB, the application automatically compresses it into a <code>.zip</code> archive before attaching to the email. This prevents email delivery failures due to attachment size limits.</p>
+</div>
+
+<div class="section" id="caching">
+    <h2>8. Caching Strategy</h2>
+
+    <h3>Field Changes (Delta Refresh)</h3>
+    <p>Field change queries hit the database directly. However, if the database becomes unreachable, the most recent query results are served from an in-memory cache. A banner is displayed to users indicating the data staleness with the "as of" timestamp.</p>
+
+    <h3>BOM Explorer (Query Cache)</h3>
+    <p>BOM queries are executed live against the custom Oracle schema. Results for individual item explosions/implosions may be cached briefly to avoid redundant queries during batch operations (when processing a file upload with many items).</p>
+
+    <h3>Part Extract</h3>
+    <p>The available column list is cached after the first load. Part search queries are executed live against the database.</p>
+</div>
+
+<div class="section" id="scheduled-reports">
+    <h2>9. Scheduled Reports</h2>
+    <p>The <code>ScheduledReportService</code> manages recurring report execution for the Field Changes tab.</p>
+
+    <h3>How It Works</h3>
+    <ul>
+        <li>Users create schedules via <code>POST /api/schedules</code> with search criteria, frequency (daily/weekly), and time (30-minute intervals).</li>
+        <li>Schedules are persisted to <code>./data/scheduled-reports.json</code>.</li>
+        <li>A Spring <code>@Scheduled</code> task runs every <strong>5 minutes</strong>, checking for any schedules that are due.</li>
+        <li>When a schedule fires, the service executes the saved search, generates an Excel report, and emails it to the user.</li>
+        <li>If the search returns 0 results, no email is sent (the run is logged).</li>
+    </ul>
+
+    <h3>Data File</h3>
+    <p><code>./data/scheduled-reports.json</code> stores all user schedules. The file is read at startup and written on every create/delete.</p>
+</div>
+
+<div class="section" id="bom-extracts">
+    <h2>10. BOM Extracts</h2>
+
+    <h3>Daily Full CSV Extract</h3>
+    <p>The <code>BomExtractService</code> generates a complete BOM database dump as a compressed CSV file daily at <strong>2:00 AM</strong> (server time). The file is stored in <code>./data/extracts/</code>.</p>
+    <ul>
+        <li>Triggered automatically by a <code>@Scheduled</code> cron task.</li>
+        <li>Can also be triggered manually via <code>POST /api/bom/full-extract-trigger</code>.</li>
+        <li>Status check: <code>GET /api/bom/full-extract-status</code> returns file size, date, and generation state.</li>
+        <li>Download: <code>GET /api/bom/full-extract-download</code>.</li>
+    </ul>
+
+    <h3>BOM Notes Extract (Async)</h3>
+    <p>The BOM Notes extract generates an Excel file (<code>.xlsx</code>) of all BOM relationships that have notes. This uses <code>SXSSFWorkbook</code> (streaming workbook) to handle large datasets without running out of memory.</p>
+    <ul>
+        <li>Triggered via <code>POST /api/bom/bom-notes-trigger</code>.</li>
+        <li>Runs asynchronously; poll <code>GET /api/bom/bom-notes-status</code> for completion.</li>
+        <li>Output stored in <code>./data/extracts/</code>.</li>
+    </ul>
+
+    <div class="warn-box">
+        <strong>Memory:</strong> The BOM Notes extract can consume significant memory. Use <code>-Xmx2g</code> or higher to avoid OutOfMemoryError during generation.
+    </div>
+</div>
+
+<div class="section" id="agile-field-names">
+    <h2>11. Agile Field Names</h2>
+    <p>The Agile Lookup tab's manual input mode uses a typeahead autocomplete powered by a list of Agile field names stored in <code>./data/agile-field-names.json</code>.</p>
+
+    <h3>CSV Import</h3>
+    <p>Administrators can update the field name list by uploading a CSV file via <code>POST /api/agile-lookup/upload-field-names</code>. The <code>AgileFieldNameService</code> parses the CSV and writes the updated JSON file.</p>
+
+    <h3>Data File</h3>
+    <p><code>./data/agile-field-names.json</code> contains the field name array. It is served to the frontend via <code>GET /api/agile-lookup/field-names</code>.</p>
+</div>
+
+<div class="section" id="deployment">
+    <h2>12. Deployment</h2>
+
+    <h3>Building</h3>
+    <pre><code>./mvnw clean package -DskipTests</code></pre>
+    <p>This produces a self-contained JAR in <code>target/</code>.</p>
+
+    <h3>Running</h3>
+    <pre><code>java -Xmx2g -jar plm-field-tracker.jar</code></pre>
+    <p>Override properties at startup via command-line arguments:</p>
+    <pre><code>java -Xmx2g -jar plm-field-tracker.jar \
+  --server.port=9090 \
+  --spring.datasource.url=jdbc:oracle:thin:@host:1521:SID \
+  --ldap.url=ldaps://ad.company.com:636</code></pre>
+
+    <h3>JRE Compatibility</h3>
+    <p>The application is built with Java 11 source/target and is compatible with JRE 11 through JRE 17. Amazon Corretto 11 or 17 is recommended.</p>
+
+    <h3>Data Directory</h3>
+    <p>The <code>./data/</code> directory must persist between deployments. It contains:</p>
+    <ul>
+        <li><code>saved-searches.json</code> &mdash; user saved searches</li>
+        <li><code>scheduled-reports.json</code> &mdash; scheduled report definitions</li>
+        <li><code>access-requests.json</code> &mdash; pending access requests</li>
+        <li><code>agile-field-names.json</code> &mdash; Agile field name list for typeahead</li>
+        <li><code>extracts/</code> &mdash; BOM full extract CSV and BOM Notes extract XLSX</li>
+        <li><code>activity-log.jsonl</code> &mdash; persistent activity log (survives restarts)</li>
+        <li><code>last-report-time.txt</code> &mdash; timestamp of the last delta report sent</li>
+        <li><code>app-knowledge.txt</code> &mdash; knowledge base for AI help chatbot</li>
+    </ul>
+    <p>If deploying to a container or ephemeral environment, mount <code>./data/</code> as a persistent volume.</p>
+
+    <h3>Health Check</h3>
+    <p>After startup, verify the application is running by accessing <code>http://host:port/login.html</code> in a browser or curling <code>/api/auth/session</code>.</p>
+
+    <div class="info-box">
+        <strong>Memory:</strong> Use <code>-Xmx2g</code> for production. The BOM Notes extract uses SXSSFWorkbook for streaming, but deep BOM explosions and large extracts still require adequate heap. Using <code>-Xmx1g</code> may cause OutOfMemoryError during BOM Notes extraction.
+    </div>
+</div>
+
+<div class="section" id="help-sidebar">
+    <h2>13. Help Sidebar and AI Chatbot</h2>
+    <p>The help sidebar provides an AI-powered conversational assistant accessible via the floating "?" button on every page.</p>
+
+    <h3>Architecture</h3>
+    <p>The chatbot uses a two-tier approach:</p>
+    <ol>
+        <li><strong>Keyword FAQ fallback:</strong> For common questions, a keyword-based lookup returns instant answers without an API call.</li>
+        <li><strong>Haiku API proxy:</strong> For complex or nuanced questions, the request is proxied to the Anthropic Haiku model via <code>POST /api/help/ask</code>. The AI is provided with the application knowledge base and the user's current tab context.</li>
+    </ol>
+
+    <h3>Knowledge Base</h3>
+    <p>The chatbot's knowledge is loaded from <code>./data/app-knowledge.txt</code>. This file is <strong>auto-reloaded every 24 hours</strong>, so updates to the knowledge base take effect without restarting the application. The knowledge base contains feature descriptions, usage instructions, and common troubleshooting answers.</p>
+
+    <h3>Tab-Aware Context</h3>
+    <p>When a user asks a question, the frontend sends the currently active tab name along with the question. The AI uses this context to provide tab-specific answers (e.g., export instructions for the BOM Explorer tab vs. the Part Extract tab).</p>
+
+    <h3>Session Handling</h3>
+    <p>If the user's session expires while the help sidebar is open, the chatbot detects the 401 response and displays a friendly message with a link to the login page, rather than showing a raw error.</p>
+
+    <h3>Conversation Reset</h3>
+    <p>The conversation history is cleared automatically when the user switches tabs, ensuring the AI context stays relevant to the current view.</p>
+
+    <h3>Configuration</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Effect</th></tr>
+        <tr><td><code>ai.help.api-key</code></td><td>Anthropic API key. If not set, the chatbot falls back to keyword-only mode.</td></tr>
+        <tr><td><code>ai.help.enabled</code></td><td>Set to <code>false</code> to disable the help sidebar entirely.</td></tr>
+    </table>
+</div>
+
+<div class="section" id="issue-tracking">
+    <h2>14. Issue Tracking</h2>
+    <p>Users can report issues directly from the help sidebar with an automatic screenshot capture.</p>
+
+    <h3>How It Works</h3>
+    <ol>
+        <li>The user clicks <strong>Raise Issue</strong> in the help sidebar.</li>
+        <li>The frontend uses <strong>html2canvas</strong> to capture a screenshot of the current page as a PNG image.</li>
+        <li>The screenshot and issue description are submitted via <code>POST /api/support/raise-issue</code>.</li>
+        <li>The server sends an email to the PLM admin team with the user's description, metadata (username, tab, timestamp), and the <strong>PNG screenshot as an attachment</strong>.</li>
+    </ol>
+
+    <h3>Endpoint</h3>
+    <table class="guide-table">
+        <tr><th>Endpoint</th><th>Method</th><th>Payload</th></tr>
+        <tr><td><code>/api/support/raise-issue</code></td><td>POST</td><td>JSON with description text and base64-encoded screenshot image</td></tr>
+    </table>
+</div>
+
+<div class="section" id="feedback-system">
+    <h2>15. Feedback System</h2>
+    <p>A feedback form is accessible from the <strong>Feedback</strong> link in the navigation bar.</p>
+
+    <h3>How It Works</h3>
+    <ol>
+        <li>The user selects a category (Feature Request, Bug Report, General Feedback, etc.) and types a message.</li>
+        <li>The feedback is submitted via <code>POST /api/support/feedback</code>.</li>
+        <li>The server emails the feedback to the PLM admin team with the user's name, category, and message.</li>
+    </ol>
+
+    <h3>Endpoint</h3>
+    <table class="guide-table">
+        <tr><th>Endpoint</th><th>Method</th><th>Payload</th></tr>
+        <tr><td><code>/api/support/feedback</code></td><td>POST</td><td>JSON with category and message fields</td></tr>
+    </table>
+</div>
+
+<div class="section" id="delta-reports">
+    <h2>16. Delta Reports and AI Insights</h2>
+    <p>The delta report is an automated summary of application activity, enhanced with AI-generated insights from server log analysis.</p>
+
+    <h3>Schedule</h3>
+    <p>Delta reports are generated and emailed automatically at <strong>9:00 AM</strong> and <strong>9:00 PM</strong> (server time). Reports can also be triggered manually via the <strong>Send Stats</strong> button in the admin UI or by calling <code>POST /api/admin/send-delta-report</code>.</p>
+
+    <h3>Persistent Activity Log</h3>
+    <p>All user actions (searches, exports, emails, logins) are logged to a persistent <strong>JSONL file</strong> at <code>./data/activity-log.jsonl</code>. Unlike in-memory counters, this log survives application restarts. Each line is a JSON object with a timestamp, action type, username, and relevant details. The delta report reads entries since the last report time to compute the period's activity summary.</p>
+
+    <h3>AI Log Analysis</h3>
+    <p>When the Anthropic API key is configured, the delta report includes an <strong>"AI Insights"</strong> section generated by Claude Haiku. The AI analyzes the application's server log file (configured via <code>app.log-file</code>) and produces:</p>
+    <ul>
+        <li>A summary of notable events and patterns</li>
+        <li>Prioritized error excerpts with context</li>
+        <li>Recommendations for attention or investigation</li>
+    </ul>
+
+    <h3>Email Format</h3>
+    <p>The delta report email uses Markdown-to-HTML conversion for the AI insights section, producing clean formatted output. The HTML is designed to be <strong>Outlook-compatible</strong> (inline styles, table-based layout). The report includes activity counts, user breakdown, and the AI insights section.</p>
+
+    <h3>Tracking State</h3>
+    <p>The timestamp of the last report is stored in <code>./data/last-report-time.txt</code>. This allows accurate delta computation even across application restarts.</p>
+
+    <h3>Configuration</h3>
+    <table class="guide-table">
+        <tr><th>Property</th><th>Effect</th></tr>
+        <tr><td><code>ai.help.api-key</code></td><td>Required for AI insights. Without it, the report is sent without the AI section.</td></tr>
+        <tr><td><code>app.activity-log.file</code></td><td>Path to the JSONL activity log file.</td></tr>
+        <tr><td><code>app.log-file</code></td><td>Path to the server log file that the AI analyzes.</td></tr>
+    </table>
+</div>
+
+<div class="section" id="logging">
+    <h2>17. Logging</h2>
+    <p>The application uses <code>java.util.logging</code> (JUL) for log output. Key log messages to watch for:</p>
+
+    <h3>Authentication Logs</h3>
+    <table class="guide-table">
+        <tr><th>Log Pattern</th><th>Meaning</th></tr>
+        <tr><td><code>[AD GROUPS] User X is member of N groups</code></td><td>Lists all groups found for the user</td></tr>
+        <tr><td><code>[AD GROUP]   groupname</code></td><td>Individual group membership (one per line)</td></tr>
+        <tr><td><code>User X not in required group: Y</code></td><td>Login denied due to missing group membership</td></tr>
+        <tr><td><code>User authenticated successfully: X</code></td><td>Successful login</td></tr>
+        <tr><td><code>Cached credentials for user: X</code></td><td>Credentials stored in offline cache</td></tr>
+        <tr><td><code>Offline login from cache for user: X</code></td><td>AD unreachable, used cached credentials</td></tr>
+    </table>
+
+    <h3>Scheduler and Background Logs</h3>
+    <table class="guide-table">
+        <tr><th>Log Prefix</th><th>Meaning</th></tr>
+        <tr><td><code>[SCHEDULER]</code></td><td>Scheduled report execution (5-min polling, report generation, email send)</td></tr>
+        <tr><td><code>[ACCESS]</code></td><td>Access request workflow (LDAP polling, grant detection, email notification)</td></tr>
+        <tr><td><code>[BOM EXTRACT]</code></td><td>Daily full BOM CSV extract (2 AM cron, generation progress)</td></tr>
+        <tr><td><code>[BOM NOTES EXTRACT]</code></td><td>Async BOM Notes XLSX extract (trigger, progress, completion)</td></tr>
+        <tr><td><code>[AI HELP]</code></td><td>AI chatbot requests (question received, API call, fallback to keywords, knowledge base reload)</td></tr>
+        <tr><td><code>[DELTA REPORT]</code></td><td>Delta report generation (schedule trigger, activity log parsing, AI analysis, email send)</td></tr>
+        <tr><td><code>[SUPPORT]</code></td><td>Issue reports (screenshot capture, email send to admin)</td></tr>
+        <tr><td><code>[FEEDBACK]</code></td><td>Feedback submissions (category, email send to admin)</td></tr>
+    </table>
+
+    <h3>Database and Query Logs</h3>
+    <p>SQL queries and their execution times are logged at INFO level. Look for messages containing query parameters and row counts to diagnose slow queries or unexpected results.</p>
+
+    <h3>Progress Logging</h3>
+    <p>Long-running BOM operations log progress messages indicating which items are being processed and how many remain in the batch.</p>
+</div>
+
+<div class="section" id="performance">
+    <h2>18. Performance</h2>
+
+    <h3>Parallel BOM Queries</h3>
+    <p>When processing batch BOM requests (multiple items from a file upload), the application processes up to 3 items in parallel to balance throughput against database load. This is controlled server-side.</p>
+
+    <h3>Connection Pooling</h3>
+    <p>HikariCP manages connection pools for both datasources. Default pool size is typically 10 connections. Tune via:</p>
+    <pre><code>spring.datasource.hikari.maximum-pool-size=15
+custom.datasource.hikari.maximum-pool-size=10</code></pre>
+
+    <h3>Client-Side Filtering</h3>
+    <p>Column filters are applied entirely in the browser (JavaScript), so they are instant regardless of result set size. Only the initial search query hits the server.</p>
+
+    <h3>Result Limits</h3>
+    <p>Field change queries are capped at 500 rows to prevent memory exhaustion on the server and slow rendering in the browser. If results are truncated, a warning chip is displayed.</p>
+</div>
+
+<div class="section" id="troubleshooting">
+    <h2>19. Troubleshooting</h2>
+
+    <table class="guide-table">
+        <tr><th>Symptom</th><th>Likely Cause</th><th>Resolution</th></tr>
+        <tr>
+            <td>Login fails with "not in required group"</td>
+            <td>User is not a member of the DL specified in <code>ldap.required.groups</code></td>
+            <td>Add the user to the required AD group, or update the property to include additional groups</td>
+        </tr>
+        <tr>
+            <td>Login fails with "Authentication server is unavailable"</td>
+            <td>AD/LDAP server is unreachable and no cached credentials exist</td>
+            <td>Verify network/VPN connectivity to AD server; check <code>ldap.url</code> is correct</td>
+        </tr>
+        <tr>
+            <td>"Database unavailable" banner appears</td>
+            <td>Oracle database connection failed</td>
+            <td>Check database connectivity, credentials, and that the Oracle listener is running</td>
+        </tr>
+        <tr>
+            <td>BOM Explode returns no results</td>
+            <td>Item number not found in BOM tables</td>
+            <td>Verify the item number exists and is an assembly (has components). Check the custom datasource connection.</td>
+        </tr>
+        <tr>
+            <td>Email fails to send</td>
+            <td>SMTP server unreachable or rejecting connections</td>
+            <td>Verify <code>spring.mail.host</code> and <code>spring.mail.port</code>; check firewall rules</td>
+        </tr>
+        <tr>
+            <td>Slow field change queries</td>
+            <td>Large time range or broad search criteria</td>
+            <td>Reduce the days-back setting; add field name or item number filters to narrow the query</td>
+        </tr>
+        <tr>
+            <td>Application runs out of memory</td>
+            <td>Deep BOM explosion or too many concurrent users</td>
+            <td>Increase <code>-Xmx</code> to 2g; reduce <code>bomMaxDepth</code>; limit concurrent batch sizes</td>
+        </tr>
+        <tr>
+            <td>Tech Guide link not visible</td>
+            <td>User is not in <code>pdl-plm-admin</code> group</td>
+            <td>Add the user to the <code>pdl-plm-admin</code> AD group and have them log out/in</td>
+        </tr>
+        <tr>
+            <td>Session expiry shows "undefined" in UI</td>
+            <td>Session timed out and AJAX call returned 401</td>
+            <td>This is handled automatically &mdash; the UI redirects to the login page. If "undefined" persists, clear browser cache and reload.</td>
+        </tr>
+        <tr>
+            <td>BOM Notes extract fails with OutOfMemoryError</td>
+            <td>Insufficient heap for SXSSFWorkbook processing</td>
+            <td>Increase JVM heap to <code>-Xmx2g</code> or higher. SXSSFWorkbook streams rows but still needs memory for the full query result set.</td>
+        </tr>
+        <tr>
+            <td>Scheduled report not firing</td>
+            <td>Scheduler polling interval missed or JSON file corrupted</td>
+            <td>Check <code>[SCHEDULER]</code> log entries. Verify <code>./data/scheduled-reports.json</code> is valid JSON. The scheduler polls every 5 minutes, so reports may fire up to 5 minutes late.</td>
+        </tr>
+        <tr>
+            <td>Access request not detected after user added to AD group</td>
+            <td>LDAP polling interval (10 min) not yet elapsed, or AD replication delay</td>
+            <td>Check <code>[ACCESS]</code> log entries. Wait up to 10 minutes for the next poll cycle. AD group changes may take time to replicate across domain controllers.</td>
+        </tr>
+        <tr>
+            <td>AI insights not appearing in delta report</td>
+            <td>Log file path not configured or API key missing</td>
+            <td>Verify <code>app.log-file</code> points to an existing, readable log file. Verify <code>ai.help.api-key</code> is set. Check <code>[DELTA REPORT]</code> log entries for errors.</td>
+        </tr>
+        <tr>
+            <td>Help chatbot falling back to keyword answers only</td>
+            <td>Anthropic API key not set or invalid</td>
+            <td>Set <code>ai.help.api-key</code> in <code>application.properties</code>. Check <code>[AI HELP]</code> log entries for API errors. The chatbot gracefully degrades to keyword FAQ mode when the API is unavailable.</td>
+        </tr>
+        <tr>
+            <td>Help chatbot knowledge seems outdated</td>
+            <td>Knowledge base file not updated, or 24h reload cycle not yet elapsed</td>
+            <td>Edit <code>./data/app-knowledge.txt</code> with updated content. The file is reloaded automatically every 24 hours. Restart the application for immediate effect.</td>
+        </tr>
+    </table>
+</div>
+
+<div class="footer">
+    Agile PLM Toolkit &mdash; Technical Guide (Admin Only)
+</div>
+
+</div><!-- container -->
+</body>
+</html>

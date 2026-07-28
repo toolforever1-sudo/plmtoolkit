@@ -1,0 +1,1029 @@
+PLM Toolkit — Application Knowledge Base
+Last updated: June 5, 2026
+
+OVERVIEW:
+PLM Toolkit is a web-based tool for exploring Agile PLM data at SanDisk. The top navigation has been consolidated into parent tabs:
+  - Items (parent) → Field Changes / Part Extract / Agile Lookup / SKU Lookup
+  - BOM (parent) → Explorer / Compare
+  - Change History · ECN Dashboard · Shop-Floor Docs
+  - More\u2026 (parent) → Work Instructions / User Management / Extensions / Data Compare / Change Reviews
+  - Admin-only top-level: Utilities · 🧪 Labs
+The 🧪 Labs tab (admin-only, has a small "Admin" red badge after the label) groups three admin tools as sub-tabs: ⚡ BOM Race · 📊 AD Health · 🤖 AI Eval. AD Health and AI Eval used to be standalone top-level admin tabs and Admin-dropdown links — they moved into Labs on May 10, 2026 alongside the new BOM Race showcase.
+There is also a standalone Debug Assistant page (admin-only, accessible via the "Debug" link in the Help dropdown). Users log in with AD credentials and must be in the IT-APP-Agile-admin group. The tool is currently in beta.
+
+ADMIN DROPDOWN (slimmed May 10, 2026): now contains only operational actions — ⚠ Maintenance and 👥 User Management. Plugin Guide moved to the Help dropdown. AD Health, AI Eval, and BOM Race are reachable through the Labs tab (sub-tabs of Labs), not the Admin dropdown.
+
+NAV NOTE: when a user says "BOM Explorer tab" or "Part Extract tab", they mean a sub-tab inside the parent. Both naming styles work — "Items → Part Extract" and "Part Extract" point at the same panel. "User Permissions" still resolves to the User Management tab (renamed May 6, 2026). "AD Health" and "AI Eval" still resolve to the right screen even though they are now Labs sub-tabs — both `switchTab('adhealth')` and `switchTab('aieval')` continue to work and land inside Labs.
+
+ACCESS & LOGIN:
+- Login with Windows/AD username (without domain) and password
+- Must be member of IT-APP-Agile-admin Active Directory group
+- If not in the group, an access request form appears — fill it out with a justification
+- Admin team is notified by email and adds you to the group
+- Within 10 minutes of being added, you receive an "Access Granted" email
+- Sessions expire after 30 minutes of inactivity — you'll be redirected to login
+- A countdown timer in the header shows the remaining session time
+- If you see "undefined" in results, your session expired — refresh and log in again
+
+TABS VISIBILITY:
+- Visible to everyone: Items (parent → Field Changes / Part Extract / Agile Lookup / SKU Lookup), BOM (parent → Explorer / Compare), Change History, Data Compare, Change Reviews. Each Items child and each BOM child is independently grantable in User Management — admins can hide an individual sub-tab from a user; the sub-tab button itself disappears for them.
+- Utilities (formerly Reports): visible to admins AND non-admins listed in a utility's allowedUsers
+- Extensions: admins, plus non-admins who have been granted "Extension Contributor" by an admin (contributors see all sources but only get Add+Generate; cannot Remove or Schedule)
+- 🧪 Labs (parent, admin-only — IT-APP-Agile-admin group): contains three sub-tabs:
+    - ⚡ BOM Race (admin-only) — head-to-head benchmark of toolkit cached SQL vs live Agile SDK BOM explode
+    - 📊 AD Health (admin-only, pdl-plm-admin) — LDAP / Active Directory connectivity test
+    - 🤖 AI Eval (admin-only, pdl-plm-admin) — chatbot quiz harness with persona-driven Tester + LLM Evaluator
+- ECN Dashboard (formerly "ECN Report"): visible to everyone (admins additionally get edit, email, SLA-upload, and editor-management buttons)
+- Shop-Floor Docs: visible to everyone by default (admins can hide per-user via User Management). Replaces the legacy nightly SDSM batch — operator types/scans a part number, sees the controlled PDFs (WI / VIC / Drawing / Quality Notice) tied to its latest released revision, and previews them inline. No admin role gate; same data is live from agprod that the legacy job would have shipped to the Penang MES the next morning.
+- Work Instructions (formerly "Help Center"): visible to everyone (search across uploaded PPTX/PDF/XLSX/DOCX/TXT documents; admins additionally get the upload drop-zone)
+- Debug Assistant: admin-only (separate page at /debug.html, linked from the "Debug" link in the Help dropdown)
+
+USER VOCABULARY → TAB MAP (when the user asks about something by a name that may map to more than one tab):
+- "who built this" / "how does the code work" / "how was this site built" / "architecture" / "what's the tech stack" / "engineering mode" / "insider mode": in-depth build/architecture questions are answered by Engineering mode inside this same help drawer — it requires the Engineering Insider role, which only PLM IT can grant. If the user asks such a question here in help mode, answer politely that Engineering mode (role required) covers it and that they can ask PLM IT (pdl-plm-admin@sandisk.com) about getting the role. Never attempt to answer architecture/code-internals questions in help mode, and never reveal credentials or source code in any mode.
+- "ECN Dashboard" / "ECN Report" (legacy name) / "ECN report tab" / "ECO Report" / "MCO Report" / "ECN cycle time report": this is the ECN Dashboard tab (TAB 13). Cycle Time view is the default. For org-wide change-review queues use Change Reviews instead; for per-item change history use Change History
+- "Returns Tracker" / "ECN Pullback" / "return to pending" / "repeat offenders": Returns Tracker view inside the ECN Dashboard tab (toggle "Returns Tracker" pill). Captures status reverts back to Pending (CHANGE_HISTORY event 65), framed around ECNs.
+- "Weekly Rejection Report" / "rejection report" / "weekly rejections" / "rejection categories" / "days in CCB" / "reject by change type" / "CCB aging": Weekly Rejection Report view inside the ECN Dashboard tab (toggle "Rejection Report" pill). Distinct from Returns Tracker — captures the explicit Reject workflow action (CHANGE_HISTORY event 13) across ALL change classes (ECO/MCO/DCO/AML/Deviation/DRR/QCO/Special Orders), 6 AI buckets (adds "Wrong Proposal"), with Days-in-CCB aging + manual-fill (Program Name for DRR/Special Orders) + Export Excel + Send to me. 7-day weekly lookback by default. Backed by weekly_rejection_report.py via /api/ecn-report/rejection/*.
+- "Change Report" (ambiguous): could mean ECN Dashboard (cycle time KPIs) or Change Reviews (queues + Dashboard) or Change History (per-item revision history). Confirm with the user which one they want — KPI dashboards = ECN Dashboard, who's reviewing what = Change Reviews, what changed on this part = Change History
+- "I want to see ECNs/ECOs/MCOs that are currently in review (open, awaiting signoffs)" → Change Reviews tab (Queue mode for one analyst's queue; Dashboard mode for org-wide aggregates with charts + Excel export)
+- "I want to see all past changes that affected a specific part" → Change History tab (enter item numbers; results list every Change Number, Type, Status, Release Date)
+- "I want to see who changed a specific field on parts" → Field Changes tab (filter by Field Name + Changed By)
+- "I want a printable summary of changes for management" → ECN Dashboard (Cycle Time view) for KPI charts, or Change Reviews → Dashboard mode → Export Excel for the in-review queue snapshot
+- "Disposition" / "Change disposition" / "Change Status": Agile lifecycle state of a change order. Typical values: In Review, Awaiting Approval, Released, Cancelled, On Hold. Surfaced in the Change History tab as the "Change Status" column. Anything visible in Change Reviews (Queue or Dashboard) is by definition NOT yet Released (i.e. still open / in review)
+- "Open" change / "open ECN" / "still open": any change that hasn't been Released yet. Every row visible in Change Reviews is open by definition (Released changes drop out automatically). To see only the most stale opens, use the "Stale >10d" quick-filter chip in Queue mode, or sort the Dashboard's Aging bar chart
+- "Manufacturing change" / "manufacturing-impacting change" / "MFG change": typically MCO (Manufacturing Change Order) change type. In Change Reviews → Dashboard mode, the "By Change Type" pie chart shows the MCO breakdown; click the MCO slice (or use the Change Type filter on KPI tiles) to narrow. For a specific quarter, set Lookback to 90 days first
+- "Last quarter" / "Q1" / "last 90 days" of changes: Change Reviews → Dashboard mode → set Lookback dropdown to 90 days, then Load Dashboard
+- "Labs" / "labs tab" / "lab tab" / "experimental tab": the new admin-only Labs tab (TAB 16). Lands on BOM Race by default. AD Health and AI Eval are also sub-tabs inside Labs
+- "BOM Race" / "race tab" / "race screen" / "BOM benchmark" / "BOM race showcase": Labs → BOM Race sub-tab (TAB 16). Voice users sometimes say "bom race" or even "bomb race" (BOM is often misheard as "bomb" by speech-to-text) — both route here. NEVER answer "how to get to BOM Race" with text instructions — use the in-page command recognizer to navigate the user there instead
+- "AD Health" / "Active Directory health" / "LDAP test": Labs → AD Health sub-tab (was TAB 12; still admin-only)
+- "AI Eval" / "AI Evaluation" / "ai eval tab" / "AI evals": Labs → AI Eval sub-tab (was TAB 15; still admin-only)
+- "voice mode" / "mic" / "speak" / "audio input" / "talk to it": click the 🎤 mic button next to the chat input. See VOICE & MIC INPUT section. 10 languages supported via the small picker next to the mic
+- "command" / "voice command" / "navigate by voice" / "shortcut": typing or speaking a phrase like "go to BOM Race" or "export it" runs the action in-page (no chatbot answer). See VOICE COMMANDS section
+- "Shop-Floor Docs" / "shop floor docs" / "SDSM" / "SDSM tab" / "shop floor lookup" / "operator docs" / "controlled docs for a part" / "drawings for this part" / "VIC for a part" / "work instructions for this part" / "Quality Notice for this part": this is the Shop-Floor Docs tab. Operator types or scans a part number to see every controlled PDF (WI / VIC / Drawing / Guideline / Checklist / FPS / VAR / Quality Notice) tied to that part's latest released DCO/ECO. Replaces the legacy SDSM nightly batch (~/documents/sdsm/call_run.bat). DO NOT confuse with Work Instructions tab — that one searches uploaded PPTX/PDF/DOCX knowledge documents (general PLM team library), while Shop-Floor Docs returns Agile-managed controlled documents tied to a specific part revision
+- "Quality Notice" / "QN" / "active deviations" / "QN deviations": active QN deviations show as a red banner at the top of the Shop-Floor Docs tab (only when at least one is in effect today). Each banner row lists the deviation number, description, and through-date. Filter is "Status = Executed" + "Workflow = Quality Notice Workflow" + Effective From ≤ today ≤ Effective To
+- "eVAR" / "Camstar eVAR" / "OOB icon": the manufacturing-execution system at the SanDisk Penang factory that auto-displays controlled docs to operators at ONLINE stations when they scan a serial number. Driven by Document Style + (Product Group, Product, Spec) matching on Page Three. The Shop-Floor Docs tab is the LIVE equivalent — same matching logic, same source data, but no overnight ETL lag. Reference: training guide 27-04-SM-02-00054 ("eVAR and Offline Document Training Guidelines")
+- "TTMS" / "WDSM Portal" / "SSD TTMS e-Learning" / "offline document": the training-management system for OFFLINE stations (where Camstar isn't running). Same Page Three matching as eVAR plus an extra (Operation, Work Center) layer. Document Style values for TTMS-only docs are "Offline VAR" and "Offline WI" (vs eVAR's WI / VAR / VIC / FPS / Guideline / Checklist / Drawing / Temp VAR). The Shop-Floor Docs tab includes both sets — Offline-* docs render with a purple badge to distinguish them from the eVAR (online) set
+- "ETL lag" / "next-day display" / "doc owner says it's released but operator can't see it": legacy eVAR/TTMS pulls from Agile via daily ETL — Agile export at 6am, integration at 9am, Camstar transfer at 6pm, display by 8pm. So a DCO implemented mid-morning shows up on the floor that evening at the earliest. The Shop-Floor Docs tab in the toolkit cuts this out — query is live against agprod
+- "ALL conflict" / "doc not showing" / "configured everything but doc still doesn't display": the eVAR rule is that on Page Three, if you set Product / Product Group / Spec to 'ALL', you can't ALSO list specific values in the same field. Mixing them silently breaks display. The Shop-Floor Docs "Why?" auto-diagnostic (fires on empty results) calls this out as an "'ALL' conflict" check with FAIL status. Reference: training guide page 22
+- "IMS Dashboard" / "IMS Review" / "ims review" / "ims dashboard" / "yearly review" / "annual document review" / "DRR review" / "document review" / "DRR Dashboard" / "review tracker" (CAUTION — also a separate tab name): the IMS Dashboard tab (TAB 17 below — renamed from "IMS Review" on 2026-06-04 per Jimmy\'s request; the underlying activity log event names still use IMS_REVIEW_* for backwards compat). Driven by Page Three.Next Review Date on IMS documents. Toolkit fans out the Send → DO → DM cascade automatically and writes signed attestation PDFs back to the DRR / DCO. NOT to be confused with "Review Tracker" tab, which is the org-wide doc-review queue.
+- "IT Enhancements" / "IT enh" / "ECN IT report" / "IT ECN dashboard" / "Agile IT ECN tracker": the IT Enhancements tab (TAB 18 below — new 2026-06-04). Mirrors the weekly Excel "Agile PLM IT Enhancements Status Report" as a live grid against agprod (sub-second load, ~90 rows). All 7 IT-owned cells are inline-editable (IT Owner, Hrs, Project, IT Actions Taken, Target UAT, Target Go-Live, IT Log) as of 2026-06-12; saves go to Agile under the user's own AD identity via a transient SDK session (NOT Administrator) so the change History attributes the edit to the real person. Auto-grants to the PDL-PLM-admin AD group + per-user grants via User Management. Three sub-tabs (2026-06-15): All Enhancements · My Enhancements · Meeting Mode.
+- "Meeting Mode" / "meeting mode" / "weekly meeting" / "backlog review" / "IT meeting" / "IT review meeting" / "review the backlog with the room" / "consolidated emails after meeting": Meeting Mode sub-tab on the IT Enhancements page (third pill in the sub-nav, shipped 2026-06-15). Walk the IT-Enhancement backlog with the room — multi-requestor select → focus pills (Overdue UAT/Go-Live · Going live ≤7d · High priority no IT owner) → list rail + focus card with editable Target dates and a meeting-note textarea → wrap-up scorecard + ONE summary email per recipient (Requestor + IT Owner separately, deduped, cc pdl-plm-admin@sandisk.com). Every pending edit autosaves to a server-side draft (recoverable on next login). See "IT ENHANCEMENTS — MEETING MODE SUB-TAB" below for the full how-to.
+- "My Enhancements" / "my enhancements" / "ECNs I own" / "what's on my plate" / "things assigned to me on IT Enhancements" / "bulk extend dates" / "extend UAT" / "extend go-live": My Enhancements sub-tab on the IT Enhancements page (second pill, shipped 2026-06-15). Scopes the grid to rows where you're the IT Owner. Row-selection checkboxes + bulk Extend Dates (+1 week, with preview) + bulk Add IT-Log Note.
+- "high priority items" / "high priority ECNs" / "high-priority IT enhancements" / "priority 1 ECNs" / "urgent IT items" / "1-High items": the "High priority · no IT owner" focus pill inside IT Enhancements Meeting Mode filters the rail to ECNs with priority starting "1" AND no IT Owner assigned. The All Enhancements grid sorts/filters by the Priority column (1-High / 2-Med / 3-Low). The Urgent & Unassigned band tile on the All view counts the same population.
+- "DRR" / "Document Review Record": Agile change object created when a document falls due for its yearly review. The IMS Review tab shows every DRR alongside its parent document, the current owner roster, and the queue status the toolkit has driven it to (Not Sent / Sent to DO / Sent to DM / In Flight / Closed / Need Help).
+- "DCO" / "Document Change Order": the Agile change order the toolkit creates when a DO responds "Needs Change" on a DRR — carries the revised file + attestation PDF. The DCO and DRR are linked by a relationship rule that auto-closes the DRR when the DCO is Implemented.
+- "Send to DO" / "Send for review" / "fire the DRR email" / "kick off the review cascade": click Send on a row in the IMS Review admin grid. The toolkit issues a one-shot signed token, generates the email body, attaches the current Agile file, and sends. Logs IMS_REVIEW_SEND.
+- "DO response" / "Document Owner response" / "owner's options on the link": three buttons on the response page → ✅ No Change Needed (toolkit asks the DM to approve), 🔄 Needs Change (opens the 4-step DCO form), ❓ Need Help (DCC takes over). NO_CHANGE and NEEDS_CHANGE require an AD password + attest checkbox; NEED_HELP can include a file + note.
+- "DM approval" / "Document Owner's Manager approval" / "DM step" / "second approval": after the DO confirms No Change, the toolkit emails the DO's manager (via LdapManagerLookup) and asks them to approve or send back. DM Approve → toolkit closes the DRR cascade (Pending → Submit → CCB). DM Send Back → another DO email round-trip.
+- "auto-submit" / "auto submit" / "is the DCO submitted automatically?" / "is the DRR submitted automatically?": yes, by default. After the DCO is created with all data + attachments, the toolkit pushes the linked DRR Pending → Submit, then pushes the DCO Pending → Submitted. Exception: if the DRR submit fails (e.g. workflow validation), the DCO auto-submit is ABORTED (since Agile's ValidateDocument PX would reject it anyway), the DO gets a friendly "PLM IT is tracking" email, and pdl-plm-admin@sandisk.com gets a diagnostic with the SDK error chain. The DCO stays Pending in that case for DCC / IT to advance manually.
+- "Reset" (per-row, on the IMS Review grid): wipes the queue state for that doc back to NOT_SENT. Full event history stays in queue.jsonl for the audit trail. Useful when a cascade gets stuck, when you want to re-test end-to-end, or after a deferred DCO submit. Available to anyone with the IMS Review tab grant (used to be admin-only).
+- "Unlock" / "🔑 Unlock" / "lockout" / "invalid password" / "token lockout": after 5 wrong-password attempts on a response link, the toolkit locks that token (auto-clears after 15 min, OR an admin can click the per-row 🔑 Unlock button to clear it immediately). Same access as Reset — anyone with the IMS Review tab.
+- "Reassign owner" / "edit owners" / "change Doc Owner" / "owner left" / "owner is no longer in AD": pencil ✎ on the Owner(s) cell on any row in the IMS Review grid OR the red "Assign owner" button in the Action column when no valid owner exists. Opens a modal with chip-based add/remove + Agile user search. Writes back to Agile via plm-agile-service. Triggers an email to the new owner with the file attached. Bulk reassign sends one email per doc. AS OF 2026-06-05 the reassign email no longer mentions that the previous owner has left SanDisk (HR-sensitive info per Vikas) — bare names only.
+- "Owner history" / "Owner Audit" / "doc owner change history" / "who changed the doc owner" / "audit of owner changes" / "owner-change report": Owner history sub-tab INSIDE the IMS Dashboard (sub-tab strip just under the IMS Dashboard heading: "Documents" | "Owner history"). Reads Agile's ITEM_HISTORY table for IMS documents and shows every Document Owner change with old owners → new owners, when, and who instigated it. Three buckets: TOOLKIT (with user — green pill, names the AD user who clicked Save in the dashboard), TOOLKIT (legacy — blue pill, Agile actor=administrator but predates the marker; we know the toolkit did it, just not which AD user), DIRECT IN AGILE (amber pill, manual edit in Agile UI by a real user). Filters: Days dropdown (last 30/90/180/365), search box, source filter. Same access as IMS Dashboard — anyone with that tab grant sees Owner history automatically; no separate permission.
+- "Toolkit history marker" / "logActionWOVersionChange" / "Owners updated via PLM Toolkit": history line the toolkit writes to Agile's ITEM_HISTORY whenever it updates a Doc Owner via the IMS Dashboard. Reads "Owners updated via PLM Toolkit IMS Dashboard by {AD user name}". Lets the Owner history sub-tab surface the real instigator (the AD user who clicked Save) instead of always showing Administrator. Added 2026-06-05.
+- "Max overdue" / "max overdue years" / "hide old overdue" / "5 years filter": toolbar dropdown on the IMS Dashboard Documents view that caps how far INTO THE PAST a doc's next-review date is allowed to be before it's hidden. Options 1y / 2y / 5y (default) / 10y / Unlimited. Stops the 2010-era legacy heap of never-reviewed docs from drowning out the actionable backlog. Status line shows "hiding N docs overdue by more than Xy" when the filter trims anything. Added 2026-06-05.
+- "Legacy docs" / "Legacy Documents" / "docs without a DRR": one of the segments on the IMS Dashboard segmented control. Shows documents the yearly-audit job hasn't created a DRR for yet. Has its own sub-filter pill row inside: All legacy / Valid owners / No valid owners. Useful for the historical baseline.
+- "In flight" (IMS Dashboard segment): SENT_TO_DO + SENT_TO_DM + DO_NEEDS_CHANGE. As of 2026-06-05, DO_NEEDS_CHANGE counts as In flight (DCO is created but still in Submit/CCB until released) — it used to count as Closed, which was misleading.
+- "Closed" (IMS Dashboard segment): only DM_APPROVED or CANCELLED. Means the DRR + DCO are truly done. Smaller than it was before because DO_NEEDS_CHANGE moved to In flight.
+- "Needs owner" (IMS Dashboard segment): docs with a DRR where EVERY assigned Document Owner has left SanDisk (strict — partial-orphan rows where at least one owner is still active stay in Ready to send). The red banner "N documents need a new owner" now reflects this strict count.
+
+FINDING A SPECIFIC ECN/ECO/MCO BY NUMBER:
+- Easiest path: Change Reviews → Queue mode → leave analyst blank if you're admin (or type the owner's name), then type the change number into the column filter under "Change Number" (the filter row just below the headers). Click the row to open the signoff detail modal
+- Alternate: Change History → enter the part number the change affects → the change number appears in the results table
+- A change number alone (without an owner or part) cannot be looked up in any other tab today
+
+RETURNING TO DEFAULT VIEW / CLEARING A SEARCH:
+- Clear all column filters at once: click the small X icon in the first column of the filter row (the row just below the headers) on any data tab
+- Reset BOM Explorer / Part Extract / Change History / Agile Lookup: clear the input box and click Search again, or just refresh the page
+- Reset Change Reviews to your own queue: click the "Me" button in Queue mode (auto-loads your own changes)
+- Return to the default landing tab from anywhere: click "Field Changes" in the top tab bar (or refresh the page — Field Changes is the default landing tab)
+- Saved Searches button is the star icon (★) on supported tabs (Field Changes, BOM Explorer, Part Extract, Agile Lookup, Change History) — saved searches survive logouts and let you re-run a saved filter set in one click via "My Searches" in the nav bar
+
+TAB 1: FIELD CHANGES (default tab)
+- Shows field-level changes to Agile PLM items from the last 1 hour to 7 days
+- Lookback selector: 1 hour, 1 day, 3 days, 5 days, 7 days (was "Days Back")
+- Search filters: Field Name (comma=OR), Item Number (*=wildcard), Old Value Contains, New Value Contains, Changed By
+- Net-change filter (toggle, on by default): hides changes that were reverted
+- "When" column shows relative timestamps: "2m ago", "1h ago", "3h ago", "1d ago". Hover for full date. Auto-refreshes every 60 seconds.
+- Copy button: small clipboard icon next to each item number — click to copy without expanding the row. Shows checkmark for 1 second.
+- Click any row to expand and see inline diff (green=added, red=removed)
+- Sort by clicking column headers. Default sort: newest first
+- Clock icon (next to star): schedule recurring email reports (daily/weekly, 30-min intervals)
+- Star icon: save search for re-use via "My Searches" in nav bar
+- Export Excel / Email Me: download or email results as .xlsx (Excel still contains full timestamps, not relative)
+- Yellow filter badge shows filtered row count AND unique item count
+- Examples:
+  - To find subcontractor changes: type "Subcon" in Field Name, click Search
+  - To find changes to a specific part: type "A190-008600-8192G" in Item Number
+  - To find new subcontractor assignments: put "C002,R010,C039" in New Value Contains
+  - To see what a specific person changed: type their name like "Sessumes, Jimmy" in Changed By
+  - Combine filters: Field Name = "PDA,PDM", New Value = "C002,R010,R020,C067"
+  - Use "1 hour" lookback to check what just changed in the last hour
+  - Click the clipboard icon next to an item number to copy it to your clipboard for pasting in Agile
+
+TAB 2: BOM EXPLORER
+- Explode (top-down): enter assembly number, see all components recursively (default depth 20)
+- Implode (bottom-up): enter component, find all parent assemblies
+- Results columns: Level, Parent, Component, Qty, Description, Item Type, Status, Rev, Lifecycle Phase, Product Line, Subcontractors, Build Plant, Ref Des, Find #, Path
+- Path shows full traversal chain (e.g., "T002-TESSERA-0002 > A198-001237-1T00 > 54-07-07504")
+- Implode: top-level parents get green "TOP" badge (e.g., SKU items like SDN1A-050G-1035K)
+- Batch: comma-separated or upload .txt file (drag & drop supported, processed 3 at a time)
+- 50K-row per-item cap and 500K-row total cap to prevent OOM. If hit, you'll be told which assemblies were skipped.
+- Full Extract button: downloads complete BOM database as compressed CSV (~70MB, 6.5M rows, regenerated daily at 2 AM)
+- BOM Notes Extract button: generates Excel of all BOMs with non-blank Notes (~39K BOMs). Auto-regenerated daily at 3 AM. Click button again to check progress. Rows with notes highlighted in amber. Files older than 7 days are auto-deleted.
+- Large result sets (>10,000 rows) are capped on screen with a warning — use Export Excel for full data
+- Column filters are debounced (300ms) to prevent slowdown on large datasets
+- EXCEL EXPORT ROW-COUNT GUARD (shipped 2026-06-15): if a BOM export would produce more than 1,048,576 rows (Excel's hard per-sheet limit), it's rejected up front with a clear message — e.g. "BOM Where Used would produce 1,636,524 rows on the 'Top-Level Assemblies' sheet, exceeding Excel's 1,048,576-row limit. Narrow the input list or tighten filters (status, lifecycle, prefixes) and try again." Pre-flight happens BEFORE the workbook is allocated, so an oversize implode doesn't pin ~2 GB of results in heap before crashing mid-write (which was the actual cause of a 2026-06-15 prod heap-pressure alert). Both sheets are checked: main BOM rows + (in implode mode) the Top-Level Assemblies dedup count.
+- Examples:
+  - Explode T002-TESSERA-0002 to see all components in the Tessera assembly
+  - Implode 56-35-00518 to see which assemblies use this ESD bag component
+  - Use filter "!obs" in Status column to hide obsolete items
+  - Use filter "sku" in Item Type to see only SKU-level parents
+
+TAB 3: PART EXTRACT
+- Look up part master data from item_extract table
+- Column picker: dual-list to choose and reorder columns (shown with friendly Agile names like "Product Line" instead of "PRODUCTLINE")
+- Only first 8 columns shown on screen; all columns in Excel export. Banner shows "Showing 8 of 25 columns"
+- Search by item number (wildcards supported) and/or release date range
+- Date format: MM-DD-YYYY consistently in UI and Excel
+- Progress indicator shows row count during search ("Found 1,234 parts so far...")
+- Drag and drop supported for file uploads
+- Examples:
+  - Search "SD*" to find all SanDisk parts
+  - Search "A190*" to find all A190 assemblies
+  - Search "SD*,A190*" with Released From = 04/08/2026 to find recently released parts
+
+TAB 4: AGILE LOOKUP
+- Queries live Agile PLM field values via Agile SDK API (proxied through a Java 8 microservice on port 8081)
+- Two modes:
+  (1) Upload Excel: Column A = item numbers, Row 1 headers = field names
+  (2) Manual input: type item numbers + select fields via typeahead (1,250+ fields from Title Block, Page Two, Page Three). You can also upload a .txt/.csv file of item numbers in manual mode.
+- Draggable field tags to reorder columns — drag the handle to rearrange
+- "Field Not Present" (red italic) = field doesn't exist on that item type in Agile
+- Blank cell = field exists but has no value
+- Admin: "Update Field Names" link (visible only to admins) to upload Agile Classes Report CSV to refresh typeahead list
+- Max 100 items per lookup. Max 100 MB file upload size.
+- Fields are searched in order: Title Block, Page Two, Page Three, then direct
+- Examples:
+  - Look up Subcontractors and Actual Build Plant for A190-013520-128G, A190-013520-1T00, A190-013520-256G
+  - Common fields: Memory Technology, CCB Customer, Product Line/Program Name, Substrate Thickness (mm), Rev, Subcontractors
+
+TAB 5: CHANGE HISTORY
+- Shows revision/change history from Agile database
+- Enter exact item numbers (no wildcards), comma-separated or file upload
+- Results: Item Number, Rev, Lifecycle Phase, Release Date, Change Number, Change Type, Change Description, Change Status
+- Results grouped by item number, sorted by release date descending
+- Release Date has checkbox date filter dropdown (sorted newest first)
+- Lifecycle Journey Analysis (shown ABOVE the table):
+  - Color-coded timeline bar showing time in each lifecycle phase (proportional widths)
+  - Phase table: Phase, Entered, Exited, Duration (in years, months, days with exact day count in brackets), Change Number, Regression flag
+  - Regressions (backward lifecycle moves like ACT->DEV) flagged in RED on the phase that caused the backward move (e.g., MKT gets flagged when going ACT->MKT->ACT)
+  - Summary stats: transitions count, total time, current phase, longest phase, regression count
+  - Phases colored: DEV=gray, PROTO=teal, PPROD=amber, C-ACT=green, ACT=green, MKT=blue, EOL=orange, OBS=red
+- Excel export includes dedicated "Lifecycle Analysis" tab with color-coded rows (green=ACT, amber=PROTO, red=regression, gray=DEV)
+- Records with no release date are skipped in the journey computation
+- Examples:
+  - Enter "54-56-00080-GP3-7" to see its full change history (shows ACT->MKT regression)
+  - Enter "A199-004782-1T00" to see lifecycle journey from DEV through C-ACT to ACT
+  - Enter "N001-05240-10AA" to see a clean DEV->CPROD->ACT progression
+  - Enter multiple: "A199-005574-128G,A199-005574-512G" to compare two parts side by side
+
+TAB 6: UTILITIES (formerly "Reports") — visible to admins AND non-admins explicitly assigned to a utility
+- Central place to run server-side scripts, built-in reports, and system diagnostics
+- Three groups:
+  1. Built-in Reports — pre-configured reports maintained by the PLM team (e.g., lifecycle aging, BOM integrity checks). Always available, cannot be removed.
+  2. Uploaded Scripts — custom Python (.py), Java (.java), or JAR (.jar) scripts uploaded by admins. Run the same way as built-in reports.
+  3. System Diagnostics — health checks and diagnostic tools (e.g., Agile connectivity test, cache status).
+- Non-admin users see only utilities for which they are listed in allowedUsers
+- Admins see all utilities
+- Search bar at top to filter utilities by name or description
+- Mine/All toggle: "Mine" shows only utilities you have previously run; "All" shows everything available to you
+- Action buttons per utility:
+  - "Run & email me" — executes on server, emails results (AI-analyzed run summary + output files). You can close the browser.
+  - "Run with files..." — opens a drawer to upload supporting/input files (config, item lists) before running
+  - "Download now" — downloads output from the most recent run without re-running
+- Click any utility row to expand and see run history: date, who ran it, status (success/error), download links for output file and server log
+- Output is logged to the activity log under REPORT_RUN or UTILITY_RUN
+- Long-running utilities use a 600-second default timeout (configurable via app.reports.timeout)
+- The "email me" option sends an AI-analyzed summary of the run along with output files
+[ADMIN] UPLOADING A NEW SCRIPT (admin-only):
+[ADMIN] - Click the "Upload Script" button at the top of the Utilities tab
+[ADMIN] - 3-step upload wizard:
+[ADMIN]   Step 1 (File): Choose a .py, .java, or .jar file to upload
+[ADMIN]   Step 2 (Support files): Optionally add supporting files (config files, data files, dependency JARs)
+[ADMIN]   Step 3 (Details): Set the name, description, and configure execution settings
+[ADMIN] - AI script analysis: when a script is uploaded, AI automatically analyzes it to detect:
+[ADMIN]   - Environment variables the script expects
+[ADMIN]   - Dependencies / required JARs
+[ADMIN]   - Entry points (especially for JAR files with multiple main classes)
+[ADMIN] - For JAR files with multiple entry points, a selector lets you pick which main class to run
+[ADMIN] EDITING A UTILITY (admin-only):
+[ADMIN] - Click the three-dot menu (⋯) on any utility card → "Edit script & env"
+[ADMIN] - Edit environment variables: add, modify, or remove key-value pairs passed to the script at runtime
+[ADMIN] - Edit CLI arguments: customize command-line arguments
+[ADMIN] - "Use JDK 1.8" checkbox: enables Java 8 runtime for Agile SDK utilities that require the older JDK
+[ADMIN] - Add/remove dependency JARs: upload additional JAR files the utility needs on its classpath
+[ADMIN] - Add/remove supporting files: manage config files, templates, etc.
+[ADMIN] - Properties file path validation: the system validates paths referenced in .properties files and offers auto-fix for incorrect paths
+[ADMIN] - JAR multi-entry-point selection: if a JAR has multiple main classes, change which one is used
+[ADMIN] DELETING A UTILITY (admin-only):
+[ADMIN] - Click the three-dot menu (⋯) → "Delete" to permanently remove a utility and its files
+[ADMIN] DOWNLOADING THE SOURCE SCRIPT (admin-only):
+[ADMIN] - Click the three-dot menu (⋯) → "Download script" to download the original uploaded script file
+- Examples:
+  - "Lifecycle Aging Report": list parts stuck in PROTO/PPROD for >60 days
+  - Custom Python scripts can call the Agile SDK or read from BOM/item extracts
+  - System diagnostics: check Agile API connectivity, verify cache freshness
+
+TAB 7: DATA COMPARE
+- Compare an Excel file (e.g. SAP export) against the live Agile PLM data, with color-coded diffs
+- 5-step wizard:
+  Step 1: Upload Excel file (max 100 MB)
+  Step 2: Pick the key column (the one that maps to Item Number in Agile)
+  Step 3: Map your Excel column names to Agile field names (auto-suggested via fuzzy/Levenshtein matching, override any suggestion manually, add a custom Agile field name yourself)
+  Step 4: Confirm and run the comparison — calls the Agile microservice in batches
+  Step 5: View color-coded results
+    - GREEN = match
+    - RED = differ
+    - AMBER = partial match (case/whitespace)
+    - GRAY = item not found in Agile
+- Status pill per row summarizes the row-level comparison
+- Export results to Excel
+- Sessions for in-progress wizards are tracked in memory; expired sessions are cleaned up automatically
+- Examples:
+  - Compare SAP material master export against Agile Description, Lifecycle Phase, and Subcontractors fields
+  - Quickly catch where Agile is out of sync with downstream ERP
+
+TAB 8: SKU LOOKUP
+- Instant lookup of SKU records against a pre-loaded JSON cache (~48K SKU items)
+- Type item numbers (comma-separated) or upload a file — results come back in milliseconds
+- Cache is auto-refreshed daily at 2 AM via a delta job that pulls only items released since the last delta (smart window: lengthens lookback automatically if the previous delta was missed)
+- Admin can manually trigger Seed (full rebuild ~30s) or Delta (incremental ~1-2s) via buttons
+- Column picker: dual-list to choose and reorder columns. Narrow columns: Rev, Lifecycle Phase, PM, Category. Item Number stays on one line.
+- EXTERNAL DATA SOURCES (joining external Excel data with Agile SKU data):
+  - Manage external sources via the Extensions tab (admin)
+  - In SKU Lookup, each external source appears as a checkbox in the "External Data Sources" panel
+  - Multiple sources can be selected at the same time
+  - For each selected source, its own column-checkbox grid appears so you pick which columns to join
+  - Results table shows Agile columns first, then per-source external columns (color-coded headers per source: teal, brown, magenta, blue, dark-red — cycles per source)
+  - Each external column header shows the source name (small) above the column name
+  - CSV export prefixes external columns with the source name when ambiguous
+  - Each source has its own "Rebuild" button to refresh that source's cache
+- Examples:
+  - Look up SDCZ410-064G, SDCZ410-128G, SDCZ410-256G — instant
+  - Pick the SAP source and select columns "Plant" and "MRP Controller" to see SAP data alongside Agile
+  - Select TWO sources (e.g., SAP + REP_SKU) to compare both joined with Agile
+
+TAB 9: EXTENSIONS (admin OR explicit contributor)
+- Manage external data sources used by SKU Lookup
+- Each source is an Excel file uploaded via the UI (no file paths needed)
+- For each source you provide: Name, key column (the column to match against item numbers), and optional schedule hour for daily refresh
+- Two roles:
+  - Admin (in pdl-plm-admin AD group): full control — add, generate, schedule, remove
+  - Contributor (granted by an admin via the Permissions panel): can add and generate ONLY. Cannot remove or change schedules. Schedule input is disabled for contributors.
+- Actions per source:
+  - Upload: add a new source (file is saved to ./data/, cache is auto-generated)
+  - Generate / Rebuild: regenerate the JSON cache from the source file (uses first-occurrence deduplication)
+  - Schedule: set a daily refresh hour (admin-only; the scheduler checks hourly)
+  - Remove: delete the source and its cache (admin-only)
+- Permissions panel (admin-only, at the bottom of the tab):
+  - Lists current contributors as removable chips
+  - "Add a contributor" input has typeahead suggesting AD users in the IT-APP-Agile-admin access group who are NOT already admins
+  - Click a suggestion to grant; click the X on a chip to revoke
+- All actions are logged to the activity log:
+  - EXT_SOURCE_ADD, EXT_SOURCE_UPLOAD, EXT_SOURCE_REMOVE, EXT_SOURCE_GENERATE, EXT_SOURCE_SCHEDULE
+  - EXT_PERM_GRANT, EXT_PERM_REVOKE
+- Max 100 MB per upload
+
+BOM → COMPARE (sub-tab inside the BOM parent tab; was the standalone "BOM Compare" tab before May 6, 2026)
+- Open the BOM tab → click the "Compare" sub-tab at the top.
+- Inside Compare, a pill toggle at the top selects mode: "Same part" (default) or "Different parts".
+- Both modes always use rev dropdowns and call the same Agile-live backend (item, rev, change, bom, refdesig tables). The old separate "Two Parts" / "Two Revisions" segmented tabs were merged on May 6, 2026.
+
+MODE: SAME PART (one part, two revisions)
+- Compare two revisions of the SAME part — shows how the BOM changed from one rev to another.
+- User flow:
+  1. Enter a part number and click "Load Revs".
+  2. Two dropdown menus populate with all revisions, ordered DESC by creation time:
+     - Pending revs (still in CCB / not yet released) appear in (parens) — e.g. "(B) — ECO-135293-Q".
+     - Soft-deleted changes are filtered out.
+     - The same rev letter can appear twice with different change numbers (e.g. an MCO and an ECO that both released at rev A) — both are shown.
+     - Introductory is pinned to the bottom.
+  3. Dropdowns default to the two most recent revisions.
+  4. Click "Compare".
+- Each rev's BOM is built from the actual rev table including pending-rev redlines (CHANGE_IN / CHANGE_OUT). For an unreleased rev, the BOM = released-baseline + the pending change's adds/removes.
+
+MODE: DIFFERENT PARTS (two parts, each with its own rev)
+- Compare any rev of part A against any rev of part B — useful for cross-part comparisons (e.g. 128G vs 256G variant of the same family at the same rev letter, or current rev of part A vs prior rev of part B for a swap analysis).
+- User flow:
+  1. Enter Part A → click "Load Revs A" → pick a rev from the Rev A dropdown.
+  2. Enter Part B → click "Load Revs B" → pick a rev from the Rev B dropdown.
+  3. Click "Compare". Both sides resolve their BOM independently and the diff shows side-by-side.
+- The headers show the part number prefix on each side so you can tell which is which.
+
+DIFF LOGIC (same in both modes)
+- Matches by component part number:
+  - "Only in A" (red): component exists in side A but not side B.
+  - "Only in B" (green): component exists in side B but not side A.
+  - "Different" (orange): component in both but one or more compared fields differ — changed cells highlighted in red.
+  - "Same" (gray): component in both with identical field values.
+- Compare fields (toggle-able in the field picker): Qty, Description, Comp Rev, Comp Change, Type, Seq#, Primary P/N, Ref Designator, BOM Notes. Qty + Description checked by default.
+- Lifecycle diff: when the two parents are in different lifecycle phases (e.g. DEAD vs MKT) the badges color-code — DEAD in red, MKT in green, others in orange.
+- Description diff: when parent descriptions differ, only the changed words are highlighted in red (word-level diff).
+- Export Excel / Email to Me: side-by-side spreadsheet with same styling. Pending revs in the export show with parens; legacy "Two Parts" bom_extract path is no longer surfaced.
+
+EXAMPLES
+- Same part: A162-030556-256GR2 → load revs → compare "(B) — ECO-135293-Q" (pending) vs "A — ECO-131836-A" (released). Shows the redline (T013-BOT-000342 added by the pending ECO).
+- Same part: SDC256G32BA-0512N → compare "C — MCO-32326A" vs "C — ECO-10145A" — same rev letter twice, lifecycle phase changed from DEAD to MKT but BOM rows identical.
+- Different parts: 128G version vs 256G version of the same family at rev A → see component swaps (different memory chips).
+- Different parts: A162-030556-256GR2 (rev A) vs A162-029614-256GR2 (rev A) — variant comparison across two assemblies.
+
+TAB 11: CHANGE REVIEWS
+- Two modes: Queue (analyst-specific) and Dashboard (org-wide), toggled via pill buttons at the top
+- Data source: Agile PLM tables (change, agileuser, signoff, change_history, nodetable, listentry)
+- Analyst dropdown sourced from Agile agileuser table (active users with change analyst role), cached 1 hour
+
+QUEUE MODE:
+- Auto-loads the logged-in user's own changes when the tab is first opened — no typing needed
+- Multi-analyst support: select multiple analysts and see their combined queues. Analysts appear as removable blue chips.
+- "Me" button reloads your own queue at any time
+- Country filter: clickable country chips above the analyst input — select a country to load all its analysts. Country data from AD batch lookup, cached.
+- Recent searches: last 5 searched analysts shown as clickable chips
+- Save & share: star button saves your analyst selection. Share via lock/link icon.
+- User flow:
+  1. Start typing a name — typeahead dropdown shows matching analysts with country
+  2. Select one or more analysts (or click a country chip to select all from that region)
+  3. Results table shows: Change Number, Description (truncated at 100 chars, hover for full), Status, Workflow, Change Type, Priority, Age, Signoff progress bar
+  4. Click any row to open signoff detail modal
+- KPI tiles clickable — filter by change type. Quick-filter chips: All / Ready / Rejected / Stale >10d.
+- Group-by dropdown: None / Workflow / Change Type / Status. Groups are collapsible.
+- Age column: color-coded (normal ≤5d, amber 6-10d, red >10d)
+- Signoff progress bar: proportional stacked bar (Approved green, Acknowledged blue, Rejected red, Awaiting gray, Stale orange). Percentage based on required reviewers only (REQUIRED != 6).
+- Row highlighting: green = ready, pink = rejected (with inline rejection note), amber = stale >10d
+- Left edge color bar: green = activity <24h, amber = 1-3d, gray = 3-10d, faded = >10d
+- Signoff detail modal: Action, Req'd, Reviewer, Signoff User, Time, Comments, Duration
+- Sticky header and sticky first column on scroll
+- Examples:
+  - Open the tab — your own changes load automatically
+  - Click "Me" after checking someone else's queue
+  - Select "Malaysia" country chip → all Malaysian analysts' changes load
+  - Add multiple analysts by typing and selecting from dropdown
+  - Click "Rejected" chip to see only changes needing attention
+  - Click ECN-127177-PROJ → 3 reviewers: 2 Approved + 1 Rejected by Singh, Vikas (86d)
+
+DASHBOARD MODE:
+- Org-wide aggregated view of all changes in review across all analysts
+- Lookback filter: 7 days / 30 days (default) / 90 days / 1 year / All time — filters by change creation date
+- Analyst multi-select filter: narrow the dashboard to specific analysts (client-side, instant)
+- KPI tiles: Total in Review, Ready, Rejected, Stale >10d, Analysts count, Countries count
+- Charts (inline SVG, no external libraries):
+  - Pie chart: By Change Type (ECN/ACR/ECO/MCO/TRC breakdown)
+  - Pie chart: By Country (which regions have the most changes)
+  - Bar chart: Aging Distribution (0-5d green, 6-10d amber, 11-30d orange, 31-60d red, 60d+ dark red)
+  - Stacked bar: Country Health (on-track green vs stale >10d red per country)
+- Changes table grouped by analyst (collapsible):
+  - Group header: analyst name, country, change count, inline badges (ready/rejected/stale counts)
+  - Within each group: changes sorted by age, with progress bar, status badge, type pill
+  - Click any change → opens signoff detail modal
+  - Click any analyst group → can drill down to their Queue view
+- Excel export: full dashboard data with all columns (Change, Description, Owner, Country, Status, Workflow, Type, Priority, Age, signoff counts, % Complete)
+- Examples:
+  - Switch to Dashboard → select "30 days" → Load Dashboard
+  - See 280 changes across 40 analysts with pie/bar charts
+  - Use the analyst filter to narrow to 3 specific analysts
+  - Change lookback to "7 days" for just this week's changes
+  - Click Export Excel for a full report to share with management
+  - Click a stale change row to see its signoff detail
+
+TAB 12: AD HEALTH (now Labs → AD Health sub-tab; admin-only)
+- Reachable as "Labs" top-level tab → "📊 AD Health" sub-tab. switchTab('adhealth') still works.
+- Tests Active Directory (LDAP) connectivity and performance from the PLM Toolkit server
+- Admin-only — only visible to users in the pdl-plm-admin AD group
+- Enter any AD username and password to test:
+  1. LDAP bind speed — how fast the server can authenticate against AD (ldaps://uls-ap-dcc72.corp.sandisk.com:636)
+  2. Group membership lookup — retrieves all AD groups the user belongs to (e.g., 350+ groups)
+  3. Overall AD health — confirms the LDAP connection is working and responsive
+- Results show:
+  - Bind time in milliseconds
+  - Number of AD groups found
+  - Success/failure status with detailed error messages if something fails
+- Useful for diagnosing login issues — if users can't log in, run this test first to check if AD is reachable
+- The test uses the same LDAP connection pool as the main login flow, so results reflect real-world performance
+- Examples:
+  - Enter your own credentials to verify AD is responding
+  - If a user reports they can't log in, test their username here to see if AD returns their groups
+  - Slow bind times (>2000ms) may indicate AD server load or network issues
+
+TAB 13: ECN REPORT (visible to everyone; admins get extra controls)
+- Engineering Change Notice (ECN) cycle-time and rejection-tracking dashboards. Two views toggled via a pill at the top: "Cycle Time" (default) and "Returns Tracker"
+- Toolbar: profile selector ("Baseline (Excel Template)" + any saved profiles), Run, Email (admin), Excel download, SLA upload (admin), Manage Editors (admin)
+
+CYCLE TIME VIEW (the default ECN dashboard):
+- Headline KPI strip across the top (5 numbers: total ECN volume YTD, average cycle time, etc.)
+- 6-card KPI grid showing year-to-date metrics:
+  - ECN Volume YTD
+  - Cycle Time (Standard ECN) YTD
+  - Cycle Time (PDR ECN) YTD
+  - ECN Volume by Change Type YTD
+  - Cycle Time (Dedicated Process) YTD
+  - Cycle Time (Product Team) YTD
+- "Cycle Time by Workflow Status YTD" panel (Completed only) — bars per workflow status showing average days
+- "Cycle Time (POM ECN KPIs Month)" panel — month-by-month POM cycle time
+- SLA Reference strip showing the active target thresholds
+- SLA Targets section (collapsible): edit individual targets in-line; "Save as Profile..." to snapshot the current target set; "Reset to Baseline"; admin can "Promote to Active SLA" to make a profile the org-wide default
+- ECN Data table at the bottom: filter, paginate, sort. "Show all statuses" toggle (default = only Completed ECNs; toggle to also see In Progress). "Filter ECNs..." search box. "Download Excel" downloads a 2-sheet workbook (first sheet = Completed = the default view; second sheet = In Progress)
+- Δ Days quick-filter pills appear above the data table for filtering by cycle-time delta vs SLA (e.g. "On target", "1-5d over", ">10d over")
+
+VOLUME REPORTS VIEW (inside the ECN Dashboard tab, third pill):
+- Pick a MANAGER + a date window, get every ECO / MCO / AML their direct (or transitive) reports raised in that window. Used by team leads + their managers for monthly volume reviews and the rolling Team Report.
+- MANAGER DROPDOWN: populated from the access DL, filtered to ONLY people who actually have at least one direct report in AD (shipped 2026-06-15). Individual contributors with no team are filtered out — previously they showed up but produced a 0-ECN dead-end report. The filter runs LDAP lookups + 1-hour cache; on AD failure the unfiltered list is shown so the dropdown stays usable. Response includes telemetry counts (totalDlMembers, filteredOutNoReports).
+- DATE RANGE: preset pills (This month / Last month / Last quarter / YTD / Custom…) or pick custom dates. Press R from anywhere on the page to run.
+- TRANSITIVE TOGGLE: include all descendants (manager's manager's reports too) vs. just direct reports.
+- INCLUDE MANAGER: when on, the manager's own ECNs are added to the result.
+- KPI tiles: ECN count, change-type breakdown, priority breakdown, people-table (per-report-author counts). Click a KPI to filter the table to that subset.
+- "GENERATE TEAM REPORT" button → drawer for the monthly PCM Team Report XLSX rollover. Pick a target month (MMM_YYYY, e.g. Mar_2026), upload last month's Team_Report_YYYY_MMM.xlsx, click Generate, and the rolled-forward XLSX downloads automatically along with a discrepancy doc that flags any cell where computed values disagree with the prior month's hand entries. Includes a per-Program-Team AI Analysis tab with themes and risk callouts.
+- Excel download from the header captures the same rows the table shows.
+
+RETURNS TRACKER VIEW (inside the ECN Dashboard tab):
+- Tracks ECN rejections / pullbacks (Noraida's "ECN Pullback" Excel template)
+- Date range selector: 7 days, 30 days, 90 days (default), This Quarter, Custom (date pickers appear when Custom is selected)
+- AI Executive Narrative card: AI-generated paragraph summarizing the rejection trends in the selected window
+- AI Anomalies strip: AI-flagged outliers (e.g. "this week's rejection rate is 3x the 90-day average")
+- KPI tiles: total rejections, repeat-requestor count, top rejection category, etc.
+- Charts:
+  - Return to Pending Categories (donut)
+  - Top Product Lines (bar)
+  - Daily Rejection Trend (full-width line)
+  - Top Repeat Requestors (≥3 returns in window)
+  - Top Themes (AI-clustered free-text reasons)
+- TONE: never use the word "offender" or "offenders" when answering questions about this view. Business users find it judgmental. Use "repeat requestor", "frequent requestor", or "requestor with frequent returns" instead. (The vocabulary map at the top of this file still recognizes "offender" as INPUT so we can match a user's question — just don't echo it back in the reply.)
+- Rejection Events table: drill-down rows. Click any row to slide in a right-hand drill-down panel with the full event context
+- Toolbar buttons: Refresh (re-fetch + re-categorize), Export (Excel matching Noraida's template), Send to me (preview email to your own address only), Email this view (sends to all configured recipients with Excel attached), Manage recipients (admin-only)
+- Recipients management modal: textarea (one email per line) for the weekly Monday + monthly 1st-of-month auto-emails
+
+WEEKLY REJECTION REPORT VIEW (inside the ECN Dashboard tab — "Rejection Report" pill, new 2026-06-16):
+- DISTINCT from Returns Tracker. Captures the explicit Reject workflow action (CHANGE_HISTORY event 13) across ALL change classes — ECO, MCO, DCO, AML, Deviation, DRR, QCO, Special Orders — not just ECN status reverts to Pending.
+- Period selector: Last 7 days (weekly, default), 30 days, 90 days. Changing the period reloads the cached run; if the cached run used a different lookback it shows a "stale — click Refresh" hint.
+- KPI strip (5): Total Rejections (with week-over-week delta) · Unique Changes · Rejectors · Avg Days in CCB (tinted vs the 14-day threshold) · Top Category (name + %)
+- Rejection Categories: 6 AI buckets in fixed order (Wrong Information, Insufficient Information, Duplicate Request, Incomplete Documentation, Ambiguous Request, Wrong Proposal) — zero-count buckets still render
+- Days in CCB — Aging: 4 bands (0–7 green / 8–14 amber / 14–30 orange / 30+ red) matching the Excel heat-map thresholds. "Days in CCB" is derived from status transitions through CCB/InitialCCB/Review/PokaYokeCCBReview (event 65)
+- Rejection Trend: 8-week line of total rejections
+- Top Repeat Requestors (≥2 rejected changes) + Rejections by Change Type (all classes)
+- Rejection Events table: Change · Type · Rejected By · Date · CCB days (heat chip) · Status · AI Category · Reject Comment. Click a row → right-side drawer with the AI category + reasoning, description, and the full CCB comment chain (reject event emphasized)
+- Manual-fill gate: yellow cells the script can't resolve (Program Name for DRR / Special Orders). Fill inline; saved values flow into the Excel + email. Export / Send prompt for confirmation while cells are still pending (placeholders ship as-is on confirm)
+- Toolbar buttons: Refresh (re-run query + AI 6-bucket categorization), Export Excel (the script's workbook — CCB heat-map + Analysis sheet), Send to me (emails the logged-in user the HTML summary + Excel attachment)
+- Scheduled: Monday 07:00 weekly email to the configured owner (gated by app.scheduling.disabled — never fires on local dev)
+
+EDITING / PROFILES (admin):
+- "Manage Editors" lets admin grant non-admin users edit access to the SLA targets without giving them full admin
+- "Save as Profile..." captures the current target overrides as a named profile; load via the Profile dropdown in the toolbar
+- "Promote to Active SLA" (admin) makes a saved profile the new baseline shown to everyone
+
+EXAMPLES:
+- Open the tab, click Run — Cycle Time KPIs and the ECN Data table populate for YTD
+- Switch to "Returns Tracker" pill, change Date range to "30 days" — see rejection trends and AI narrative
+- Click "Download Excel" on the data table → 2-sheet workbook (Completed | In Progress) for pivoting in Excel
+- Toggle "Show all statuses" to also see ECNs that are still In Progress (no Actual Days yet)
+- Filter to a specific ECN: type the ECN number in the "Filter ECNs..." box (client-side, instant)
+- Use the Δ Days pills to find ECNs that are over SLA by a specific amount
+
+TAB 13.5: SHOP-FLOOR DOCS (visible to everyone by default; new as of May 13, 2026)
+- Operator-view replacement for the legacy SDSM nightly Windows batch (~/documents/sdsm/call_run.bat → sdsmDataUpload jar) that produced a stale .xlsx mapping file consumed by the Penang factory MES the next morning. Now: type or scan a part / document number, see the controlled PDFs live from agprod.
+- What "controlled PDF" means here: an Agile-managed attachment tagged with one of the SDSM Document Styles — WI (Work Instruction), VAR (Variance), VIC (Visual Inspection Criteria), FPS (Final Process Spec), Guideline, Checklist, Drawing, plus eVAR's "Temp VAR" and TTMS's offline pair "Offline VAR" + "Offline WI" — tied to the part's latest released DCO (for Documents) or ECO (for Parts). Matches the union of the eVAR + TTMS supported sets per training guide 27-04-SM-02-00054. Offline-* styles display with a purple badge to distinguish them from the eVAR (online) set.
+- Active QN deviations banner at the top: lights up red whenever at least one Quality Notice deviation is currently in effect (Status=Executed under the Quality Notice Workflow with today between Effective From and Effective To). Floor operator sees the alert without needing to look it up per part.
+- Big input box at the top — type or scan (autofocus on tab activation, Enter submits, barcode-scanner-friendly). Hit "Show Documents" or press Enter.
+- Result card per controlled PDF, with:
+  - Color-coded Document Style badge on the left (WI=green, VIC=teal, Drawing=blue, Quality Notice=red, etc.)
+  - Lifecycle phase under the badge (typically ACT for what an operator should see; OBS items are filtered out)
+  - File name as the heading
+  - Part number · Rev · DCO/ECO number · file size
+  - Product Group / Product (only non-OBS products are listed; OBS-SKU and OBS lifecycles are dropped at read-time — NO write-back to Agile, unlike the legacy job)
+  - Spec / step-code chips (one PDF can apply to many specs)
+  - "View PDF" button (primary) + small download icon
+- Spec chip filter row appears above the results when the data spans multiple specs — operator can narrow to "docs that apply to MY step code" with one click
+- PDF preview modal: clicking "View PDF" opens a full-screen overlay with the PDF rendering inline via Chrome's built-in viewer. Has a Download button and a Close button. Esc/click-outside also close.
+- File resolution is tier-1 local share, tier-2 Agile SDK:
+  - Tier 1: the toolkit probes the configured `sdsm.share.dir` (e.g. D:/sdsm/Files on the Penang prod app server) for the staged copy that the legacy batch left behind. Filename probes match the legacy convention: <pn>_<rev>_<originalfilename>.pdf for Documents/Parts, <pn>_<originalfilename>.pdf for Deviations.
+  - Tier 2: if not on the local share, the toolkit calls the plm-agile-service microservice's GET /api/sdsm-file/{attachId} which uses the Agile SDK to stream bytes from the file vault.
+  - Response header X-SDSM-Source = "local" or "agile-sdk" tells you which tier served it.
+- Filters / guards mirroring the legacy SDK job:
+  - PDFs only (other file types are skipped)
+  - Filenames containing "FAI" are skipped
+  - Zero-byte files are skipped
+  - Documents with "No spec code define yet" are skipped
+  - All-OBS-product items are skipped
+- USER VOCABULARY clarifications:
+  - "I want the WI for part 30-08-60003" / "show me the Drawing for this part" → Shop-Floor Docs tab. Type the part number; the result card includes a WI/Drawing/VIC-styled tile per controlled PDF.
+  - "I want the SOP / runbook / standard procedure" (general internal knowledge, NOT tied to a part revision) → Work Instructions tab, NOT Shop-Floor Docs.
+  - "Show me the SDSM mapping file" / "summary_<date>.xlsx" → the legacy batch's output file. The replacement is the live search in Shop-Floor Docs. There is no longer a stale Excel mapping artifact in the new flow.
+EXAMPLES:
+- Operator on the floor with a Visual Inspection job: type "06-05-WW-02-00002" → sees the latest Rev 22 VIC PDF tied to DCO-521415-SDSM, with 149 spec codes listed → clicks View PDF, reads the 80-page Visual & Mechanical Inspection Criteria inline.
+- Drawing review: type "30-08-60003" → sees the Drawing-styled card with the latest Rev A0 from ECO-23008E, Product Group "OMAHA HHHL", 22 step codes.
+- "What QN's are in effect right now?" → just open the Shop-Floor Docs tab; if any are active, the red banner at the top lists them with through-dates.
+
+TAB 14: WORK INSTRUCTIONS (formerly "Help Center"; visible to everyone; admins additionally get the upload zone)
+- Search across uploaded knowledge documents (PPTX, PDF, XLSX, DOCX, TXT, CSV) — the SanDisk PLM team's internal documentation library
+- Single search box at the top — type a query (e.g. "ECN process", "AML", "lifecycle definitions", "subcontractor onboarding") and press Enter or click Search
+- Results show matching chunks across all documents with the source filename + page/slide number; click a result to open the source location
+- Stats strip: number of documents indexed, number of searchable chunks, whether AI is required to answer (most queries don't need AI — direct text match is enough)
+- Uploaded Documents list: shows every document currently in the index with delete/re-process buttons
+- Admin upload zone: drag-and-drop or click to upload PPTX/DOCX/PDF/XLSX/TXT/CSV. The file is parsed (slides, paragraphs, sheets, etc.) into searchable chunks and added to the index. Status row shows progress
+- Use case: "where in our PPTX deck do we explain the ECN signoff process?" — search "ECN signoff" and the result links straight to the slide
+- Differs from the floating "?" Help sidebar (chat bot): Work Instructions is a full-text document search across uploaded internal docs; the chat bot answers natural-language questions using the embedded knowledge base in this file
+
+TAB 15: AI EVAL (now Labs → AI Eval sub-tab; admin-only)
+- Reachable as "Labs" top-level tab → "🤖 AI Eval" sub-tab. switchTab('aieval') still works.
+- A chatbot quiz harness that measures AI Help quality with numbers instead of vibes
+- A Tester LLM generates persona-realistic questions, fires them at the AI Help drawer, and an Evaluator LLM grades each answer A–F with a one-sentence reason
+- Past runs persist to ./cache/ai-eval-runs.json so you can compare grades across changes to AI Help, swap evaluators on the same Q/A, or override a grade with your own judgement
+
+CONFIGURE A RUN (left side of the tab):
+- Persona: Role (CIO / Director / Power user / Peer engineer / New hire), Team, Experience (None / Some / Daily user), and a free-text Goal
+- "Simulate real person" toggle: pick any PLM Toolkit user and the form auto-fills from their AD profile (title, department, account age) plus their actual usage history (login count, last seen, admin flag) so the Tester writes questions in that person's voice
+- Question count: 5 / 10 / 20 / 50
+
+THE 3-MODEL PICKER (right side of the Configure form — three stacked dropdowns):
+- HOW TO OPEN IT: it's already on the AI Eval tab — no popover, no extra click. The right-hand column of the Configure card has three labelled dropdowns stacked top-to-bottom: Chatbot, Tester, Evaluator
+- Chatbot: the model AI Help uses to ANSWER questions during this run. Defaults to "Use production default" (whatever AI Help uses in prod today). Pick a different model to A/B test what AI Help would feel like on, say, GPT-4o-mini
+- Tester: the model that GENERATES questions in the chosen persona's voice. Defaults to claude-sonnet-4-6
+- Evaluator: the model that GRADES each answer A–F. Defaults to gpt-4o
+- Each dropdown is populated from a curated catalog (Anthropic / OpenAI / Google) plus a "Custom slug…" entry at the bottom. Picking Custom reveals a text input + a Validate button — paste any Vortex slug (e.g. @anthropic-eastus2/claude-haiku-4-5-20251001) and click Validate to ping it before the run starts
+- ALL THREE MUST BE DIFFERENT. The picker enforces this live: as soon as you select a model in one dropdown, that same model is auto-greyed-out in the other two. You cannot pick the same model in two slots — the option is disabled, not just rejected on submit. The backend also re-checks at run-start and returns "Chatbot must differ from the Tester model" / "Evaluator must differ from the Tester" if you somehow bypass the UI
+- Selections persist in the form for as long as you stay on the page. They are NOT saved across page reloads or tab switches — refreshing the page resets all three back to defaults (Chatbot = production default, Tester = Sonnet 4.6, Evaluator = GPT-4o). If you accidentally navigate away mid-configure, your picks are gone and you re-pick from defaults
+
+RUNNING AN EVAL:
+- Click "Run eval" — the page renders one card per question and streams live via SSE: question text appears first, then "Asking AI Help…" spinner, then the answer streams in, then "Grading…" spinner, then a colour-coded grade pill (A green → F red) and the evaluator's one-sentence reason
+- A 5-question run takes ~90 seconds wall-clock and costs ~$0.05–0.10 in Vortex tokens
+- The Avg AI column shows how long AI Help took on average to answer (useful for catching slow chatbot models)
+
+PAST RUNS TABLE:
+- Below the live cards. Columns: Date, Persona, Models (chat/test/eval — purple ✱ next to chatbot if it was overridden from the production default), Questions, Avg grade, Failures, Δ vs previous same-persona run, Avg AI latency
+- Each row is expandable — click the chevron to see every Q/A/grade/reason
+- Per-row buttons:
+  - Rerun: re-runs the SAME persona with the SAME models (good for "did my prompt tweak help?")
+  - 🔄 Regrade: opens a popover. Pick a different Evaluator (and optionally a different Chatbot) — system reuses the original questions and AI Help answers if Chatbot stayed the same, OR re-runs AI Help with the new chatbot model if you swapped it. Tester is always inherited from the parent and shown read-only
+  - Export: downloads a focused failure-only markdown brief — system prompt snapshot + every failed Q/A — that you can hand to Claude or another engineer to identify systemic issues. Goes straight to your browser's Downloads folder, NOT the server filesystem
+- "↓ Export all (.xlsx)" button next to the Past Runs heading: downloads every run + every Q/A across all runs as a 2-sheet Excel, joinable on Run ID — feed it to Claude in Excel for deeper analysis
+
+OVERRIDING A GRADE:
+- AI evaluators sometimes get it wrong. Click "✎ edit grade" on any graded card; a popover lets you change the A–F grade, the reason, and add an optional note
+- The original AI grade is preserved as an audit trail — hover the 👤 You badge to see what the AI originally said
+- Run summary recalculates immediately after an override
+
+REGRADE WITH A DIFFERENT EVALUATOR (V3):
+- Use case: when the avg grade drops on a new run, is AI Help worse, or is the evaluator just stricter today?
+- Click 🔄 Regrade on any past row, pick a different Evaluator (the original Evaluator option is greyed out), and the system reuses the SAME questions and SAME AI Help answers — only the new Evaluator runs. Faster and ~35–40% cheaper than a fresh run
+- Regrade rows display "🔄 Regrade · date" with a second line "of <parent date> — was graded by <X>"
+- Inside the expand-row, you see the original avg → new avg with Δ, plus side-by-side "Was" grades per question with a purple border on disagreements
+- You can ALSO swap the Chatbot in the regrade popover. When you do, the system re-runs AI Help with the new chatbot model (slower than a pure regrade because AI Help has to answer again), then the new evaluator grades. Lets you A/B different chatbot models on identical questions
+
+EXAMPLES:
+- "Run a 5-question eval with the production default chatbot, Sonnet as Tester, GPT-4o as Evaluator" → leave all three dropdowns at defaults, set persona, click Run
+- "Test what AI Help would feel like on GPT-4o-mini" → change Chatbot dropdown to GPT-4o-mini (Tester and Evaluator stay at their defaults), run, compare the new Avg grade to a recent run with the production chatbot
+- "Did Gemini grade my run too harshly?" → click 🔄 Regrade on that row, pick Claude Opus as the new Evaluator, click Regrade — compare the Δ in the past-runs table
+- "Hand the failures to Claude in chat" → click Export on the failed run, drop the .md into chat, ask Claude to propose system-prompt fixes
+
+LOGGED ACTIVITY:
+- Tab open → AI_EVAL_VIEW (tab name shows as "AI Eval" in activity log)
+- Run start → AI_EVAL_RUN_START
+- Run complete → AI_EVAL_RUN_COMPLETE
+- Regrade → AI_EVAL_REGRADE
+- Override → AI_EVAL_OVERRIDE_GRADE
+- Export → AI_EVAL_EXPORT
+
+TAB 16: LABS → BOM RACE (admin-only, added May 10, 2026)
+- A live "race" benchmark that fires a BOM explode through TWO paths simultaneously and shows them moving down twin tracks: the toolkit's cached SQL CONNECT BY against bom_extract/item_extract, vs the live Agile SDK walk via plm-agile-service. Both finish; we score who was faster and whether the rows agree.
+- Two hero cards above the controls explain each lane: 🏆 Toolkit (batched SQL via Oracle CONNECT BY) and 🐢 Agile SDK (sequential live walk, one shared session reused across the whole input list). The line "Same input · Same output · Measure the difference" sits between them.
+- INPUT modes (pill toggle): Random (default — picks N items that have BOMs from item_extract, optionally filtered to a year via the year body param) or Upload (Excel upload of items — UI stub in v1; use Random for the showcase).
+- PRESET CHIPS next to the N input: Quick · N=5, Standard · N=10, Stress · N=25. Click a chip to set N + mode + highlight the chip. Default highlighted = Standard.
+- ⚡ Start race: kicks both lanes from the same instant via CompletableFuture.allOf. Live race clock in the top-right ticks while running.
+- ▶ Replay last: replays the most recent race from a localStorage recording at 2× speed. No backend hit. Useful when the SDK is slow or the demo time-window is tight. Auto-disables if no recording exists.
+- RACETRACK: two horizontal lanes with tinted backgrounds (blue toolkit, amber SDK), dashed lane markers, start line, 🏁 finish flag, animated runner emojis (💻 Toolkit, ⚙️ SDK) that move via CSS transition driven by item-done events, ghost-trail dots that fade in as the runner passes 20/40/60/80%, live ticker (e.g. "now: A162-032103-128G"), and per-lane speed pill (e.g. "247 items/s" for Toolkit, "0.71 items/s" for SDK).
+- FINISH CARD (revealed when race-done): dark gradient background, giant serif speedup numeral (e.g. 12.4×) with "8.2s vs 102s" mono caps below. Right side: three coloured chips (Set match · Structural match · Row totals) and a "What this means" callout that scales the savings to a 500-item monthly report ("saves ~83 minutes of wall time and ~500 SDK sessions").
+- DOWNLOADS (inside the dark card, available for ~10 min after race-done): two buttons — "Input items" (xlsx, 1 sheet of part numbers) and "Race results · xlsx" (2 sheets — Toolkit output + Agile SDK output, side-by-side for diffing). Both are Excel.
+- PER-ITEM DETAILS: "Show details" expander reveals a per-item table with 4 columns: Item · Toolkit rows · SDK rows · SDK ms. Toolkit time isn't broken down per item (it's a single batched SQL call); the total appears as a footnote.
+- ROW-COUNT DIFFERENCE: toolkit usually returns more rows than SDK because it doesn't dedup repeated sub-assemblies in the flat result, while SDK uses a per-input visited set. The ⓘ icon next to each lane's row count explains this on hover. Set match is the headline metric — if both methods agree on the SET of distinct parts, that's a green check.
+- PAST RACES leaderboard (below the scoreboard, always visible): shows last 5 completed runs from /api/bomrace/history (When · N · Toolkit · SDK · Speedup · By). Backed by a bomrace_run table in the custom schema, auto-created on first boot.
+- WHY IS THE TOOLKIT FASTER: serif explainer next to the leaderboard. The line: "The toolkit issues one Oracle CONNECT BY query and lets the database engine do the walk where it belongs."
+- PRE-FLIGHT GATE: if plm-agile-service (port 8081) isn't reachable, /start returns 503 with a clean callout "Agile lookup service is not reachable — race can't start." Local Mac instance always shows this since Agile isn't reachable from there. On remote it works.
+- HTTPS: when the toolkit is served over HTTPS (e.g. https://uls-ep-aglipccb.sandisk.com:8444/), the mic feature works and voice commands like "go to BOM Race, start standard race, and export the output files" actually fire all three steps including the file downloads (queued until race-done).
+- LOGGED ACTIVITY: BOM_RACE_START at /start with runId + mode + N · BOM_RACE_DONE not separately logged (race summary persisted to bomrace_run table)
+- COMMON QUESTIONS:
+  - "How do I run a race?" → click ⚡ Start race after picking a preset chip (or just leave the default Standard·N=10). Both lanes fire from the same instant.
+  - "Why are toolkit row counts so much higher?" → batched walk doesn't dedup repeated sub-assemblies; SDK uses a per-input visited set. Both methods agree on the distinct part SET — that's the "Set match" indicator.
+  - "How do I export the race results?" → after race-done, click "Race results · xlsx" in the dark card. Or say/type "export the output files" — that triggers both downloads (Input + Race results).
+  - "How do I see past races?" → leaderboard panel is below the scoreboard; loads from /api/bomrace/history?limit=5 on tab open.
+
+TAB 17: IMS DASHBOARD (formerly "IMS Review" — renamed 2026-06-04 per Jimmy's request; visible to everyone with the tab grant; auto-grants to DOs / DMs who have pending items in their queue)
+- Drives the yearly IMS document review cycle end-to-end. Replaces a previously-manual DCC workflow where someone had to find docs coming due, ping each owner by email, chase the manager for sign-off, file the attestation PDFs in Agile, and (for revised docs) hand-create a DCO with the new file.
+- WHO SEES WHAT: admins + anyone explicitly granted "IMS Review" in User Management see the admin grid (every doc due in the next N days, plus its DRR + status). DOs / DMs without the grant see only their own card view (just the items where they're the current recipient).
+- SUB-TAB STRIP (just under the heading, 2026-06-05): "Documents" (the main grid; default) · "Owner history" (every Doc Owner change recorded in Agile for IMS docs, with toolkit-driven vs direct-in-Agile classification). Anyone with IMS Dashboard access sees both — Owner history is NOT a separate top-level tab and does NOT need a separate permission. See "OWNER HISTORY SUB-TAB" section below.
+- WINDOW CONTROL (top-right of the tab, Documents sub-tab only): "Next 7 / 14 / 30 / 60 / 90 / 365 days" dropdown filters by Page Three.Next Review Date ≤ today + N. Refresh button forces a fresh Agile pull (otherwise cached on disk for 60 min, rebuilt every hour by a background scheduler so the first user after a deploy doesn't pay the 100+ second cold cost). Export downloads the visible grid as .xlsx.
+- "MAX OVERDUE" DROPDOWN (next to Window, added 2026-06-05 per Jimmy's chat ask): caps how far INTO THE PAST a doc's next-review date is allowed to be before it's hidden. Options 1y / 2y / 5y (default) / 10y / Unlimited. Stops the 2010-era legacy heap from drowning out the actionable backlog. Status line shows "hiding N docs overdue by more than Xy" when the filter trims anything.
+- KPI TILES (top of grid): NOT SENT (yellow), IN FLIGHT (amber), CLOSED (green) — pipeline funnel. Below: 6-segment control: READY TO SEND (green; has DRR + ≥1 valid owner) · NEEDS OWNER (red; has DRR + EVERY owner left — strict, 2026-06-05 refinement) · IN FLIGHT (amber; SENT_TO_DO + SENT_TO_DM + DO_NEEDS_CHANGE; the DO_NEEDS_CHANGE move is 2026-06-05 — the DCO is sitting in Submit/CCB awaiting workflow approval, not actually Closed) · NEED HELP (purple; DCC action required) · CLOSED (dark; DM_APPROVED or CANCELLED only — the strict-Closed redefinition is 2026-06-05) · LEGACY DOCS (gray; no DRR yet, added 2026-06-05). Clicking a segment filters the table to that subset.
+- LEGACY DOCS SECTION: when the Legacy docs segment is selected, three sub-filter pills appear above the table: "All legacy" · "Valid owners (N)" · "No valid owners (N)". Useful for sorting through the historical baseline that the yearly-audit job hasn't opened a DRR for yet.
+- "N documents need a new owner" RED BANNER: appears when at least one doc in the window has EVERY assigned Document Owner with LDAP status NOT_FOUND ("left SanDisk"). Strict count as of 2026-06-05 — partial-orphan rows where one owner left but another is still active are NOT counted (those stay actionable in Ready to send). Banner CTA "Review & reassign owners →" filters the grid + enables bulk reassign.
+- PER-OWNER BADGES: on every tab (including Needs owner), each owner shows its own LDAP-status badge inline — e.g. "Shamlou, Danny ⊘ left SanDisk; Sessumes, Jimmy" makes it obvious which specific owner has left vs which is still active. Before 2026-06-05 this was a single trailing badge after the whole owner list which hid which owner specifically was gone.
+- GRID COLUMNS: Number/Description · Owner(s) (with per-owner ⊘ "left SanDisk" / ⊘ "disabled" badges + pencil ✎ to edit) · Next Review (with overdue badges in red) · DRR (link) · Status pill · Last Update · File (Get File button — downloads Agile attachment) · Action.
+- ACTION BUTTONS PER ROW (depend on status):
+  - NOT_SENT with valid owner → 📤 Send to DO
+  - NEEDS_OWNER → 👤 Assign owner (red — opens edit-owners modal)
+  - SENT_TO_DO / SENT_TO_DM → 📧 Resend · ✕ Cancel · 🔑 Unlock · ⟲ Reset
+  - DM_APPROVED · CLOSED → ⟲ Reset (rerun the cascade from scratch)
+- SEND CASCADE (happens automatically once admin clicks Send):
+  1. Toolkit picks ALL Document Owners on the doc (multi-recipient if more than one)
+  2. Issues a one-shot signed token (TTL = 30 days; URL is /ims-respond.html?token=...&action=...)
+  3. Fetches the current Agile attachment via plm-agile-service so the DO has the file in their inbox
+  4. Generates the email body (SanDisk template, mono-spaced doc#, three action buttons in the body)
+  5. SMTP send via mailrelay.sandisk.com — DCC DL Cc'd per CRD ECN-129414
+  6. Logs IMS_REVIEW_SEND, persists queue.jsonl, transitions status NOT_SENT → SENT_TO_DO
+- DO RESPONSE (page renders from the email link, no toolkit login required — token-only auth):
+  1. ✅ No Change Needed → enters AD password + ticks attest → toolkit verifies via LdapAuthService.verifyCredentials → generates the DO attestation PDF (signed timestamp + AD-resolved name) → attaches PDF to the DRR → posts a history line → looks up the DO's MANAGER via LdapManagerLookup.findManagerByUserEmail → sends the DM email with both PDFs and the DM action buttons. Status: SENT_TO_DO → SENT_TO_DM.
+  2. 🔄 Needs Change → opens the 4-step DCO Form (described below). Submitting the form burns the token, creates the DCO, and auto-submits it (or aborts cleanly if the DRR submit fails — see "DCO submit deferred" Q&A below).
+  3. ❓ Need Help → optional file + note → emails DCC, status flips to NEED_HELP. DCC handles manually in Agile from there.
+- DM APPROVAL: same response-page pattern. ✓ Approve → DM attestation PDF attached to DRR → closeNoChange cascade fires (sets DRR.UpdateRequired=No so DocumentReview PX skips creating a duplicate DCO, then pushes DRR Pending → Submit → CCB). DCC drives Submit → Closed manually. ↩ Send Back to DO → bounces the cascade back to a fresh DO round-trip.
+- BULK REASSIGN: select multiple rows with the row checkboxes, click "🔁 Reassign N owners…" — picks one replacement, then iterates each doc through the edit-owners modal one at a time. Each save sends a separate reassign-notification email.
+- OWNER REASSIGN EMAIL (sent automatically every time the owner roster changes via the modal): To = new owner(s). Cc = removed-and-still-active owners + Doc Control DL (configurable via app.ims-review.owner-reassign.cc-dl, defaults to pdl-plm-admin@sandisk.com). Body shows the doc + DRR link, the current Agile attachment, the new vs replaced rosters. AS OF 2026-06-05 the email no longer mentions that the previous owner has left SanDisk — bare names only on the Replaced line, no red callout, no "has left SanDisk" badge. HR-sensitive info shouldn't be broadcast even to internal teammates. Cc-vs-skip logic on the envelope still consults LDAP status so departed owners aren't Cc'd (no bounce); that decision just doesn't leak into the email body anymore.
+- TOKEN LOCKOUT: 5 wrong-password attempts on a single token marks it locked. Auto-clears after 15 min OR an admin / DCC clicks the per-row 🔑 Unlock button. The locked-out error message tells the user how long until auto-clear and points them to Doc Control for an immediate unlock.
+
+THE 4-STEP DCO FORM (opens when DO picks "Needs Change"):
+- STEP 1 · The change: 📝 Description of change (textarea, required), 💡 Reason for change (textarea, required), Urgency (Standard / Urgent radio).
+- STEP 2 · Scope & people:
+  - "Which product lines does this touch?" — radio chooser (added Jun 3, 2026): "Yes — this change touches specific product line(s)" (chip picker enabled, multi-select from Agile catalog) OR "No product line touched (record as N/A)" (picker greyed out, server gets the single value "N/A").
+  - Subcontractors involved (chip picker, required, multi-select).
+  - Training needed? (dropdown, required).
+  - Change impact (dropdown, required) — required by Agile's submit-side audit for most document styles.
+  - Document owner(s) (typeahead against Agile users, pre-filled from the doc).
+  - Approvers (typeahead, required).
+  - Observers (typeahead, required).
+  - "Notify these people on submit" (OPTIONAL as of Jun 3, 2026 — observers / approvers cover the audit notify need): textarea with AD-backed typeahead. Type 2+ chars after a comma to get SanDisk directory matches; click to insert. Paste comma- or newline-separated emails to fan-out.
+- STEP 3 · Files: required uploads — Redline document (.xlsx / .docx / .pdf, shows what changed), Final document (the new revision), Email message (the original .msg / .eml that started the review). Each file is attached to the DCO + the DRR.
+- STEP 4 · Review & sign: read-only summary of every field, attest checkbox, AD Username + AD Password to sign. Click "Sign & submit" → token burns → toolkit calls plm-agile-service create-dco-rich → 16-step cascade (find DRR, create DCO, set cover-page cells, set affected items at the new rev, set relationship rule "DCO Implemented → DRR Implemented", set Document Owners + Approvers + Observers, attach all 3 files + the signed attestation PDF, set DRR.UpdateRequired=No, push DRR Pending→Submit, push DCO Pending→Submitted) → stakeholder notify email.
+- DCO SUBMIT DEFERRED (added Jun 3, 2026): if the DRR submit step fails (e.g. workflow validation requires a field the toolkit doesn't set), the DCO auto-submit is ABORTED (previously the toolkit attempted it anyway and Agile's ValidateDocument PX would reject because the DRR was still Pending). Three things happen: (a) DCO stays in Pending with all data intact, (b) the DO who signed gets a friendly email — "your DCO was created, PLM IT is tracking the deferred submit, no further action needed", (c) pdl-plm-admin@sandisk.com (configurable via app.ims-review.it-diagnostic-dl) gets the diagnostic with the cause-chained SDK exception, corrId, doc/DRR/DCO numbers, signer identity, and triage hint ("open the DRR in Agile and attempt a manual Submit — workflow rules will surface the missing field / failed PX"). After PLM IT fixes the DRR, DCC can submit the DCO manually in Agile and the relationship rule closes the DRR when the DCO Implements.
+
+DRR REQUESTOR (fixed Jun 3, 2026): on DM-Approve cascades, the toolkit now correctly stamps the DRR's Requestor as the DO who confirmed No Change (the actual signer), NOT the DM who approved. Earlier builds were passing the DM's sAMAccount to closeNoChange, which overwrote the Requestor with the manager's name (e.g. DRR-0016599 showed Pete Manibo instead of Jimmy Sessumes after Jimmy's confirmation cascaded to Pete's approval). Walks queue history backwards for the latest DO_RESPONSE_NO_CHANGE event so Send Back + re-confirm cycles still pick the right signer.
+
+DCO REQUESTOR (added Jun 3, 2026; identifier fix later same day): on Needs-Change cascades that create a DCO via the toolkit's DCO Form, the DCO's Cover Page Requestor cell now defaults to the Document Owner who signed the form (e.g. Jindal, Vikas (8252)) instead of the SDK service account that shows as "Administrator". If the signer isn't a valid Agile user (rare edge case — they signed with AD credentials that don't map to an Agile account), the cell silently falls back to the Agile session-user default — still "Administrator" — so DCC has a clear "automated" marker. plm-agile-service's create-dco-rich flow has a new STEP 3b: setRequestor that performs the IUser lookup via session.getObject(IUser.OBJECT_TYPE, requestorEmail) and writes ATT_COVER_PAGE_ORIGINATOR on the DCO. IDENTIFIER NOTE: despite the field being named "requestorEmail", the toolkit sends the signer's sAMAccountName (e.g. "8252"), NOT their email address — the Agile SDK in this environment keys IUser.OBJECT_TYPE by user-id and returns null on email lookups. First attempt on DCO-525540 sent "vikas.jindal@sandisk.com" and the lookup returned null, leaving the Requestor as Administrator; sending "8252" resolves correctly. Same identifier pattern the closeNoChange / DRR Requestor flow has always used. Reported by Vikas on 2026-06-03 with DRR-0016599 / DCO-525533 (original bug) and DCO-525540 (identifier-fix case).
+
+DOCUMENT OWNER IS ALWAYS COPIED ON IMS REVIEW EMAILS (added Jun 3, 2026): every email coming off the IMS Review tab now has the Document Owner copied (either as the To recipient when they're the primary, or on Cc otherwise). Specifically: (1) the DCO stakeholder-notify email used to silently drop the signer from To — it now keeps them on Cc so they see their own send; (2) the DM-approved closure email previously Cc'd the DM's own address (a bug — the call site was reading v.email of the DM-actor as "doEmail") — it now Ccs every current Document Owner on the doc, pulled fresh from the docs cache via getCurrentDocOwnerEmails(docNumber); (3) the PLM IT diagnostic email on a deferred DCO submit also Ccs the signer (so they have the SDK error chain in case DCC asks them about it). The DO-response email is To'd to the DO; DM cascade Ccs the DO via the existing doEmail param on payloadForDmEmail; the DCC Needs-Change / Need-Help emails Cc the responding DO via payloadForDccEmail; owner-reassign emails are To'd to the new owner (= the new DO). All Cc inserts are idempotent (case-insensitive dedup) so re-running a flow doesn't double up the DO.
+
+OWNER HISTORY SUB-TAB (added 2026-06-05 per Jimmy Sessumes's chat ask — was briefly a separate top-level "Owner Audit" tab on the same day before Vikas asked to fold it into the IMS Dashboard so anyone with IMS Dashboard access sees it automatically):
+- Reads Agile's ITEM_HISTORY table for IMS documents (subclass 9141) and surfaces every Document Owner change with: doc # + description, parsed Old Owners → New Owners, when it happened, who instigated it.
+- THREE-BUCKET CLASSIFICATION (right side of each row + count tiles at the top):
+  - TOOLKIT (with user — green pill): Agile actor is "Administrator" (the SDK service account) AND a marker history row exists within 10 seconds saying "Owners updated via PLM Toolkit IMS Dashboard by {AD name}". Both conditions = we know the toolkit did it AND we know which AD user clicked Save in the dashboard.
+  - TOOLKIT (legacy — blue pill): Agile actor is "Administrator" but no marker row was found. We know it was the toolkit (only the SDK service account uses the Administrator login) but we can't recover which AD user clicked Save because the marker only started being written on 2026-06-05. All toolkit-driven changes from before that date show this way. Instigator field reads "(pre-marker; user unknown)".
+  - DIRECT IN AGILE (amber pill): Agile actor is a real user signed into Agile Web UI to make the change manually — instigator field shows their name.
+- FILTERS (toolbar above the grid): Days dropdown (Last 30 / 90 [default] / 180 / 365 days); free-text search across doc #, owner names, instigator; source dropdown (All / Toolkit with user / Toolkit legacy / Direct in Agile).
+- "OWNERS UPDATED VIA PLM TOOLKIT" MARKER: the toolkit's plm-agile-service.ItemOwnerService.updateOwners now calls IItem.logActionWOVersionChange("Owners updated via PLM Toolkit IMS Dashboard by {AD name}") after every successful owner write. Adds a separate history row right after Agile's auto cell-change row. The Owner history sub-tab pairs them by item + timestamp (within 10s) to recover the AD user. Marker text is also useful for ad-hoc reporting outside the toolkit ("find every owner change where the toolkit was used in the last quarter").
+- WHY NOT JUST READ THE ACTOR COLUMN: the SDK always shows "Administrator" as the actor (it's the service account the toolkit's long-lived session uses). Without the marker we can identify toolkit-vs-manual changes (legacy bucket) but not which AD user did it.
+
+COMMON QUESTIONS (IMS Review):
+- "Is the DCO auto-submitted?" → YES by default. The 4-step form's "Sign & submit" burns the token, creates the DCO fully populated, and the toolkit pushes both the DRR (Pending → Submit) and the DCO (Pending → Submitted) automatically. EXCEPTION: if the DRR push fails, the DCO submit is aborted cleanly and the DCO stays in Pending — the DO gets a friendly email, pdl-plm-admin gets a diagnostic with the SDK error chain. After PLM IT resolves the DRR-side blocker, DCC submits the DCO manually.
+- "Is the DRR also submitted?" → YES, as part of the same cascade. For NEEDS_CHANGE: DRR.UpdateRequired=No + Pending → Submit (auto). For DM-APPROVED No-Change: DRR Pending → Submit → CCB (auto). DCC drives CCB → Closed (or via the relationship rule when the DCO is Implemented).
+- "Where do the email attestation PDFs go?" → Both the DO PDF and the DM PDF are attached to the DRR via the SDK. For Needs-Change flows, the DO PDF is ALSO attached to the new DCO so the audit trail in Agile matches what the recipients received.
+- "How do I cancel a cascade in flight?" → ✕ Cancel button on any SENT_TO_DO / SENT_TO_DM row. Burns the outstanding token, writes a CANCEL event to queue.jsonl, no Agile-side change.
+- "What's the difference between Reset and Cancel?" → Cancel halts the IN-FLIGHT token (the email link stops working). Reset goes further — wipes the queue state for that doc back to NOT_SENT, ready for a fresh Send. Both preserve full history in queue.jsonl for audit.
+- "An owner left SanDisk — what now?" → The grid shows ⊘ "left SanDisk" badge on their name + adds them to the NEEDS OWNER count. Click the ✎ pencil OR the 👤 Assign owner button to reassign. The new owner gets an email with the attachment + a prominent "Heads up: the previous owner Jane Doe is no longer at SanDisk" callout so they have context.
+- "I'm getting 'invalid password' on the response link" → either (a) your AD password is wrong (5 attempts → 15-min lockout), or (b) you're using credentials of someone different from the intended recipient — the message now spells this out specifically and tells you to ask the right person or use your own AD username. Admins / DCC can clear the lockout immediately via the per-row 🔑 Unlock button.
+- "Can I respond from someone else's email link?" → No. The token is bound to the recipient's email (or to all owners' emails for multi-DO docs). Trying to sign with another person's AD password returns an explicit "this link was sent to <Vikas>; your own credentials won't work — please ask them to handle this response" message.
+- "Where does the LDAP status come from?" → LdapManagerLookup.checkUserStatus probes corporate AD (ldap://uls-ap-dcc72.corp.sandisk.com:636) per owner email. Results: ACTIVE / DISABLED / NOT_FOUND / UNKNOWN. Status is baked into the docs snapshot and refreshed on the hourly background rebuild; the request thread itself never waits on LDAP (added Jun 3, 2026 to fix a 9-minute first-load cost).
+- "Why was the tab slow to load earlier?" → First cold call after a deploy used to take 100+ seconds (1,400 docs from Agile + ~1,800 LDAP probes). Now: the SQL pull persists to data/ims-review-docs-cache.json and survives restarts, LDAP enrichment runs on a daemon thread, and an hourly cron keeps it fresh. First call after a fresh deploy returns in ~SQL time (tens of seconds); owner badges fill in on the next refresh.
+- "I clicked Send by accident" → Use ✕ Cancel right away on the row (the token won't be redeemable). If the recipient already opened the email, ask them to ignore it; the token expires after 30 days regardless. If the cascade is already mid-flight you can also use ⟲ Reset to wipe the state entirely.
+- "Can non-admins use Reset / Unlock / Reassign?" → YES, as of Jun 3, 2026. Anyone with the IMS Review tab granted in User Management can use all three. Auto-granted DO/DM users (who only see their own card view, not the admin grid) still can't — they never see those buttons in the first place.
+- "Is the Document Owner Cc'd on emails the toolkit sends?" → YES, as of Jun 3, 2026. Every IMS Review email has the DO either in To (when the email is addressed to them — DO response, owner reassign, DCO submit deferred user notice) or in Cc (DM ask, DCC Needs-Change, DCC Need-Help, DM-approved closure, DCO stakeholder notify, IT diagnostic). Cc-dedup is case-insensitive so the DO isn't doubled up when they're already in To.
+- "Who shows up as the DCO Requestor?" → The Document Owner who signed the DCO form on the toolkit (e.g. Sessumes, Jimmy). If they aren't a valid Agile user (rare), the cell falls back to "Administrator" — Agile's session-user default. Before the Jun 3, 2026 fix, every auto-generated DCO showed "Administrator" because the toolkit wasn't setting the Requestor cell at all.
+- "Who shows up as the DRR Requestor?" → On DM-Approve cascades, the DO who confirmed No Change (the original signer) — NOT the DM who approved. Earlier builds (before Jun 3, 2026) were overwriting the Requestor with the manager's name because the closeNoChange call was passing the DM's sAMAccount. Walks queue history backwards to pick the latest DO_RESPONSE_NO_CHANGE event so Send Back + re-confirm cycles still resolve correctly. ALSO on the Needs-Change auto-cascade (DCO creation flow), as of 2026-06-05 the DRR Requestor is stamped to the first valid Document Owner before the DRR Submit — fixes Agile's "Requestor cannot be Administrator" workflow rejection that previously left auto-cascade DRRs stuck in Pending.
+- "Where do I see who changed the document owner?" / "Show me the doc owner history" / "Audit of owner changes" → Open the IMS Dashboard, click the "Owner history" sub-tab at the top. You'll see every Document Owner change recorded in Agile for IMS documents over the last N days (defaults to 90), with old → new owners, when, and who instigated it. Toolkit-driven changes show the AD user; manual Agile UI changes show "Direct in Agile" with the real user's name. Same access as IMS Dashboard — anyone who can see the dashboard sees this too, no separate permission needed.
+- "Why does my owner change show as 'Toolkit (legacy)' instead of my name?" → The toolkit started writing a "Owners updated via PLM Toolkit by {AD user}" marker into Agile history on 2026-06-05. Owner changes from before that date have no marker — we know the toolkit did them (Agile actor = Administrator, only the toolkit uses that login) but we can't tell which AD user clicked Save. Those show as "Toolkit (legacy)" with instigator "(pre-marker; user unknown)". Changes from 2026-06-05 onward will show as "Toolkit" with the real AD user name.
+- "Why does my recent change show as 'Direct in Agile'?" → It means the change wasn't done through the toolkit's IMS Dashboard — someone signed into Agile Web UI and edited the Document Owner cell there directly. Agile's actor column will be that user's real name (not Administrator). If you DID use the toolkit and it shows Direct in Agile, that's a bug worth reporting.
+- "What's the difference between 'In Flight' and 'Closed' now?" → As of 2026-06-05, In Flight includes anything where the DCO is still being processed (SENT_TO_DO, SENT_TO_DM, AND DO_NEEDS_CHANGE — the latter means a DCO was created but is in Submit/CCB awaiting workflow). Closed is only DM_APPROVED (no DCO needed) or CANCELLED. Before this change, DO_NEEDS_CHANGE counted as Closed which made the funnel misleading.
+- "What's 'Legacy docs' on the IMS Dashboard?" → The 6th segment on the segmented control. Shows IMS documents that the yearly-audit job hasn't created a DRR for yet. Has its own sub-filter pill row inside: "All legacy" / "Valid owners (N)" / "No valid owners (N)" so you can quickly see which legacy docs are still actionable vs which need an owner review first. Useful for the historical baseline.
+- "Why are some old overdue docs hidden?" / "What's the Max overdue filter?" → New toolbar dropdown on the IMS Dashboard Documents view (added 2026-06-05). Default 5 years — hides docs whose next-review date is more than 5 years overdue, so the 2010-era legacy heap doesn't drown out the actionable backlog. Toggle the dropdown to 1y / 2y / 10y / Unlimited as needed. Status line shows "hiding N docs overdue by more than 5y" when the filter trims anything.
+- "Why was the owner-reassign email less detailed today?" / "Why is the email not saying so-and-so left SanDisk?" → AS OF 2026-06-05 the email no longer mentions that the previous owner has left SanDisk. The red "Heads up: previous Document Owner is no longer at SanDisk" callout at the top and the "has left SanDisk" badge next to the replaced owner's name were both removed. That info is HR-sensitive and shouldn't be broadcast even to internal teammates. The Cc-vs-skip logic on the envelope still skips departed owners (no email bounce); that decision just doesn't leak into the body anymore. New owner still sees who they're replacing — just bare names.
+
+LOGGED ACTIVITY (IMS Review):
+- Send → IMS_REVIEW_SEND (doc, drr, recipients, attached)
+- DO response → IMS_REVIEW_DO_RESPONSE (response=no_change|needs_change|need_help, dmFallback if DM-direct)
+- DM response → IMS_REVIEW_DM_RESPONSE (response=approved|send_back)
+- Attestation PDF generated → IMS_REVIEW_PDF_GENERATED (role=DO|DM, sha256, path)
+- Closure email sent → IMS_REVIEW_CLOSURE_SENT (pdfs count)
+- Owner reassign (Agile write) → IMS_REVIEW_AGILE_WRITEBACK (corrId, doc, drr, dco, role, steps, errorAt if failed)
+- Token redeem → IMS_REVIEW_TOKEN_REDEEM (doc, drr, action, role, verifiedEmail, ip)
+- Reset → IMS_REVIEW_RESET (doc, drr)
+- DCO form submit → IMS_REVIEW_DCO_FORM_SUBMIT (tokenId, doc, drr, dcoFormChecksum, attachmentCount)
+- DCO created → IMS_REVIEW_DCO_CREATED (tokenId, corrId, dcoNumber, drr, newRev, attachments)
+- DCO auto-submit deferred → IMS_REVIEW_DCO_SUBMIT_DEFERRED (tokenId, corrId, dcoNumber, drr, reason)
+- Stakeholder notify → IMS_REVIEW_STAKEHOLDER_NOTIFY (tokenId, dco, recipients, ok)
+
+VOICE & MIC INPUT (added May 10, 2026):
+- A 🎤 mic button sits next to the chat inputs in the Help sidebar AND the Labs → AI Eval → Ask the AI form. Click it (don't hold) — recording starts, button turns red and pulses. A "● Listening (lang)… click mic to stop" pill appears next to the input.
+- Click the mic again (or pause speaking long enough) to stop. Transcript stays in the input — the user still presses Enter to submit (we do NOT auto-submit; that risks losing the last word if recognition drops it).
+- LANGUAGE PICKER: a tiny dropdown next to the mic shows the current language. Choices (10 languages): EN (English US) · 中 (Mandarin Simplified, zh-CN) · MY (Malay Malaysia, ms-MY) · हि (Hindi, hi-IN) · বং (Bengali, bn-IN) · தமி (Tamil, ta-IN) · తె (Telugu, te-IN) · ಕನ (Kannada, kn-IN) · עב (Hebrew, he-IL) · 日 (Japanese, ja-JP). Saved choice persists in localStorage as plmtMicLang and syncs across both inputs.
+- INSECURE-CONTEXT BLOCK: Web Speech API only works on HTTPS or localhost. Plain http://intranet.example.com blocks it; the mic button greys out with a tooltip "Mic requires HTTPS — currently on http://". Use the HTTPS port (e.g. https://uls-ep-aglipccb.sandisk.com:8444/) on remote.
+- ERROR FEEDBACK: dropped permission, no microphone, recognition timeout — each shows a short toast above the button explaining the cause, instead of failing silently.
+- BROWSER SUPPORT: Chrome, Edge, Safari (14.1+). Firefox doesn't ship the API — the mic button is hidden there.
+- ADDING MORE LANGUAGES: edit MIC_LANGS in static/mic.js — append an entry like { code: 'fr-FR', label: 'FR' }. Chrome supports 100+ BCP-47 codes.
+
+VOICE COMMANDS / CHAT SHORTCUTS (added May 10, 2026):
+- The chat inputs (helpInput in the Help sidebar AND askQuestion in Ask the AI) intercept your input BEFORE sending to the AI. If the text matches a known command, the action runs in-page and the AI is not called. If not, it falls through to the AI as before.
+- This means: when the user types or speaks "show me the BOM Explorer tab", the chatbot does NOT lecture them on how to navigate — it just navigates them. Same for "go to BOM Race", "open ECN report", "I want to run a where used", etc.
+- TOAST FEEDBACK: every recognized command flashes a small dark pill near the top of the screen ("Opening BOM Race…", "Exporting…", "Will export when the race finishes…"). Errors get a red pill ("No export button visible on this screen.").
+- SUPPORTED VERBS:
+  - Tab navigation: any of "go to" / "open" / "show me" / "take me to" / "switch to" / "navigate to" / "let's go to" / "I want to (see|open|view|run|do)" / "get me" / "bring me to" / "jump to" / "view" + a tab phrase. Also bare keywords work in non-English ("bom" alone navigates to BOM Explorer if no question word is present in the input).
+  - Export: "export" / "download" / "save" + (it / this / the file / the files / the output / the rows / the data / the excel / nothing). Clicks every visible Export/Download button on the active screen, staggered 250ms apart so the browser allows multiple downloads.
+  - Email / send: "email it" / "send to me" / "email me the output". Clicks the visible email/send button.
+  - Race: "start the race" / "start standard race" / "start a quick race" / "start a stress race" → switchTab('bomrace') + apply preset + click Start.
+  - Replay: "replay last" / "play it again" → switchTab('bomrace') + click Replay.
+- MULTI-STEP CHAINS: the recognizer splits input on " and " / " then " / "," and runs each fragment. Example: "go to BOM Race, start a standard race, and export the output files" runs all three. The export step is smart — when the chain includes both start-race AND export, the export waits for race-done (MutationObserver on the scoreboard) before firing the download buttons.
+- VOICE TYPO NORMALIZATION: speech-to-text often hears "BOM" as "bomb". The recognizer normalizes "bomb" → "bom" before matching, so "show me the bomb Explorer tab" routes correctly. Also handles "EC and" → "ECN", "S K U" → "SKU", "A I" → "AI".
+- MULTI-LANGUAGE FALLBACK: if the strict English-prefix recognizer misses a command (e.g. user spoke in Malay or Mandarin), a soft keyword fallback scans the input for known tab nouns (BOM, race, ECN, etc.) — if found AND the input is short enough AND doesn't contain English question words ("what" / "how" / "why") AND has no "?", it navigates. Catches things like Malay "...butiran setiap bom" → BOM Explorer.
+- WHEN ANSWERING "HOW DO I GO TO X?" QUESTIONS: prefer to NOT explain the navigation — the user's input itself probably already triggered the recognizer. If asked "how do I navigate to the BOM Race tab", the chatbot can say "Try saying or typing 'go to BOM Race' — I'll take you there directly." Don't lecture them step-by-step.
+
+DEBUG ASSISTANT (admin-only, separate page)
+- Accessible via the "Debug" link in the Help dropdown (opens debug.html). Was previously in the Admin dropdown until the May 10, 2026 nav reorg.
+- AI-powered exception analysis tool for Agile PLM stack traces
+- Input: paste a Java stack trace, upload a .log/.eml/.txt file, or upload a source JAR
+- What it does:
+  1. Parses stack traces from the input (handles multi-exception logs, .eml email attachments)
+  2. Extracts source references (com.sandisk.* and com.agile.fio.* classes with line numbers)
+  3. Resolves source code from Bitbucket (tries the specified repo first, or auto-detects across all PLM project repos)
+  4. Sends the stack trace + source code to Claude AI for root cause analysis
+  5. Returns a structured report: root cause, severity, suggested fix with code, and explanation
+- Source resolution options:
+  - Bitbucket Repo field: type to search available repos under PLM project (autocomplete dropdown)
+  - Source JAR/.java upload: upload a JAR with bundled .java source files for instant local matching (skips Bitbucket entirely — much faster)
+  - Auto-detect: leave repo blank and the tool searches across all PLM Bitbucket repos
+- Agile SDK classes (com.agile.api.*) are automatically skipped during source resolution — they're Oracle code, never in Bitbucket
+- Progress stepper: shows real-time progress as pill-shaped steps (Parse → Extract → Resolve source 3/14 → AI analysis) with elapsed timer
+- Email when done: enter your email during analysis and get the full report delivered to your inbox when it finishes — you can close the tab
+- Cancel button: abort a long-running analysis at any time
+- History sidebar: shows your past analyses with exception name, input file, time ago, and resolution status (green/amber/red dot). Click any entry to reload the full results. "Clear all" button to delete history.
+- Results display:
+  - Root cause banner: extracted exception name, AI hypothesis, stats (traces/resolved/time)
+  - Stack frames panel: each source ref with found/not-found/SDK status, source line preview
+  - AI Analysis panel: full markdown analysis with severity rating, suggested fix, and explanation
+  - Toggle raw stack trace view
+  - Download report as .md file
+  - Copy stack trace or analysis to clipboard
+- Re-run button: go back to edit inputs and re-analyze
+- New Analysis button: clear everything and start fresh
+- Examples:
+  - Paste a NullPointerException from an Agile PX hook — get the exact line, source code, and fix suggestion
+  - Upload an .eml error notification email — the tool extracts the stack trace from the email body and attachments
+  - Upload the FIO integrations JAR to resolve source instantly without hitting Bitbucket
+
+ADMIN FEATURES (visible only when logged in as admin in IT-APP-Agile-admin or pdl-plm-admin):
+- "Send Stats" link in header: emails the activity report (last 24h) to the logged-in admin's email; Sample chart of who used what tab how many times
+- "Download Log" link in header: downloads the current server log (plm-toolkit.log) as a timestamped .log file. Log download is itself logged as ADMIN_LOG_DOWNLOAD.
+- "Tech Guide" link in header: opens the technical/admin documentation
+- "Debug" link in the Help dropdown (moved from Admin dropdown in May 10, 2026 reorg): opens the Debug Assistant (AI-powered stack trace analysis) — see DEBUG ASSISTANT section above
+- 🧪 Labs tab (parent): contains BOM Race · AD Health · AI Eval sub-tabs — see TAB 16, TAB 12, TAB 15
+- Reports tab (Utilities): see TAB 6
+- Extensions tab: see TAB 9
+- SKU Lookup "Seed" button (rebuilds the entire SKU JSON cache from scratch)
+- Field Changes "Update Field Names" link (refreshes Agile field typeahead list)
+
+ADMIN-ONLY HELP CHATBOT QUERIES:
+When an admin asks the help chatbot about activity, the bot answers directly from the activity log instead of going through the AI model. Non-admin users get the normal AI response and cannot see other users' activity through the chatbot.
+
+Supported query shapes (all admin-only):
+
+Per-user:
+- "What did Prakash do today?"
+- "Show me Prakash's recent actions"
+- "What has Vikas Singh been doing in the last 2 hours?"
+- "Activity for Krati"
+- "Audit log for vsingh"
+Returns: total count, action breakdown (e.g., AGILE_LOOKUP × 5, BOM_EXPLODE × 3), and a table of every action with timestamp and details.
+
+Aggregate ("who"):
+- "Who logged in the last 4 hours?"
+- "Who uploaded a source today?"
+- "Who searched today?"
+- "Who's been active in the last hour?"
+- "Which user exported anything today?"
+Returns: a ranked table of users with their action counts and most-recent activity timestamp, filtered by the implied action type.
+
+Time windows recognized:
+- "last N hours", "last N minutes", "last N days" (e.g. "last 4 hours", "last 30 minutes")
+- "today" / "this morning" / "this afternoon" (since midnight)
+- "the last hour" / "past hour"
+- default: last 24 hours
+
+Action filters recognized in "who" queries:
+- login / logged in / signed in → LOGIN
+- upload / uploaded / added a source → any *_UPLOAD action
+- search / lookup / looked up → any *_SEARCH or *_LOOKUP action
+- export / download / downloaded → any *_EXPORT or *_DOWNLOAD action
+- report → any REPORT_* action
+- feedback → FEEDBACK
+- compare → any DATA_COMPARE_* action
+- raise / issue → RAISE_ISSUE
+
+All answers come from the in-memory activity log, which persists to ./data/activity-log.jsonl and is reloaded on boot so answers survive server restarts.
+
+FEEDBACK:
+- Click "Feedback" link in the top navigation bar to submit feedback
+- Choose a category: Feature Request, Bug Report, Improvement, or General Feedback
+- Your feedback is emailed to the admin team and logged
+- You receive a CC copy of your submission
+
+HELP & SUPPORT:
+- Click the floating "?" button (bottom-right corner) to open the Help sidebar
+- Ask questions about any feature — the bot understands which tab you're on
+- Click "Raise Issue" to report a bug with an automatic screenshot of your current screen
+- The issue is emailed to the admin team with your description and the screenshot attached
+- You are CC'd on the issue email for your records
+- After 3 unanswered questions, the bot suggests raising an issue
+- Chat interactions are batched and emailed hourly to the admin team as a digest
+
+TAB 18: IT ENHANCEMENTS (added Jun 4, 2026; auto-grants to PDL-PLM-admin AD group + per-user grant via User Management)
+- Mirrors the weekly Excel "Agile PLM IT Enhancements Status Report" as a live grid against agprod — sub-second load, ~90 rows in the typical "IT ECN" universe (saved-search-equivalent: Review-status DRRs in the 6 IT request classifications + recently-released items with an IT status). Replaces opening the Excel to see who's working on what.
+- THREE BANDS AT THE TOP (clickable to filter): All · OVERDUE UAT (red; status=WIP and Target UAT in the past) · OVERDUE GO-LIVE (amber; status=UAT/UAT complete and Target Go-Live in the past) · APPROACHING GO-LIVE ≤7d (blue; status=UAT and Target Go-Live within 7 days). Click a band to filter the grid to that subset.
+- BLANK-DATE FILTER PILLS (below the toolbar, added 2026-06-04): "Target UAT (N)" · "Target Go-Live (N)" · "Submit date (N)" · "Release date (N)". Click a pill to show only rows missing that date; click multiple pills to find rows missing all of them (e.g. Target UAT AND Target Go-Live blank — useful for finding ECNs that haven't been scheduled yet). Counts come from the cached snapshot.
+- GRID COLUMNS (18 of them, matching the Excel sheet): ECN # · Priority · IT Status · Workflow · IT Owner · Requestor · Category · Problem Statement · Proposal · Hrs · Project · IT Actions Taken · Target UAT (editable) · Target Go-Live · Rework Reason · IT Log · Submitted · Released.
+- INLINE EDIT — TARGET UAT (the key write-back feature, added 2026-06-04): click any Target UAT cell, pick a date, hit Enter or click outside. The dashboard remembers pending edits as "dirty" rows with a star (*) and accumulates them in the "Save all changes (N)" button. Click Save → toolkit pushes the edits to Agile via plm-agile-service using the user's OWN AD identity (not the SDK service account "Administrator"). Agile's History tab will read "Jindal, Vikas (8252) — Modify — Page Three.Target UAT Date" instead of Administrator.
+- "SIGN IN TO AGILE" MODAL (first save in a session — added 2026-06-04): because Agile on this install is NOT AD-integrated (Agile has its own user store with its own passwords, separate from AD), the first time you click Save the toolkit pops a small modal asking for your Agile password (the one you use to sign in to Agile Web — NOT your Windows/AD password). The Agile loginid is pre-filled from your toolkit login (typically your employee number, e.g. 8252). One verification round-trip; the password is stashed in this server's memory for the rest of your session and dropped on logout. Subsequent saves in the same session don't re-prompt.
+- WHY THE SDK USES A SPECIAL PATH FOR PER-USER WRITES: WebLogic's j_security_check (the standard SDK auth path) is wired to a security realm that only accepts service accounts like "administrator". Per-user SDK auth uses the PX_USERNAME / PX_PASSWORD parameter set instead, which triggers a hop through PCMServlet?module=LoginHandler&opcode=updateSession — that endpoint authenticates against Agile's own user store and issues a session token the SDK can use. This is how the per-user write-back authenticates Jimmy/Vikas/etc. against Agile without needing them on the WebLogic realm.
+- JSON CACHE + HOURLY REFRESH (added 2026-06-04): the SQL pull persists to ./data/it-enhancements-cache.json so first load after a deploy is instant. Background @Scheduled task rebuilds the snapshot hourly. Toolbar shows "Snapshot · Nm ago" freshness indicator + "Refresh now" button to force a fresh re-pull. Cache TTL 60 min; stale-fallback serves the existing snapshot if a re-pull fails (e.g. agprod brief outage).
+- SEARCH + FILTERS (toolbar): free-text search across ECN / proposal / project / requestor / IT log; IT owner dropdown; IT status dropdown.
+- COMMON QUESTIONS:
+  - "Why was I asked for an Agile password?" → Agile here isn't AD-integrated. Your AD/Windows password doesn't work for the SDK. The toolkit asks for your Agile password (same one you use for Agile Web) so it can write the UAT date update under your identity (not Administrator). Stashed in server memory only, dropped on logout.
+  - "Why is the IT Owner / Status / Hours empty for some rows?" → IMS_REVIEW pulls these from agile.page_three (Owner from LIST53, Status from TEXT36, Hours from TEXT37). If the project owner hasn't filled them in on the ECN cover page, they're blank in the dashboard too.
+  - "Why am I seeing more rows than the Excel?" → The dashboard's universe includes the saved-search "IT ECN's" branch (workflow=Review + IT request-classification) AND a "released in the past 7 days with IT Status" branch, to catch recent go-lives. The Excel snapshot might pre-date some of those releases.
+  - "Where is the SNOW number column?" → SNOW number is not stored as an Agile attribute in this environment, so it's not in the dashboard. CRD and UAT Doc are also not in the grid (they're attachment references, not cell values).
+  - "Why does Target UAT save take longer than other cells?" → The save opens a transient Agile SDK session under your identity, writes the cell, and closes the session. Each save = one transient session round-trip (~500ms typical). Batch saves run sequentially.
+
+IT ENHANCEMENTS — FULL EDITABLE GRID (Phase 2 shipped 2026-06-12; replaces the single-column Target-UAT editor described above):
+- ALL 7 IT-OWNED CELLS ARE EDITABLE: IT Owner · Hrs (Effort) · Project · IT Actions Taken · Target UAT · Target Go-Live · IT Log. Click a cell (or tab to it and hit Enter) to edit. Editable column headers show a small pencil (✎) mark.
+- KEYBOARD NAVIGATION: Tab / Shift+Tab jumps editable cell to editable cell (skips read-only). Enter commits and drops down to next row. Esc cancels. Shift+↑/↓ extends a range. Cmd/Ctrl+D fills the active cell's value down into the selected range; or drag the small blue corner handle to fill with the mouse.
+- PER-CELL SAVE STATE (corner dot): amber=pending · blue pulsing=saving · green=saved (fades 2.2s) · red=validation error (hover for reason). "Save all changes (N)" button batches every pending edit in one round-trip. Errors stay dirty so you can fix + retry without losing the rest.
+- TYPE-AWARE EDITORS: dates → native date picker; IT Owner → single-select dropdown sourced from Agile's user list (not what's already in the grid, so you can assign someone new); Project + IT Actions Taken → checkbox-multiselect popover (these are multi-LIST cells in Agile); IT Log → roomier popover modal.
+- VALIDATION: Go-Live before Target UAT is flagged red with a "Go-Live is before Target UAT" tooltip; the row stays dirty until you fix it. Effort (Hrs) must be a non-negative number.
+- DENSITY TOGGLE in the toolbar (Comfortable / Compact) is remembered in browser localStorage.
+
+IT ENHANCEMENTS — MY ENHANCEMENTS SUB-TAB (shipped 2026-06-15):
+- Third pill in the sub-nav (after All Enhancements) scopes the grid to rows YOU own — matched on Agile loginid (the case-insensitive match between Row.itOwnerLoginId and your session username, same identity the per-user write-back uses). Header shows "Owned by <Your Name> (loginid)".
+- The four band tiles (Active, Overdue UAT, Overdue Go-Live, Approaching) and the missing-date pills re-scope automatically. The IT-owner filter dropdown is hidden in this view (redundant — the scope is already fixed to you).
+- ROW-SELECTION CHECKBOXES (sticky left column) + select-all in the header. Selection scopes the bulk-action buttons and clears automatically when you switch sub-tabs.
+- BULK EXTEND DATES: three buttons in the toolbar — Extend UAT +1 wk · Extend Go-Live +1 wk · Extend both +1 wk. Scope = selected rows if any are checked, else ALL your rows. Within scope, a row contributes a date only if it's in the past or blank (future-dated rows are skipped). Opens a PREVIEW modal listing each affected ECN / Field / Current → New. Rows where the resulting Go-Live would land before Target UAT are flagged red with a "!"; conflict rows are excluded from the batch. Click "Save N to Agile" to write.
+- BULK ADD IT-LOG NOTE: with one or more rows selected, click "Add log note…", type a note, and the toolkit prepends a dated/attributed stamp ([YYYY-MM-DD Your Name] note) to each row's IT Log as a pending edit. Review the amber dots, then "Save all changes" to commit.
+
+IT ENHANCEMENTS — MEETING MODE SUB-TAB (shipped 2026-06-15, the big one):
+- WHAT IT IS: a structured surface for running the weekly IT-Enhancement backlog review with the room. Click the "Meeting Mode" pill (third sub-tab pill) to enter. The pill shows a small green badge with the number of notes captured this session.
+- HOW TO USE — STEP BY STEP:
+  1. Pick the people in the room from the "Reviewing" checklist dropdown (multi-select; busiest requestor first). Empty = all requestors.
+  2. (Optional) Click a "Start with" focus pill to filter the list: "Overdue UAT / Go-Live" (red) · "Going live ≤ 7 days" (blue) · "High priority · no IT owner" (amber). Pill counts are scoped to the selected requestors. Click "Show all (N)" to clear.
+  3. Walk the list. Click an item in the left rail to focus it; arrow keys (↑/↓/←/→) also navigate (ignored while you're typing). Focused-row stays in view as the rail auto-scrolls.
+  4. On the right pane (focus card): edit Target UAT and Target Go-Live inline (they're marked ✎). Validation: Go-Live < UAT turns the field red with a "Needs fix" chip and is excluded from the batch until fixed. Risk badge + focus-pill counts recompute live as you edit dates.
+  5. Type a meeting note in the textarea — it becomes a pending IT Log edit, stamped "[YYYY-MM-DD Your Name] note" and prepended to the existing IT Log.
+  6. Click "Prev / Next" or use arrow keys to move on.
+  7. When done, click "Wrap up & consolidate →" (enabled whenever there's at least one pending edit OR captured note).
+- TO ANSWER "HOW DO I GO INTO HIGH-PRIORITY ITEMS?" — open Meeting Mode and click the "High priority · no IT owner" pill at the top. It filters the rail to ECNs with priority starting "1" (1-High) AND no IT Owner assigned. The count next to the pill tells you how many. To see all high-priority items regardless of ownership status, leave Meeting Mode and use the All Enhancements grid's priority column to sort or filter (priority column sorts by 1-High, 2-Med, 3-Low).
+- LIST RAIL (left pane): each item shows index / ECN # / one-line proposal / status / risk-color left border (red=Overdue UAT, amber=Overdue Go-Live, blue=Approaching Go-Live). Right side has two dots: green = note captured · amber = pending edit (date or log change) · red = validation error. Independent — a row can show both, one, or neither. A color legend strip just above the panes documents this.
+- FOCUS CARD (right pane): ECN link (opens in Agile) · risk badge · Edited/Needs-fix chip with row-level ↶ Undo · Requestor / IT Owner / IT Status / Priority / Target UAT (editable) / Target Go-Live (editable) / Hrs / Project meta grid · Problem (if any) · Proposal · LATEST UPDATE preview block (see below) · Meeting note textarea · Prev / Next.
+- LATEST UPDATE PREVIEW (shipped 2026-06-15): below the Proposal, the focus card now shows "Latest update by <Name> · YYYY-MM-DD" with the previous IT Log entry inline. Author + date come from a structured fetch — first tries to parse Agile's inline bold author-band from the raw IT Log CLOB, then falls back to querying agile.CHANGE_HISTORY for the most recent "IT Log" modification. The body is the committed IT Log text (no need to expand a details element). For entries that lack any attribution metadata, the header just reads "Latest IT Log entry".
+- UNDO AFFORDANCES (shipped 2026-06-15): every pending edit gets a ↶ undo control. Row-level ↶ Undo next to the Edited/Needs-fix chip clears every dirty entry on the ECN plus the captured note. Per-cell ↶ next to each pending date input clears just that cell. ↶ Discard note in the note hint area clears both the note and the IT Log pending edit. Nothing is sent to Agile until you click Save — Undo only touches the in-memory dirty map; saved Agile values are never affected.
+- WRAP-UP SCORECARD: deterministic A/B/C/D/F grade computed from a weighted composite (Schedule health 40% · IT Owner coverage 20% · Target UAT set 15% · Target Go-Live set 15% · Effort/Hrs set 10%). IT Log population is intentionally NOT a criterion — many straightforward ECNs ship with no log entry and penalizing for that produces false bad-hygiene signals. Risk-count flags (overdue UAT, overdue Go-Live, stale Analysis, without IT Owner) appear below the metric bars. "To reach an A" list of prioritized recommendations is generated from the live gap analysis. Re-grade button recomputes after edits.
+- CONSOLIDATED EMAILS (preview + send): each recipient gets ONE summary email listing every ECN that touches them — Krati with 3 affected ECNs gets ONE email listing all 3, not 3 separate emails. Same for the requestor. Sender Cc: pdl-plm-admin@sandisk.com (always). Subject: "PLM IT Enhancements — N ECNs updated by <Your Name>". Body: greeting → "<Your Name> updated N IT Enhancement(s) that you're involved with" → one card per ECN with hyperlinked ECN # + proposal context (truncated to 120 chars) + role line ("Your role: IT Owner · Requestor: X") + field-diff table (Field / Previous / New, green-highlighted) + meeting note (if any) → link to Agile.
+- AUTO-SEND ON SAVE: when you click "Save N changes to Agile →" on the wrap-up screen, the toolkit saves to Agile first, then automatically fires the summary emails for every successfully-saved ECN. Toast: "Sent N summary emails (one per recipient, cc admin)". If some saves failed, the failed-edits roll into a separate admin-only failure summary email sent to pdl-plm-admin@sandisk.com with retry instructions; the failed entries stay in the dirty state so you can fix + Save again.
+- AUTOSAVE + RECOVERY: every change you make in Meeting Mode (pending date edit or captured note) is debounced 1 second and POSTed to the server as a draft (stored at ./drafts/<your-loginid>-active.json). On next login the toolkit shows a recovery prompt: "Found unsaved meeting draft <Name>EditedOn<YYYY-MM-DD>.json — N pending edits, M notes — saved X minutes ago. Recover or Discard?" Recover restores everything and lands you back in Meeting Mode if there were notes. Discard wipes the draft. Drafts auto-delete server-side as soon as every edit lands in Agile via the save flow.
+- PINNED-ROW POSITION: if you edit a Target date while a focus pill is active and the row no longer matches the pill (e.g. you fix an overdue date so it's no longer overdue), the row STAYS visible in the rail at its original position — so Next/Prev keep walking the list in the order you started. The badge + left-border still reflect the live state ("On track"), but the sort treats the row as if it still had its overdue kind.
+- ECN HYPERLINKS: every ECN reference (rail items, focus card header, consolidation cards, email bodies) is hyperlinked to https://plm.sandisk.com/Agile/object/ECN/<number> and opens in a new tab.
+
+IT ENHANCEMENTS — SEND SIGN-OFF EMAIL (admin tool, dropdown improved 2026-06-15):
+- "Send sign-off" button in the All-Enhancements toolbar opens a modal that lets an admin manually fire either Flow A (Go-Live sign-off to requestor) or Flow B (Target UAT check to IT owner) for one recipient. Useful for re-sending after a missed deadline or testing the email layout. Bypasses the daily dedupe.
+- The "Recipient" field is now a DROPDOWN populated from every requestor + IT owner across the grid, deduped, sorted by display name. Each option shows "<Name> — <loginid> · <Role(s)>" so you can confirm the recipient's role matches the active flow (Flow A wants a requestor, Flow B wants an IT owner). People who hold both roles show both suffixes. The selected row's requestor (Flow A) or IT owner (Flow B) is pre-selected; if they're not in the current grid, a one-off "(not in current grid)" option is appended.
+- Admin-gated: pressing Send without admin role surfaces a 403 in the toast.
+
+IT ENHANCEMENTS — GO-LIVE / TARGET-UAT DAILY DIGESTS (shipped 2026-06-12, recipient-driven emails):
+- Two automatic daily emails at 8:00 AM. Flow A — Go-Live sign-off goes to the REQUESTOR for ECNs in UAT with Target Go-Live within the next 1–3 days (or already past due). Flow B — Target UAT check goes to the IT OWNER for ECNs in WIP / Analysis with Target UAT in the same window. Both group all of a person's qualifying ECNs into ONE envelope; Cc pdl-plm-admin@sandisk.com.
+- The CTA in each email opens a token-gated sign-off page that lets the recipient confirm each upcoming date or pick a new one for past-due rows. Submitting needs their Agile loginid + password; the date is written to Agile under their own identity. Tokens are single-use, expire in 7 days, and lock after 5 wrong passwords.
+
+TAB PERSONALIZATION:
+- Click your name in the top navigation bar to open the Visible Tabs dropdown
+- Uncheck tabs you don't use — they disappear from the tab bar
+- Check them again to bring them back
+- Field Changes is always visible (can't be hidden — it's the default landing tab)
+- Admin-only tabs (Utilities, Extensions, Labs) only appear in the list if you're an admin. Labs sub-tabs (BOM Race, AD Health, AI Eval) are not separately togglable — they live inside the Labs container.
+- Preferences are saved in your browser and persist across sessions
+- If you hide the tab you're currently on, it switches to Field Changes automatically
+
+SAVED SEARCHES:
+- Click the star icon on supported tabs to save the current search parameters
+- Access saved searches from "My Searches" in the top nav bar
+- Click a saved search to load it — switches to the correct tab and runs the search
+- Click X to delete a saved search
+- Deleting a saved search also removes any scheduled reports with matching parameters (so you stop receiving emails)
+- Supported on: Field Changes, BOM Explorer, Part Extract, Agile Lookup, Change History
+- SHARING SAVED SEARCHES:
+  - Click the lock icon (🔒) next to any of your saved searches to share it with the team
+  - Shared searches appear in a "Shared" section in everyone's My Searches dropdown
+  - The owner's name is shown so others know who created the search
+  - Click the link icon (🔗) to unshare a search
+  - Others can load and use your shared searches but cannot edit or delete them
+  - Example: save a search for "Field Name=Subcon, Days=7", share it, and your teammates can use the same filter with one click
+
+SCHEDULED REPORTS:
+- Available on the Field Changes tab (clock icon next to the star)
+- Choose Daily or Weekly frequency
+- If Weekly, select a day of the week
+- Select a time (30-minute intervals from 12:00 AM to 11:30 PM)
+- Reports use the server's timezone
+- If 0 results, no email is sent (to avoid inbox noise) — but it's logged
+- Schedules persist across server restarts
+- View/delete your schedules in the same dialog
+
+COLUMN FILTERS:
+- Available on all data tabs — type in filter boxes below column headers
+- Syntax: "value" = contains, "!value" = excludes, "a,b" = a OR b, "!a,!b" = not a AND not b
+- Filters are instant (client-side) with 300ms debounce to prevent slowdown
+- Date columns have checkbox dropdown filter — click "All dates" to open, check/uncheck specific dates
+- If 0 dates selected, button turns RED with "click to restore" hint
+- Click the X icon in the first column to clear ALL filters at once
+
+EXPORT & EMAIL:
+- Export Excel: available on most tabs, downloads as .xlsx with all data (all columns, full path, Lifecycle Analysis tab for Change History)
+- Email Me: sends the same Excel to your corporate email. Attachments over 5 MB are auto-zipped
+- BOM exports use streaming (SXSSFWorkbook) for large datasets — fast even with 30K+ rows
+- Full BOM Extract: daily CSV of entire BOM database (~70MB compressed, 6.5M rows)
+- BOM Notes Extract: Excel of BOMs with notes, auto-refreshed daily at 3 AM
+- SKU Lookup: CSV export with all selected agile + external columns
+
+DRAG & DROP:
+- All file upload areas support drag and drop
+- Drag a file onto the dashed upload zone
+- Supported formats: .txt/.csv for item lists, .xlsx for Excel uploads (Agile Lookup, Data Compare, Extensions)
+- Maximum file upload size: 100 MB
+
+NIGHT MODE:
+- Toggle button in the header (sun/moon icon) switches the entire UI to dark mode
+- Preference is remembered in browser localStorage
+
+BACKGROUND JOBS (automatic, no user action needed):
+- 2:00 AM daily: Full BOM CSV extract (~6.5M rows, compressed to ~70MB)
+- 2:00 AM daily: SKU JSON cache delta refresh (smart window — extends lookback if previous delta was missed)
+- 3:00 AM daily: BOM Notes Excel extract (~39K BOMs)
+- Hourly: External source schedule check (rebuilds any source whose scheduled hour matches)
+- Hourly: Help chatbot digest emailed to admin team
+- Every 30 seconds: Field-changes cache refresh (only when users active in last 10 min)
+- Every minute: Scheduled-report tick check
+- Cleanup: BOM extract files older than 7 days auto-deleted
+
+COMMON PART NUMBER PATTERNS:
+- A190-* : Top-level card assemblies (e.g., A190-008600-4096G, A190-013520-128G)
+- A198-* / A199-* : Packaging assemblies and SKU-level items
+- T002-* : Tessera program assemblies (e.g., T002-TESSERA-0002)
+- 54-* : Components (e.g., 54-07-07504, 54-56-00080-GP3-7)
+- 56-* : Raw materials/bags (e.g., 56-35-00518)
+- SDN1A-*, SDCZ*, SDDDC*, SDCZIA-* : SKU/retail product numbers
+- N001-* : NPI items
+- C-82-*, 01-* : Legacy components
+- MCO-*, ECO-*, ECN-*, FEO-* : Change order numbers (not part numbers)
+
+ITEM CACHE (admin):
+- The chatbot data queries run against the Oracle item_extract table via SQL
+- Admins can generate a JSON cache of item_extract (25 key columns, ~778K records) for faster lookups
+- Admin endpoints:
+  - GET /api/admin/item-cache/status — shows if cache is loaded, record count, last seed/delta times
+  - POST /api/admin/item-cache/seed — full rebuild from item_extract (~778K rows, takes 1-3 minutes)
+  - POST /api/admin/item-cache/delta — incremental update using REV_RELEASE_DATE (items released in last 3 days)
+- Delta runs automatically daily at 2:30 AM
+- Cached columns: PART_NUMBER, DESCRIPTION, REV, STATUSCODE, LIFECYCLE_PHASE, NEW_PART_CLASS, MATERIAL_GROUP, MATERIAL_TYPE, PRODUCTLINE, SUBCONTRACTORS, ACTUAL_BUILD_PLANT, PRODUCT_TYPE, CATEGORY, PM, CAPACITY, FAMILYNAME, CUSTOMER_PN, REV_RELEASE_DATE, CREATE_DATE, PRODUCTDIVISION, PROGRAM_NAME, MARKETING_PROGRAM, GOLDEN_PART, ECCN, CLASSIFICATION_PDM
+- If a chatbot query uses a column NOT in the cache (e.g., MEMORY_PACKAGE), it falls back to SQL automatically
+
+SAVED CHAT QUERIES:
+- After running a data query in the chatbot, click the ★ Save button to save it with a name
+- Access saved queries by clicking ★ My Queries in the chatbot header, or asking "show my saved queries"
+- Each saved query can be: Run (re-executes the SQL), Exported to Excel, Shared with team, Scheduled, or Deleted
+- Share: click 🔒 Share to make it visible to all users in their "Shared by team" section
+- Schedule: click ⏰ Schedule to set daily or weekly email delivery with Excel results
+  - Frequency: daily or weekly
+  - For weekly: choose a day (MON-FRI)
+  - Set a time (HH:mm, 24hr format) and the email address
+  - Results are emailed as an Excel attachment
+  - If 0 results, no email is sent
+- Saved queries persist across sessions — they're there when you log in the next day
+- Click "New Query" to clear the current SQL context and start a fresh query
+
+KEYBOARD SHORTCUTS:
+- Enter: run search (when in a search field)
+- ?: open quick help modal
+- Esc: close dialogs, collapse expanded rows, close help sidebar
+
+BETA STATUS:
+- This tool is in beta and may experience downtime
+- An amber banner is shown at the top of every page
+- For issues, email pdl-plm-admin@sandisk.com or use the "Raise Issue" button in the help sidebar
+
+WHY THIS TOOL EXISTS (build-vs-buy / strategic context for leadership questions):
+- Built in-house by the SanDisk PLM IT team. The decision to build instead of buy was driven by three things:
+  1. Deep Agile PLM coupling: SanDisk's Agile instance has highly customized field names, change workflows, lifecycle phases, AD-group mappings, and Oracle extract tables. Off-the-shelf PLM analytics products (e.g. Aras, Propel, Arena dashboards) require either expensive custom integration work or compromise on the SanDisk-specific data model
+  2. Speed of iteration: in-house lets the PLM team ship daily fixes and new tabs (15+ tabs in roughly 12 months) directly in response to engineering, operations, quality, and CCB requests — no vendor backlog, no quarterly release cycles, no per-seat licensing for a population of ~1000 internal users
+  3. Cost: the tool runs on a single Spring Boot JVM + the existing Oracle warehouse, no per-user license fees. Equivalent off-the-shelf BOM/change-history/cycle-time analytics tooling would run six figures annually for an enterprise of SanDisk's size
+- Differentiator vs generic PLM analytics: tight Agile integration (live SDK queries, not just nightly extracts), embedded admin self-service (Utilities tab lets admins push their own scripts/reports without IT involvement), AI-assisted features (chatbot, debug stack-trace analysis, eval harness, returns-tracker AI clustering), and a one-click "email me" pattern across every report so users don't have to babysit long-running jobs
+- ROI signal: tracked via the activity log (volume of LOGIN, *_SEARCH, *_LOOKUP, REPORT_RUN, etc. events). Replaces ~5 ad-hoc spreadsheets and a handful of standalone scripts that previously lived on individual laptops, plus eliminates several recurring manual data pulls the PLM team used to run for engineering and finance
+- Audience: PLM IT, change analysts, BOM owners, manufacturing engineers, supplier-quality, finance/CCB. Built for the PLM team's own workflow first, then opened up tab-by-tab to other groups
+
+CONTACT:
+For issues, email pdl-plm-admin@sandisk.com or use the "Raise Issue" button in the help sidebar.
+For feedback and feature requests, click "Feedback" in the top navigation bar.

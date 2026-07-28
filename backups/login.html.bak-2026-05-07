@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agile PLM Toolkit - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+        .navbar { background: white; color: #333; padding: 0 24px; height: 50px; display: flex; align-items: center; border-bottom: 1px solid #e0e0e0; }
+        .navbar .brand { font-size: 15px; font-weight: 700; letter-spacing: 0.3px; color: #333; }
+        .navbar .brand span { color: #888; font-weight: 400; margin-left: 6px; }
+        .login-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .login-card { background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); padding: 40px; width: 100%; max-width: 400px; }
+        .login-card h2 { color: #333; font-size: 22px; margin-bottom: 6px; }
+        .login-card .subtitle { color: #888; font-size: 13px; margin-bottom: 28px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .form-group input { width: 100%; height: 42px; border: 1px solid #d0d5dd; border-radius: 8px; padding: 0 14px; font-size: 14px; color: #333; background: #fafbfc; transition: border-color 0.2s; }
+        .form-group input:focus { outline: none; border-color: #4a6fa5; box-shadow: 0 0 0 3px rgba(74,111,165,0.12); }
+        .form-group input::placeholder { color: #aaa; }
+        .btn-login { width: 100%; height: 44px; background: #222; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 6px; }
+        .btn-login:hover { background: #333; }
+        .btn-login:disabled { background: #999; cursor: not-allowed; }
+        .error-msg { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; line-height: 1.5; }
+        .error-msg.group-error { background: #fff3cd; border-color: #ffc107; color: #856404; }
+        .spinner-small { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .footer { text-align: center; padding: 16px; }
+        .footer p { font-size: 11px; color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="brand"><img src="sandisk-logo-red.png" alt="SanDisk" style="height:18px; vertical-align:middle; margin-right:10px;">Agile PLM <span>Toolkit</span></div>
+</div>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <h2>Sign In</h2>
+        <p class="subtitle">Use your Windows / Active Directory credentials</p>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <form id="loginForm" onsubmit="return doLogin(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input id="username" type="text" placeholder="e.g. jsmith" autocomplete="username" autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" placeholder="Windows password" autocomplete="current-password">
+            </div>
+            <button class="btn-login" type="submit" id="loginBtn">Sign In</button>
+        </form>
+    </div>
+</div>
+
+<div class="footer">
+    <p>Agile PLM Toolkit &bull; SanDisk PLM Engineering</p>
+</div>
+
+<script>
+var pendingUserInfo = null;
+
+function doLogin(e) {
+    e.preventDefault();
+    var username = document.getElementById('username').value.trim();
+    var password = document.getElementById('password').value;
+    var errorDiv = document.getElementById('errorMsg');
+    var btn = document.getElementById('loginBtn');
+
+    if (!username || !password) {
+        errorDiv.textContent = 'Please enter both username and password.';
+        errorDiv.style.display = 'block';
+        errorDiv.className = 'error-msg';
+        return false;
+    }
+
+    errorDiv.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-small"></span>Authenticating...';
+
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, password: password })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var loginParam = 'login=1';
+            if (data.loginSource) loginParam += '&src=' + data.loginSource;
+            window.location.href = '/index.html?' + loginParam;
+        } else if (data.groupCheckFailed) {
+            pendingUserInfo = {
+                username: data.username,
+                displayName: data.displayName,
+                email: data.email,
+                missingGroup: data.missingGroup
+            };
+            showAccessRequestForm();
+        } else {
+            errorDiv.textContent = data.message;
+            errorDiv.style.display = 'block';
+            errorDiv.className = 'error-msg';
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+        }
+    })
+    .catch(function(err) {
+        errorDiv.textContent = 'Connection error. Please try again.';
+        errorDiv.style.display = 'block';
+        errorDiv.className = 'error-msg';
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+    });
+
+    return false;
+}
+
+function showAccessRequestForm() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+    document.querySelector('.login-card h2').textContent = 'Request Access';
+    document.querySelector('.login-card .subtitle').textContent =
+        'Hi ' + (pendingUserInfo.displayName || pendingUserInfo.username) +
+        ', your credentials are valid but you need access to the PLM Toolkit group.';
+
+    var formHtml =
+        '<div id="accessRequestForm">' +
+        '<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#856404;">' +
+        'You are not a member of <strong>' + (pendingUserInfo.missingGroup || 'the required group') + '</strong>. ' +
+        'Submit a request below and the admin team will be notified.' +
+        '</div>' +
+        '<div class="form-group">' +
+        '<label>Your Name</label>' +
+        '<input type="text" value="' + (pendingUserInfo.displayName || '').replace(/"/g, '&quot;') + '" disabled style="background:#f0f0f0;">' +
+        '</div>' +
+        '<div class="form-group">' +
+        '<label>Your Email</label>' +
+        '<input type="text" value="' + (pendingUserInfo.email || '').replace(/"/g, '&quot;') + '" disabled style="background:#f0f0f0;">' +
+        '</div>' +
+        '<div class="form-group">' +
+        '<label for="justification">Justification *</label>' +
+        '<textarea id="justification" rows="3" placeholder="Why do you need access to PLM Toolkit?" ' +
+        'style="width:100%; border:1px solid #d0d5dd; border-radius:8px; padding:10px 14px; font-size:14px; font-family:inherit; resize:vertical;"></textarea>' +
+        '</div>' +
+        '<button class="btn-login" type="button" id="requestBtn" onclick="submitAccessRequest()">Submit Request</button>' +
+        '<div style="background:#e8f4fd; border-left:4px solid #2c6fbb; padding:12px 16px; border-radius:0 4px 4px 0; margin-top:16px; font-size:13px; color:#333;">' +
+        '<strong style="color:#1a3a5c;">How it works:</strong>' +
+        '<ol style="margin:8px 0 0 16px; padding:0; line-height:1.8;">' +
+        '<li>You submit this request with a justification</li>' +
+        '<li>The PLM admin team is notified by email</li>' +
+        '<li>An admin reviews and adds you to the required group</li>' +
+        '<li>Within 10 minutes of being added, you will receive an email confirming access</li>' +
+        '<li>You can then log in and start using the tool</li>' +
+        '</ol>' +
+        '</div>' +
+        '<p style="text-align:center; margin-top:12px;"><a href="#" onclick="backToLogin(); return false;" style="color:#4a6fa5; font-size:13px; text-decoration:none;">Back to Sign In</a></p>' +
+        '</div>';
+
+    document.getElementById('loginForm').insertAdjacentHTML('afterend', formHtml);
+}
+
+function backToLogin() {
+    var reqForm = document.getElementById('accessRequestForm');
+    if (reqForm) reqForm.remove();
+    document.getElementById('loginForm').style.display = '';
+    document.querySelector('.login-card h2').textContent = 'Sign In';
+    document.querySelector('.login-card .subtitle').textContent = 'Use your Windows / Active Directory credentials';
+    document.getElementById('loginBtn').disabled = false;
+    document.getElementById('loginBtn').textContent = 'Sign In';
+    document.getElementById('password').value = '';
+}
+
+function submitAccessRequest() {
+    var justification = document.getElementById('justification').value.trim();
+    if (!justification) {
+        alert('Please enter a justification.');
+        return;
+    }
+
+    var btn = document.getElementById('requestBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-small"></span>Submitting...';
+
+    fetch('/api/auth/request-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            username: pendingUserInfo.username,
+            displayName: pendingUserInfo.displayName,
+            email: pendingUserInfo.email,
+            justification: justification
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var formDiv = document.getElementById('accessRequestForm');
+            formDiv.innerHTML =
+                '<div style="text-align:center; padding:20px 0;">' +
+                '<div style="font-size:48px; margin-bottom:12px;">&#9989;</div>' +
+                '<h3 style="color:#28a745; margin-bottom:8px;">Request Submitted</h3>' +
+                '<p style="color:#555; font-size:14px;">The PLM admin team has been notified and will review your request.</p>' +
+                '<p style="color:#555; font-size:14px; margin-top:8px;">Once you are added to the required group, you will receive a confirmation email at <strong>' +
+                (pendingUserInfo.email || '') + '</strong> within <strong>10 minutes</strong>. You can then log in and start using the tool.</p>' +
+                '<p style="margin-top:16px;"><a href="#" onclick="backToLogin(); return false;" style="color:#4a6fa5; font-size:13px;">Back to Sign In</a></p>' +
+                '</div>';
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Submit Request';
+            alert(data.message || 'Failed to submit request.');
+        }
+    })
+    .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Submit Request';
+        alert('Failed: ' + err.message);
+    });
+}
+</script>
+</body>
+</html>

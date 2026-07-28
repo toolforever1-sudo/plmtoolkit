@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debug Assistant — PLM Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: oklch(98.6% .003 250);
+  --surface:#fff;
+  --surface-2: oklch(96.8% .004 250);
+  --surface-3: oklch(94% .005 250);
+  --line: oklch(91% .006 250);
+  --line-2: oklch(85% .008 250);
+  --ink: oklch(22% .01 250);
+  --ink-2: oklch(40% .012 250);
+  --ink-3: oklch(56% .012 250);
+  --ink-4: oklch(72% .01 250);
+  --accent: oklch(52% .14 255);
+  --accent-2: oklch(96% .03 255);
+  --accent-ink: oklch(35% .12 255);
+  --good: oklch(56% .13 150);
+  --good-bg: color-mix(in oklab, oklch(56% .13 150) 12%, white);
+  --good-ink: oklch(36% .1 150);
+  --bad: oklch(58% .17 25);
+  --bad-bg: color-mix(in oklab, oklch(58% .17 25) 10%, white);
+  --bad-ink: oklch(38% .14 25);
+  --warn: oklch(68% .15 75);
+  --warn-bg: color-mix(in oklab, oklch(68% .15 75) 18%, white);
+  --warn-ink: oklch(42% .12 75);
+  --navy: #1a3a5c;
+  --font-sans:'IBM Plex Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --font-serif:'IBM Plex Serif',Georgia,serif;
+  --radius:6px; --radius-lg:10px;
+  --shadow-1:0 1px 2px rgba(20,24,40,.04),0 1px 1px rgba(20,24,40,.03);
+  --shadow-2:0 4px 14px rgba(20,24,40,.06),0 2px 4px rgba(20,24,40,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:13px;line-height:1.5;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+
+/* ── header ── */
+.header{background:var(--navy);color:#fff;padding:0 20px;height:50px;display:flex;align-items:center;gap:14px;font-size:13px}
+.header .title{font-weight:600;display:flex;align-items:center;gap:8px}
+.header .title .mark{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#3478c4,#1a3a5c);display:grid;place-items:center;font-size:13px}
+.header .sep{opacity:.35}
+.header a{color:#a8c7e8;text-decoration:none;font-size:12.5px}
+.header a:hover{color:#fff}
+.header .pill{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#a8c7e8;padding:3px 8px;border:1px solid rgba(255,255,255,.2);border-radius:999px}
+
+/* ── main container ── */
+.main-wrap{max-width:1100px;margin:0 auto;padding:20px 28px 40px}
+
+/* ── input state ── */
+.input-state{max-width:820px;margin:32px auto 0;padding:0 24px}
+.input-state .eyebrow{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.input-state h1{font-family:var(--font-serif);font-weight:500;font-size:28px;letter-spacing:-.02em;line-height:1.15;margin:0 0 10px;color:var(--ink)}
+.input-state .lede{font-size:14px;color:var(--ink-2);max-width:620px;margin:0 0 24px}
+.input-state .lede code{font-family:var(--font-mono);font-size:12.5px;background:var(--surface-2);padding:1px 6px;border-radius:3px}
+
+.input-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-2);overflow:hidden}
+.input-primary{padding:18px 20px 14px;border-bottom:1px dashed var(--line)}
+.input-primary .req-row{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.input-primary .req-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.trace-area{width:100%;min-height:150px;border:1px solid var(--line-2);border-radius:7px;padding:12px 14px;font-family:var(--font-mono);font-size:12px;line-height:1.6;color:var(--ink);resize:vertical;background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s}
+.trace-area:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-2)}
+.trace-area::placeholder{color:var(--ink-4)}
+.trace-helpers{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--ink-3)}
+.drop-inline{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px dashed var(--line-2);border-radius:5px;color:var(--ink-2);cursor:pointer;font-size:12px}
+.drop-inline:hover{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-2)}
+.drop-inline input{display:none}
+.drop-inline svg{width:13px;height:13px}
+
+/* collapsible options */
+.opt-toggle{width:100%;background:none;border:none;cursor:pointer;padding:13px 20px;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2);font-family:var(--font-sans)}
+.opt-toggle:hover{background:var(--surface-2)}
+.opt-toggle .chev{width:14px;height:14px;color:var(--ink-3);transition:transform .15s}
+.opt-toggle.open .chev{transform:rotate(90deg)}
+.opt-toggle .lbl{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.opt-toggle .hint{margin-left:auto;font-size:11.5px;color:var(--ink-4);font-family:var(--font-mono)}
+.opt-panel{padding:0 20px 18px;display:none;animation:slideDown .2s ease}
+.opt-panel.open{display:block}
+@keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.opt-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;color:var(--ink-3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+.field label .opt{color:var(--ink-4);font-weight:400;text-transform:none;letter-spacing:0;font-family:var(--font-sans)}
+.field input[type=text]{height:32px;padding:0 10px;border:1px solid var(--line-2);border-radius:5px;font-size:12.5px;font-family:var(--font-mono);color:var(--ink);background:var(--surface)}
+.field input[type=text]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-2)}
+.field .file-picker{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 10px;border:1px dashed var(--line-2);border-radius:5px;cursor:pointer;font-size:12px;color:var(--ink-3)}
+.field .file-picker:hover{border-color:var(--accent);color:var(--accent-ink)}
+.field .file-picker .pick-btn{font-size:11px;padding:3px 8px;background:var(--surface-2);border-radius:3px;color:var(--ink-2);font-family:var(--font-mono)}
+.field .file-picker.has-file{border-style:solid;border-color:var(--good);background:var(--good-bg);color:var(--good-ink)}
+.field .file-picker input{display:none}
+
+.input-foot{padding:14px 20px;background:var(--surface-2);border-top:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.btn-primary{height:38px;padding:0 18px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-size:13.5px;font-weight:500;font-family:var(--font-sans);display:inline-flex;align-items:center;gap:8px;transition:filter .15s}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-primary:disabled{background:var(--ink-4);cursor:not-allowed}
+.btn-ghost{height:38px;padding:0 14px;background:none;border:1px solid var(--line-2);border-radius:var(--radius);cursor:pointer;color:var(--ink-2);font-size:13px;font-family:var(--font-sans)}
+.btn-ghost:hover{background:var(--surface);color:var(--ink)}
+.input-foot .hint{margin-left:auto;font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.input-foot kbd{background:var(--surface);border:1px solid var(--line-2);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:10.5px;color:var(--ink-2)}
+
+/* ── running state ── */
+.summary-strip{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:14px;font-size:12.5px;margin-bottom:16px;box-shadow:var(--shadow-1)}
+.summary-strip .crumb{display:flex;align-items:center;gap:8px;min-width:0}
+.summary-strip .crumb .ico{width:22px;height:22px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;flex-shrink:0}
+.summary-strip .crumb .lbl{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em}
+.summary-strip .crumb .val{color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.summary-strip .dot{width:3px;height:3px;border-radius:50%;background:var(--line-2);flex-shrink:0}
+.summary-strip .spacer{flex:1}
+.mini-btn{padding:5px 10px;font-size:11.5px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.mini-btn:hover{background:var(--surface-2);color:var(--ink)}
+
+.running-strip{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow-1)}
+.running-strip .rs-head{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink);margin-bottom:10px}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent-2);border-top-color:var(--accent);animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rs-elapsed{margin-left:auto;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-3)}
+.rs-steps{display:flex;gap:8px;font-size:11.5px;font-family:var(--font-mono);color:var(--ink-3);flex-wrap:wrap}
+.rs-step{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2)}
+.rs-step.done{color:var(--good-ink);background:var(--good-bg);border-color:transparent}
+.rs-step.active{color:var(--accent-ink);background:var(--accent-2);border-color:transparent;font-weight:500}
+.rs-step.error{color:var(--bad-ink);background:var(--bad-bg);border-color:transparent}
+.rs-dot{width:5px;height:5px;border-radius:50%;background:var(--ink-4)}
+.rs-step.done .rs-dot{background:var(--good)}
+.rs-step.active .rs-dot{background:var(--accent);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.rs-sub{color:inherit;opacity:.7;font-size:10.5px;margin-left:4px}
+
+/* ── email card ── */
+.email-card{background:linear-gradient(180deg,var(--accent-2) 0%,var(--surface) 120%);border:1px solid color-mix(in oklab,var(--accent) 25%,var(--line));border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-1)}
+.email-card .ec-ico{width:34px;height:34px;border-radius:8px;background:var(--surface);border:1px solid color-mix(in oklab,var(--accent) 20%,var(--line));display:grid;place-items:center;flex-shrink:0;color:var(--accent-ink);font-size:16px}
+.email-card .ec-body{flex:1;min-width:0}
+.email-card .ec-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.email-card .ec-sub{font-size:12px;color:var(--ink-2)}
+.email-card .ec-sub code{font-family:var(--font-mono);font-size:11.5px;background:rgba(255,255,255,.65);padding:1px 5px;border-radius:3px;color:var(--accent-ink)}
+.email-card .ec-form{display:flex;gap:8px;align-items:center}
+.email-card .ec-form input{height:32px;padding:0 12px;width:220px;border:1px solid var(--line-2);border-radius:5px;font-size:12.5px;font-family:var(--font-mono);background:var(--surface);color:var(--ink);outline:none}
+.email-card .ec-form input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 18%,transparent)}
+.btn-sm{height:32px;padding:0 12px;background:var(--accent);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn-sm:hover{filter:brightness(1.08)}
+.btn-sm:disabled{background:var(--ink-4);cursor:not-allowed}
+.email-card.confirmed{background:linear-gradient(180deg,var(--good-bg) 0%,var(--surface) 120%);border-color:color-mix(in oklab,var(--good) 30%,var(--line))}
+.email-card.confirmed .ec-ico{border-color:color-mix(in oklab,var(--good) 25%,var(--line));color:var(--good-ink)}
+
+/* ── root cause banner ── */
+.rc-banner{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:8px;padding:16px 20px;margin-bottom:16px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.rc-banner .sev{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--bad-ink);font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:6px}
+.rc-banner .sev::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--bad)}
+.rc-banner h2{margin:0 0 4px;font-size:18px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.rc-banner .hypothesis{font-size:13px;color:var(--ink-2);margin-top:8px;max-width:780px}
+.rc-banner .rc-stats{display:flex;gap:18px;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.rc-banner .rc-stats .num{display:block;font-size:22px;color:var(--ink);font-weight:600;font-family:var(--font-serif);letter-spacing:-.01em}
+
+/* ── results panels ── */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.panel .phead{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:var(--surface-2)}
+.panel .phead h3{margin:0;font-size:11px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-weight:500}
+.panel .phead .actions{display:flex;gap:4px}
+.icon-btn{background:none;border:1px solid transparent;cursor:pointer;width:24px;height:24px;border-radius:4px;display:grid;place-items:center;color:var(--ink-3);padding:0}
+.icon-btn:hover{background:var(--surface-3);color:var(--ink)}
+.icon-btn svg{width:13px;height:13px}
+
+/* frames list */
+.frame{padding:9px 14px 10px;border-bottom:1px solid var(--line);display:flex;gap:10px;font-size:12px}
+.frame .idx{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-4);width:18px;text-align:right;flex-shrink:0;padding-top:2px}
+.frame .body{min-width:0;flex:1}
+.frame .cls{font-family:var(--font-mono);font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frame .cls .pkg{color:var(--ink-3)}
+.frame.sandisk .cls .pkg{color:var(--accent-ink)}
+.frame.sandisk .cls{color:var(--accent-ink);font-weight:600}
+.frame .loc{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);margin-top:2px;display:flex;align-items:center;gap:6px}
+.frame .loc .found{color:var(--good-ink)}
+.frame .loc .not-found{color:var(--bad-ink)}
+.frame .loc .warn{color:var(--warn-ink)}
+.frame .loc .tag{font-size:9.5px;padding:1px 5px;border-radius:3px;letter-spacing:.05em;text-transform:uppercase;font-weight:500;background:var(--surface-3);color:var(--ink-3)}
+.frame-group-label{padding:10px 14px 4px;font-family:var(--font-mono);font-size:10px;color:var(--bad-ink);text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--line);background:var(--bad-bg)}
+
+/* stack trace (collapsible) */
+.stack-trace{background:#1a1a2e;color:#e74c3c;padding:16px;font-family:var(--font-mono);font-size:11px;overflow-x:auto;white-space:pre-wrap;max-height:300px;overflow-y:auto}
+.stack-trace .sandisk-line{color:#f39c12;font-weight:600}
+
+/* AI analysis */
+.analysis{line-height:1.65;font-size:13.5px;padding:18px 22px 22px}
+.analysis h1,.analysis h2,.analysis h3{font-size:13px;font-weight:600;color:var(--ink);margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.analysis h3::before{content:'';width:3px;height:12px;background:var(--accent);border-radius:2px}
+.analysis h3:first-child{margin-top:0}
+.analysis p{margin:0 0 10px;color:var(--ink-2)}
+.analysis code{background:var(--surface-2);padding:1.5px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11.5px;color:var(--accent-ink);border:1px solid var(--line)}
+.analysis pre{margin:0 0 10px;padding:12px 14px;background:#1a1a2e;color:#e0e0e0;border-radius:var(--radius);overflow-x:auto;font-size:11.5px;line-height:1.55}
+.analysis pre code{background:none;padding:0;color:inherit;border:none;font-size:inherit}
+.analysis ol,.analysis ul{margin:8px 0 10px;padding-left:20px;color:var(--ink-2)}
+.analysis li{margin-bottom:4px}
+.analysis strong{color:var(--ink)}
+
+/* ── autocomplete dropdown ── */
+.ac-dropdown{position:absolute;top:100%;left:0;right:0;z-index:20;background:var(--surface);border:1px solid var(--line-2);border-radius:6px;box-shadow:var(--shadow-2);max-height:200px;overflow-y:auto;margin-top:2px}
+.ac-item{padding:6px 10px;font-family:var(--font-mono);font-size:12px;cursor:pointer;color:var(--ink)}
+.ac-item:hover,.ac-item.sel{background:var(--accent-2);color:var(--accent-ink)}
+.ac-item mark{background:transparent;color:var(--accent);font-weight:600}
+.ac-empty{padding:8px 10px;font-size:12px;color:var(--ink-4);font-style:italic}
+
+/* ── shell layout ── */
+.shell{display:grid;grid-template-columns:220px 1fr;height:calc(100vh - 50px);min-height:600px}
+.sidebar{background:var(--surface-2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.sidebar .head{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.sidebar .head h3{margin:0;font-size:11px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-weight:500}
+.sidebar .new-btn{font-size:11px;color:var(--accent);font-weight:500;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px}
+.sidebar .new-btn:hover{background:var(--accent-2)}
+.history-list{flex:1;overflow-y:auto;padding:6px 8px}
+.h-item{padding:10px 10px 9px;border-radius:6px;cursor:pointer;position:relative;margin-bottom:2px}
+.h-item:hover{background:var(--surface-3)}
+.h-item.active{background:var(--accent-2)}
+.h-item.active::before{content:'';position:absolute;left:-8px;top:10px;bottom:10px;width:2px;background:var(--accent);border-radius:0 2px 2px 0}
+.h-item .exc{font-family:var(--font-mono);font-size:11.5px;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.h-item.active .exc{color:var(--accent-ink)}
+.h-item .meta{font-size:11px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.h-item .hdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.h-item .hdot.found{background:var(--good)}
+.h-item .hdot.partial{background:var(--warn)}
+.h-item .hdot.none{background:var(--bad)}
+.sidebar .foot{padding:10px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-4);display:flex;align-items:center;justify-content:space-between}
+.sidebar .foot button{font-size:10.5px;color:var(--bad-ink);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px}
+.sidebar .foot button:hover{background:var(--bad-bg)}
+.main-col{overflow-y:auto;display:flex;flex-direction:column}
+
+/* ── utility ── */
+.hide{display:none !important}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:6px;font-size:12.5px;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<div class="header">
+  <div class="title"><span class="mark">&#128270;</span> Debug Assistant</div>
+  <span class="sep">|</span>
+  <a href="/">&#8592; PLM Toolkit</a>
+  <span class="sep">|</span>
+  <span class="pill">Admin &middot; AI</span>
+</div>
+
+<div class="shell">
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="sidebar">
+    <div class="head">
+      <h3>Recent Analyses</h3>
+      <button class="new-btn" onclick="clearAll()">+ New</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div style="padding:20px 10px;text-align:center;color:var(--ink-4);font-size:12px">Loading&hellip;</div>
+    </div>
+    <div class="foot">
+      <span id="historyCount">0 analyses</span>
+      <button onclick="clearHistoryAll()">Clear all</button>
+    </div>
+  </aside>
+
+  <!-- ══════ MAIN COLUMN ══════ -->
+  <main class="main-col">
+  <div class="main-wrap">
+
+  <!-- ══════ INPUT STATE ══════ -->
+  <div id="inputState" class="input-state">
+    <div class="eyebrow">New Analysis</div>
+    <h1>Paste a stack trace.<br>I'll find the source and explain what broke.</h1>
+    <p class="lede">Drop a <code>.eml</code>, <code>.log</code> or paste an exception below. Source is resolved from Bitbucket automatically &mdash; or upload a JAR for faster local matching.</p>
+
+    <div class="input-card">
+      <div class="input-primary">
+        <div class="req-row"><span class="req-dot"></span><span>Required &mdash; paste or upload</span></div>
+        <textarea class="trace-area" id="pastedTrace" placeholder="Paste exception or stack trace here&hellip;
+
+e.g.  java.lang.NullPointerException
+        at com.sandisk.plm.hook.ChangeOrderHook.onSubmit(ChangeOrderHook.java:142)
+        at com.agile.pc.gccob.q.process(...)"></textarea>
+        <div class="trace-helpers">
+          <label class="drop-inline" id="dropZone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            <span id="dropLabel">Upload .eml / .log / .txt</span>
+            <input type="file" id="debugFile" accept=".eml,.log,.txt">
+          </label>
+        </div>
+      </div>
+
+      <!-- Collapsible options -->
+      <div>
+        <button class="opt-toggle" id="optToggle" onclick="toggleOpt()">
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <span class="lbl">Source &amp; Repo</span>
+          <span class="hint">optional &middot; defaults to auto-detect Bitbucket</span>
+        </button>
+        <div class="opt-panel" id="optPanel">
+          <div class="opt-row">
+            <div class="field">
+              <label>Source JAR or .java <span class="opt">(skips Bitbucket)</span></label>
+              <label class="file-picker" id="srcPicker">
+                <span class="pick-btn">Browse</span>
+                <span id="srcPickerLabel">No file selected</span>
+                <input type="file" id="sourceFile" accept=".jar,.java">
+              </label>
+            </div>
+            <div class="field" style="position:relative">
+              <label>Bitbucket Repo <span class="opt">(auto-detect if blank)</span></label>
+              <input type="text" id="repoInput" placeholder="Type to search repos..." autocomplete="off" oninput="filterRepos()" onfocus="filterRepos()">
+              <div class="ac-dropdown hide" id="repoDropdown"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-foot">
+        <button class="btn-primary" id="analyzeBtn" onclick="runAnalysis()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          Analyze
+        </button>
+        <button class="btn-ghost" onclick="clearAll()">Clear</button>
+        <span id="statusMsg" style="font-size:12px;color:var(--ink-3);"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ RUNNING STATE ══════ -->
+  <div id="runningState" class="hide">
+    <div class="summary-strip" id="runningSummary">
+      <div class="crumb"><div class="ico">&#128196;</div><div><div class="lbl">Input</div><div class="val" id="runInputLabel">...</div></div></div>
+      <span class="dot"></span>
+      <div class="crumb"><div class="ico">&#128230;</div><div><div class="lbl">Source</div><div class="val" id="runSourceLabel">Auto (Bitbucket)</div></div></div>
+      <div class="spacer"></div>
+      <button class="mini-btn" onclick="showInputState()">Edit inputs</button>
+    </div>
+
+    <!-- Email when done -->
+    <div class="email-card" id="emailCard">
+      <div class="ec-ico">&#9993;</div>
+      <div class="ec-body">
+        <div class="ec-title">Taking a while? I'll email you when it's done.</div>
+        <div class="ec-sub">You'll get the full report &mdash; close this tab anytime.</div>
+      </div>
+      <div class="ec-form" id="emailForm">
+        <input type="email" id="emailInput" placeholder="you@sandisk.com">
+        <button class="btn-sm" onclick="requestEmail()">&#10003; Email me</button>
+      </div>
+      <div id="emailConfirmed" style="display:none;font-size:12.5px;color:var(--good-ink);font-weight:500;display:none;align-items:center;gap:6px">
+        &#10003; Will send to <strong id="emailTo"></strong>
+        <button style="background:none;border:none;cursor:pointer;color:var(--ink-3);padding:4px 6px;border-radius:4px;font-size:14px" onclick="undoEmail()">Change</button>
+      </div>
+    </div>
+
+    <div class="running-strip">
+      <div class="rs-head">
+        <div class="spin"></div>
+        <div>Analyzing&hellip;</div>
+        <div class="rs-elapsed">Elapsed <span id="elapsed">0</span>s</div>
+        <button class="mini-btn" onclick="cancelAnalysis()" style="margin-left:8px;color:var(--bad-ink);border-color:var(--bad)">Cancel</button>
+      </div>
+      <div class="rs-steps">
+        <div class="rs-step" id="rs1"><span class="rs-dot"></span>Parse input</div>
+        <div class="rs-step" id="rs2"><span class="rs-dot"></span>Extract traces</div>
+        <div class="rs-step" id="rs3"><span class="rs-dot"></span>Resolve source <span class="rs-sub" id="rsSub"></span></div>
+        <div class="rs-step" id="rs4"><span class="rs-dot"></span>AI analysis</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ RESULTS STATE ══════ -->
+  <div id="resultsState" class="hide">
+    <!-- summary strip -->
+    <div class="summary-strip">
+      <div class="crumb"><div class="ico">&#128196;</div><div><div class="lbl">Input</div><div class="val" id="sumInput">...</div></div></div>
+      <span class="dot"></span>
+      <div class="crumb"><div class="ico">&#128230;</div><div><div class="lbl">Source</div><div class="val" id="sumSource">...</div></div></div>
+      <span class="dot"></span>
+      <div class="crumb"><div class="ico">&#9201;</div><div><div class="lbl">Took</div><div class="val" id="sumTime">...</div></div></div>
+      <div class="spacer"></div>
+      <button class="mini-btn" onclick="showInputState()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Re-run
+      </button>
+      <button class="mini-btn" onclick="clearAll()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Analysis
+      </button>
+    </div>
+
+    <!-- root cause banner -->
+    <div class="rc-banner" id="rcBanner">
+      <div>
+        <div class="sev" id="rcSev">Root cause</div>
+        <h2 id="rcTitle">...</h2>
+        <p class="hypothesis" id="rcHypothesis"></p>
+      </div>
+      <div class="rc-stats" id="rcStats"></div>
+    </div>
+
+    <!-- stack frames -->
+    <div class="panel">
+      <div class="phead">
+        <h3>Stack Frames</h3>
+        <div class="actions">
+          <button class="icon-btn" title="Copy full stack trace" onclick="copyStack()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="icon-btn" title="Toggle raw stack trace" onclick="toggleRawTrace()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="framesDisplay"></div>
+      <div id="rawTraceWrap" class="hide">
+        <div class="stack-trace" id="stackTraceDisplay"></div>
+      </div>
+    </div>
+
+    <!-- AI Analysis -->
+    <div class="panel">
+      <div class="phead">
+        <h3>AI Analysis</h3>
+        <div class="actions">
+          <button class="icon-btn" title="Copy analysis" onclick="copyAnalysis()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="icon-btn" title="Download report" onclick="downloadReport()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="analysis" id="analysisDisplay"></div>
+    </div>
+  </div>
+
+</div>
+</main>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script src="ui-modal.js?v=20260513a"></script>
+<script>
+// ── Drop zone ──
+var dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', function(e){ e.preventDefault(); dropZone.style.borderColor='var(--accent)'; dropZone.style.background='var(--accent-2)'; });
+dropZone.addEventListener('dragleave', function(){ dropZone.style.borderColor=''; dropZone.style.background=''; });
+dropZone.addEventListener('drop', function(e){
+  e.preventDefault(); dropZone.style.borderColor=''; dropZone.style.background='';
+  if(e.dataTransfer.files.length>0){ document.getElementById('debugFile').files=e.dataTransfer.files; onFileSelected(); }
+});
+document.getElementById('debugFile').addEventListener('change', onFileSelected);
+
+function onFileSelected(){
+  var f=document.getElementById('debugFile').files[0];
+  if(f) document.getElementById('dropLabel').textContent=f.name+' ('+Math.round(f.size/1024)+' KB)';
+}
+
+// Source file picker
+document.getElementById('sourceFile').addEventListener('change', function(){
+  var f=this.files[0], p=document.getElementById('srcPicker'), l=document.getElementById('srcPickerLabel');
+  if(f){ l.textContent=f.name; p.classList.add('has-file'); }
+  else { l.textContent='No file selected'; p.classList.remove('has-file'); }
+});
+
+function toggleOpt(){
+  document.getElementById('optToggle').classList.toggle('open');
+  document.getElementById('optPanel').classList.toggle('open');
+}
+
+// ── State management ──
+function showInputState(){
+  document.getElementById('inputState').classList.remove('hide');
+  document.getElementById('runningState').classList.add('hide');
+  document.getElementById('resultsState').classList.add('hide');
+}
+function showRunningState(){
+  document.getElementById('inputState').classList.add('hide');
+  document.getElementById('runningState').classList.remove('hide');
+  document.getElementById('resultsState').classList.add('hide');
+}
+function showResultsState(){
+  document.getElementById('inputState').classList.add('hide');
+  document.getElementById('runningState').classList.add('hide');
+  document.getElementById('resultsState').classList.remove('hide');
+}
+
+function clearAll(){
+  document.getElementById('debugFile').value='';
+  document.getElementById('sourceFile').value='';
+  document.getElementById('pastedTrace').value='';
+  document.getElementById('repoInput').value='';
+  document.getElementById('dropLabel').textContent='Upload .eml / .log / .txt';
+  document.getElementById('srcPickerLabel').textContent='No file selected';
+  document.getElementById('srcPicker').classList.remove('has-file');
+  document.getElementById('resultsState').classList.add('hide');
+  document.getElementById('runningState').classList.add('hide');
+  document.getElementById('statusMsg').textContent='';
+  if(_elapsedTimer){clearInterval(_elapsedTimer);_elapsedTimer=null;}
+  showInputState();
+}
+
+// ── Analysis ──
+var _lastResult=null, _elapsedTimer=null, _abortController=null;
+
+function runAnalysis(){
+  var file=document.getElementById('debugFile').files[0];
+  var pasted=document.getElementById('pastedTrace').value.trim();
+  var repo=document.getElementById('repoInput').value.trim();
+  var project='PLM';
+  var srcFile=document.getElementById('sourceFile').files[0];
+
+  if(!file&&!pasted){appAlert('Upload a file or paste a stack trace.');return;}
+
+  var btn=document.getElementById('analyzeBtn');
+  btn.disabled=true; btn.innerHTML='<div class="spin" style="width:12px;height:12px;border-width:1.5px"></div> Analyzing&hellip;';
+  document.getElementById('statusMsg').textContent='';
+
+  // Update running summary
+  document.getElementById('runInputLabel').textContent=file?file.name:'Pasted text';
+  document.getElementById('runSourceLabel').textContent=srcFile?srcFile.name:(repo||'Auto (Bitbucket)');
+
+  // Reset email card
+  _notifyEmail=null;
+  document.getElementById('emailForm').style.display='flex';
+  document.getElementById('emailConfirmed').style.display='none';
+  document.getElementById('emailCard').classList.remove('confirmed');
+
+  showRunningState();
+  startProgress();
+
+  var formData=new FormData();
+  if(file) formData.append('file',file);
+  if(srcFile) formData.append('sourceFile',srcFile);
+  formData.append('pastedTrace',pasted);
+  formData.append('repo',repo);
+  formData.append('project',project);
+
+  _abortController=new AbortController();
+  fetch('/api/debug/analyze',{method:'POST',body:formData,signal:_abortController.signal})
+    .then(function(response){
+      if(!response.ok) throw new Error('HTTP '+response.status);
+      var reader=response.body.getReader(), decoder=new TextDecoder(), buffer='';
+      function pump(){
+        return reader.read().then(function(result){
+          if(result.done){finishAnalysis();return;}
+          buffer+=decoder.decode(result.value,{stream:true});
+          var parts=buffer.split('\n\n'); buffer=parts.pop();
+          parts.forEach(function(block){
+            if(!block.trim())return;
+            var evName='',dataStr='';
+            block.split('\n').forEach(function(line){
+              if(line.startsWith('event:')) evName=line.substring(6).trim();
+              else if(line.startsWith('data:')) dataStr+=line.substring(5);
+            });
+            if(dataStr){try{handleSSE(evName,JSON.parse(dataStr));}catch(e){console.warn('SSE parse',e);}}
+          });
+          return pump();
+        });
+      }
+      return pump();
+    })
+    .catch(function(err){
+      finishAnalysis();
+      if(err.name==='AbortError') return; // user cancelled
+      document.getElementById('statusMsg').textContent='Failed: '+err.message;
+      document.getElementById('statusMsg').style.color='var(--bad)';
+      showInputState();
+    });
+}
+
+function handleSSE(name,data){
+  if(name==='progress') updateStep(data);
+  else if(name==='result'){ _lastResult=data; renderResults(data); showResultsState(); sendEmailIfRequested(data); loadHistory(); }
+  else if(name==='error'){
+    markStepError();
+    document.getElementById('statusMsg').textContent=data.error;
+    document.getElementById('statusMsg').style.color='var(--bad)';
+    setTimeout(showInputState, 1500);
+  }
+}
+
+function startProgress(){
+  var startTime=Date.now();
+  if(_elapsedTimer) clearInterval(_elapsedTimer);
+  _elapsedTimer=setInterval(function(){
+    var s=((Date.now()-startTime)/1000).toFixed(1);
+    document.getElementById('elapsed').textContent=s;
+  },200);
+  for(var i=1;i<=4;i++){
+    var el=document.getElementById('rs'+i);
+    el.className='rs-step';
+  }
+  document.getElementById('rsSub').textContent='';
+}
+
+function updateStep(data){
+  var step=data.step;
+  // mark previous done
+  for(var i=1;i<step;i++){
+    var prev=document.getElementById('rs'+i);
+    if(!prev.classList.contains('done')){prev.className='rs-step done';}
+  }
+  var el=document.getElementById('rs'+step);
+  if(!el) return;
+  if(data.done){
+    el.className='rs-step done';
+    if(step===3) document.getElementById('rsSub').textContent=data.label.replace(/^.*?(\d+.*)$/,'$1');
+  } else {
+    el.className='rs-step active';
+    if(step===3 && data.current && data.total){
+      document.getElementById('rsSub').textContent=data.current+'/'+data.total+' \u00b7 '+(data.detail||'');
+    }
+  }
+}
+
+function markStepError(){
+  var active=document.querySelector('.rs-step.active');
+  if(active) active.className='rs-step error';
+}
+
+function finishAnalysis(){
+  var btn=document.getElementById('analyzeBtn');
+  btn.disabled=false;
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg> Analyze';
+  if(_elapsedTimer){clearInterval(_elapsedTimer);_elapsedTimer=null;}
+}
+
+// ── Render results ──
+function renderResults(data){
+  // Summary strip
+  document.getElementById('sumInput').textContent=data.inputFile||'Pasted text';
+  var found=(data.sources||[]).filter(function(s){return s.found==='true';}).length;
+  document.getElementById('sumSource').textContent=found+' of '+(data.sourceRefs||0)+' refs resolved';
+  var secs=((data.queryTimeMs||0)/1000).toFixed(1);
+  document.getElementById('sumTime').textContent=secs+'s';
+
+  // Root cause banner
+  var analysis=data.analysis||'';
+  var rcTitle=extractRootCause(data);
+  document.getElementById('rcTitle').textContent=rcTitle;
+  // Extract first paragraph after root cause as hypothesis
+  var hyp=extractHypothesis(analysis);
+  document.getElementById('rcHypothesis').textContent=hyp;
+  document.getElementById('rcStats').innerHTML=
+    '<div><span class="num">'+data.tracesFound+'</span><span>Stack traces</span></div>'+
+    '<div><span class="num" style="color:var(--good-ink)">'+found+'<span style="color:var(--ink-4);font-size:18px">/'+(data.sourceRefs||0)+'</span></span><span>Source resolved</span></div>'+
+    '<div><span class="num">'+secs+'<span style="color:var(--ink-4);font-size:14px">s</span></span><span>Analysis time</span></div>';
+
+  // Frames — only show found/SDK, hide not-found behind a toggle
+  var frHtml='', hiddenCount=0;
+  (data.sources||[]).forEach(function(s,i){
+    var cls=s['class']||'';
+    var lastDot=cls.lastIndexOf('.');
+    var pkg=lastDot>0?cls.substring(0,lastDot+1):'';
+    var name=lastDot>0?cls.substring(lastDot+1):cls;
+    var isSandisk=cls.indexOf('com.sandisk')===0||cls.indexOf('com.agile.fio')===0;
+    var isSDK=cls.indexOf('com.agile.api')===0;
+    var isFound=s.found==='true';
+
+    // Skip not-found frames (count them for the toggle)
+    if(!isFound && !isSDK){ hiddenCount++; return; }
+
+    var statusHtml='';
+    if(isFound) statusHtml='<span class="found">\u25CF Found</span>'+(s.source?' <span>'+esc(s.source)+'</span>':s.repo?' <span>'+esc(s.repo)+'</span>':'');
+    else statusHtml='<span class="tag">Agile SDK</span>';
+
+    var syncHtml=s.syncWarning?'<span class="warn"> \u26A0 '+esc(s.syncWarning)+'</span>':'';
+    var lineHtml=s.sourceLine?'<div style="margin-top:3px;font-size:11px;color:var(--ink-3)">L'+s.line+': <code style="font-family:var(--font-mono);background:var(--surface-2);padding:1px 5px;border-radius:3px;font-size:11px;border:1px solid var(--line)">'+esc(s.sourceLine)+'</code></div>':'';
+
+    frHtml+='<div class="frame'+(isSandisk?' sandisk':'')+'">'+
+      '<div class="idx">'+(i+1)+'</div>'+
+      '<div class="body">'+
+        '<div class="cls"><span class="pkg">'+esc(pkg)+'</span><strong>'+esc(name)+'</strong></div>'+
+        '<div class="loc">'+statusHtml+syncHtml+'</div>'+
+        lineHtml+
+      '</div></div>';
+  });
+  if(!frHtml) frHtml='<div style="padding:20px;color:var(--ink-3);text-align:center">No source references found.</div>';
+  if(hiddenCount>0) frHtml+='<div style="padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3);cursor:pointer" onclick="toggleUnresolved()" id="unresolvedToggle" data-count="'+hiddenCount+'" data-expanded="0">'+hiddenCount+' unresolved frame'+(hiddenCount>1?'s':'')+' hidden &mdash; <span style="color:var(--accent)">show</span></div>';
+  document.getElementById('framesDisplay').innerHTML=frHtml;
+
+  // Raw stack trace
+  var trace=esc(data.stackTrace||'');
+  trace=trace.replace(/(com\.sandisk\.[^\n]+)/g,'<span class="sandisk-line">$1</span>');
+  trace=trace.replace(/(com\.agile\.[^\n]+)/g,'<span class="sandisk-line">$1</span>');
+  document.getElementById('stackTraceDisplay').innerHTML=trace;
+
+  // AI analysis
+  document.getElementById('analysisDisplay').innerHTML=renderMarkdown(data.analysis||'No analysis available.');
+}
+
+function extractRootCause(data){
+  // Try to get exception from stack trace
+  var st=data.stackTrace||'';
+  var m=st.match(/([\w.]+(?:Exception|Error))[:\s]/);
+  if(m){
+    // Find which class it occurred in
+    var atLine=st.match(/at\s+(com\.(?:sandisk|agile)\.[^\s]+)/);
+    if(atLine){
+      var parts=atLine[1].split('.');
+      var method=parts.pop();
+      var cls=parts.pop();
+      return m[1]+' in '+cls+'.'+method;
+    }
+    return m[1];
+  }
+  return 'Exception Analysis';
+}
+
+function extractHypothesis(analysis){
+  // Take the first real paragraph from the analysis
+  var lines=analysis.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    if(l.length>40 && !l.startsWith('#') && !l.startsWith('```') && !l.startsWith('-') && !l.startsWith('*')){
+      return l.length>300?l.substring(0,300)+'...':l;
+    }
+  }
+  return '';
+}
+
+function renderMarkdown(text){
+  var html=esc(text);
+  html=html.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code>$2</code></pre>');
+  html=html.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  html=html.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  html=html.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  html=html.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  html=html.replace(/`([^`]+)`/g,'<code>$1</code>');
+  html=html.replace(/^\d+\.\s+(.+)$/gm,'<li>$1</li>');
+  html=html.replace(/^- (.+)$/gm,'<li>$1</li>');
+  html=html.replace(/(<li>[\s\S]*?<\/li>\n?)+/g,'<ul>$&</ul>');
+  html=html.replace(/\n\n/g,'</p><p>');
+  html='<p>'+html+'</p>';
+  return html;
+}
+
+function esc(s){
+  if(!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function cancelAnalysis(){
+  if(_abortController){_abortController.abort();_abortController=null;}
+  finishAnalysis();
+  showInputState();
+  showToast('Analysis cancelled');
+}
+
+// ── Email when done ──
+var _notifyEmail=null;
+
+function requestEmail(){
+  var v=document.getElementById('emailInput').value.trim();
+  if(!v||v.indexOf('@')<0){showToast('Enter a valid email');return;}
+  _notifyEmail=v;
+  document.getElementById('emailTo').textContent=v;
+  document.getElementById('emailForm').style.display='none';
+  document.getElementById('emailConfirmed').style.display='inline-flex';
+  document.getElementById('emailCard').classList.add('confirmed');
+  showToast('Will email report when done');
+}
+function undoEmail(){
+  _notifyEmail=null;
+  document.getElementById('emailForm').style.display='flex';
+  document.getElementById('emailConfirmed').style.display='none';
+  document.getElementById('emailCard').classList.remove('confirmed');
+}
+function sendEmailIfRequested(data){
+  if(!_notifyEmail||!data) return;
+  var found=(data.sources||[]).filter(function(s){return s.found==='true';}).length;
+  fetch('/api/debug/email-report',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      email:_notifyEmail,
+      rootCause:extractRootCause(data),
+      tracesFound:data.tracesFound||0,
+      sourceRefs:data.sourceRefs||0,
+      sourcesResolved:found,
+      queryTimeMs:data.queryTimeMs||0,
+      analysis:data.analysis||''
+    })
+  }).then(function(r){return r.json();}).then(function(res){
+    if(res.ok) showToast('Report emailed to '+_notifyEmail);
+    else showToast('Email failed: '+(res.error||'unknown'));
+  }).catch(function(){showToast('Email failed');});
+  _notifyEmail=null;
+}
+
+// ── Actions ──
+function toggleUnresolved(){
+  if(!_lastResult) return;
+  var el=document.getElementById('unresolvedToggle');
+  if(!el) return;
+  // Check if already showing
+  if(el.dataset.expanded==='1'){
+    el.dataset.expanded='0';
+    // Remove the unresolved frames
+    var uf=document.querySelectorAll('.frame.unresolved-frame');
+    uf.forEach(function(f){f.remove();});
+    el.innerHTML=el.dataset.count+' unresolved frame'+(parseInt(el.dataset.count)>1?'s':'')+' hidden &mdash; <span style="color:var(--accent)">show</span>';
+  } else {
+    el.dataset.expanded='1';
+    var html='';
+    ((_lastResult.sources)||[]).forEach(function(s,i){
+      var cls=s['class']||'';
+      var isSDK=cls.indexOf('com.agile.api')===0;
+      if(s.found==='true'||isSDK) return;
+      var lastDot=cls.lastIndexOf('.');
+      var pkg=lastDot>0?cls.substring(0,lastDot+1):'';
+      var name=lastDot>0?cls.substring(lastDot+1):cls;
+      html+='<div class="frame unresolved-frame" style="opacity:.55">'+
+        '<div class="idx">'+(i+1)+'</div>'+
+        '<div class="body">'+
+          '<div class="cls"><span class="pkg">'+esc(pkg)+'</span><strong>'+esc(name)+'</strong></div>'+
+          '<div class="loc"><span class="not-found">\u2717 Not found</span>'+(s.note?' <span style="opacity:.7">'+esc(s.note)+'</span>':'')+'</div>'+
+        '</div></div>';
+    });
+    el.insertAdjacentHTML('beforebegin',html);
+    el.innerHTML=el.dataset.count+' unresolved frames &mdash; <span style="color:var(--accent)">hide</span>';
+  }
+}
+
+function toggleRawTrace(){
+  var w=document.getElementById('rawTraceWrap');
+  w.classList.toggle('hide');
+}
+
+function copyStack(){
+  if(_lastResult&&_lastResult.stackTrace){
+    navigator.clipboard.writeText(_lastResult.stackTrace).then(function(){showToast('Stack trace copied');});
+  }
+}
+function copyAnalysis(){
+  if(_lastResult&&_lastResult.analysis){
+    navigator.clipboard.writeText(_lastResult.analysis).then(function(){showToast('Analysis copied');});
+  }
+}
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},1500);
+}
+
+function downloadReport(){
+  if(!_lastResult) return;
+  var md='# Debug Report\n\n';
+  md+='## Stack Trace\n```\n'+(_lastResult.stackTrace||'')+'\n```\n\n';
+  md+='## Source Resolution\n';
+  (_lastResult.sources||[]).forEach(function(s){
+    md+='- '+s['class']+':'+s.line+' \u2014 '+(s.found==='true'?'Found in '+(s.repo||s.foundInRepo||s.source||'?'):'NOT FOUND')+'\n';
+    if(s.syncWarning) md+='  - \u26A0 '+s.syncWarning+'\n';
+  });
+  md+='\n## AI Analysis\n\n'+(_lastResult.analysis||'')+'\n';
+  var blob=new Blob([md],{type:'text/markdown'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='debug-report-'+new Date().toISOString().slice(0,10)+'.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Repo autocomplete ──
+var _repoList=null, _acSel=-1;
+
+function loadRepoList(){
+  if(_repoList!==null) return;
+  _repoList=[];
+  fetch('/api/debug/repos?project=PLM').then(function(r){return r.json();}).then(function(data){
+    _repoList=data||[];
+  }).catch(function(){});
+}
+
+function filterRepos(){
+  loadRepoList();
+  var input=document.getElementById('repoInput');
+  var dd=document.getElementById('repoDropdown');
+  var q=input.value.trim().toLowerCase();
+  if(!_repoList||!_repoList.length){dd.classList.add('hide');return;}
+
+  var matches=_repoList.filter(function(r){return !q||r.toLowerCase().indexOf(q)>=0;});
+  if(!matches.length){
+    dd.innerHTML='<div class="ac-empty">No matching repos</div>';
+    dd.classList.remove('hide');
+    return;
+  }
+  // Limit to 15
+  matches=matches.slice(0,15);
+  _acSel=-1;
+  dd.innerHTML=matches.map(function(r,i){
+    var display=r;
+    if(q){
+      var idx=r.toLowerCase().indexOf(q);
+      if(idx>=0) display=esc(r.substring(0,idx))+'<mark>'+esc(r.substring(idx,idx+q.length))+'</mark>'+esc(r.substring(idx+q.length));
+      else display=esc(r);
+    } else display=esc(r);
+    return '<div class="ac-item" data-val="'+esc(r)+'" onmousedown="pickRepo(\''+r+'\')">'+display+'</div>';
+  }).join('');
+  dd.classList.remove('hide');
+}
+
+function pickRepo(val){
+  document.getElementById('repoInput').value=val;
+  document.getElementById('repoDropdown').classList.add('hide');
+}
+
+// Keyboard nav in dropdown
+document.getElementById('repoInput').addEventListener('keydown',function(e){
+  var dd=document.getElementById('repoDropdown');
+  var items=dd.querySelectorAll('.ac-item');
+  if(!items.length||dd.classList.contains('hide')) return;
+  if(e.key==='ArrowDown'){e.preventDefault();_acSel=Math.min(_acSel+1,items.length-1);highlightAc(items);}
+  else if(e.key==='ArrowUp'){e.preventDefault();_acSel=Math.max(_acSel-1,0);highlightAc(items);}
+  else if(e.key==='Enter'&&_acSel>=0){e.preventDefault();pickRepo(items[_acSel].dataset.val);}
+  else if(e.key==='Escape'){dd.classList.add('hide');}
+});
+function highlightAc(items){
+  items.forEach(function(it,i){it.classList.toggle('sel',i===_acSel);});
+  if(_acSel>=0&&items[_acSel]) items[_acSel].scrollIntoView({block:'nearest'});
+}
+// Hide dropdown on blur
+document.getElementById('repoInput').addEventListener('blur',function(){
+  setTimeout(function(){document.getElementById('repoDropdown').classList.add('hide');},150);
+});
+
+// Preload repo list when options panel opens
+var _origToggle=toggleOpt;
+toggleOpt=function(){_origToggle();loadRepoList();};
+
+// ── History ──
+var _historyData=[];
+
+function loadHistory(){
+  fetch('/api/debug/history').then(function(r){return r.json();}).then(function(data){
+    _historyData=data||[];
+    renderHistory();
+  }).catch(function(){
+    document.getElementById('historyList').innerHTML='<div style="padding:20px 10px;text-align:center;color:var(--ink-4);font-size:12px">Could not load history</div>';
+  });
+}
+
+function renderHistory(activeId){
+  var list=document.getElementById('historyList');
+  if(!_historyData.length){
+    list.innerHTML='<div style="padding:20px 10px;text-align:center;color:var(--ink-4);font-size:12px">No analyses yet.<br>Run one to see it here.</div>';
+    document.getElementById('historyCount').textContent='0 analyses';
+    return;
+  }
+  var html='';
+  _historyData.forEach(function(h){
+    var ago=timeAgo(h.timestamp);
+    var resolved=h.sourcesResolved||0, total=h.sourceRefs||0;
+    var dotClass=resolved===0?'none':resolved<total?'partial':'found';
+    var isActive=activeId&&h.id===activeId;
+    html+='<div class="h-item'+(isActive?' active':'')+'" onclick="loadHistoryEntry(\''+h.id+'\')">'
+      +'<div class="exc">'+esc(h.rootCause||'Analysis')+'</div>'
+      +'<div class="meta"><span class="hdot '+dotClass+'"></span>'
+      +'<span>'+esc(h.inputFile||'')+'</span>'
+      +'<span style="margin-left:auto;color:var(--ink-4)">'+ago+'</span>'
+      +'</div></div>';
+  });
+  list.innerHTML=html;
+  document.getElementById('historyCount').textContent=_historyData.length+' analys'+ (_historyData.length===1?'is':'es');
+}
+
+function loadHistoryEntry(id){
+  var entry=null;
+  for(var i=0;i<_historyData.length;i++){
+    if(_historyData[i].id===id){entry=_historyData[i];break;}
+  }
+  if(!entry) return;
+  // Build a result-shaped object from the history entry
+  var data={
+    inputFile:entry.inputFile,
+    tracesFound:entry.tracesFound,
+    stackTrace:entry.stackTrace,
+    sourceRefs:entry.sourceRefs,
+    sources:entry.sources||[],
+    analysis:entry.analysis,
+    queryTimeMs:entry.queryTimeMs
+  };
+  _lastResult=data;
+  renderResults(data);
+  showResultsState();
+  renderHistory(id);
+}
+
+function clearHistoryAll(){
+  appConfirm('Clear all your debug analysis history?', { danger: true, okText: 'Clear' }).then(function(ok){
+    if(!ok) return;
+    fetch('/api/debug/history',{method:'DELETE'}).then(function(r){return r.json();}).then(function(){
+      _historyData=[];
+      renderHistory();
+      showToast('History cleared');
+    });
+  });
+}
+
+function timeAgo(iso){
+  if(!iso) return '';
+  var now=Date.now(), then=new Date(iso).getTime();
+  var diff=Math.floor((now-then)/1000);
+  if(diff<60) return 'just now';
+  if(diff<3600) return Math.floor(diff/60)+'m ago';
+  if(diff<86400) return Math.floor(diff/3600)+'h ago';
+  if(diff<172800) return 'Yesterday';
+  return Math.floor(diff/86400)+'d ago';
+}
+
+// Load history on page load
+loadHistory();
+</script>
+</body>
+</html>

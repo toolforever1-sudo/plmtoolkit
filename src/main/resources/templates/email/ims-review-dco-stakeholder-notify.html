@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light dark">
+<title>IMS Dashboard &mdash; New DCO Submitted</title>
+</head>
+<body style="margin:0; padding:0; background:#FAFAF7; font-family:'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif; color:#0F1720;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="600" style="max-width:600px; margin:24px auto; background:#ffffff; border:1px solid #E8E6DF; border-radius:8px;">
+
+  <tr><td style="padding:14px 20px; font-size:11px; color:#6B7280; border-bottom:1px solid #E8E6DF;">
+    Agile PLM &middot; IMS Dashboard &middot; New DCO Submitted
+    <span style="float:right; background:#d4edda; color:#155724; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">DCO Submitted</span>
+  </td></tr>
+
+  <tr><td style="padding:18px 20px 6px;">
+    <div style="text-transform:uppercase; letter-spacing:0.6px; color:#6B7280; font-size:11px; font-weight:600;">IMS DASHBOARD &middot; NO ACTION REQUIRED</div>
+    <h1 style="font-family:'IBM Plex Serif',Georgia,serif; font-size:22px; font-weight:500; margin:6px 0 4px;"><strong style="font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;">${dcoNumber}</strong> created and submitted</h1>
+    <p style="color:#6B7280; margin:0 0 8px; font-size:13px;">For IMS document <strong style="font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;">${docNumber}</strong>. <strong style="color:#4a6fa5;">${signedBy}</strong> signed via PLM Toolkit; the toolkit then assembled and submitted the Agile change order on their behalf.</p>
+    <p style="color:#6B7280; margin:0 0 16px; font-size:12.5px;">Informational only &mdash; Doc Control owns the next step in Agile (review &rarr; release &rarr; implement). When the DCO reaches <em>Implemented</em>, the linked change request auto-closes via the relationship rule.</p>
+  </td></tr>
+
+  <tr><td style="padding:0 20px 12px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate; border-spacing:6px 0;">
+      <tr>
+        <td style="background:#FAFAF7; border:1px solid #E8E6DF; border-radius:6px; padding:10px; text-align:center; width:33%;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#6B7280;">DCO</div>
+          <div style="font-size:14px; font-weight:600; color:#4a6fa5; font-family:'IBM Plex Mono',Consolas,monospace;">${dcoNumber}</div>
+        </td>
+        <td style="background:#FAFAF7; border:1px solid #E8E6DF; border-radius:6px; padding:10px; text-align:center; width:33%;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#6B7280;">New Rev</div>
+          <div style="font-size:18px; font-weight:600; color:#0F1720;">${newRev}</div>
+        </td>
+        <td style="background:#FAFAF7; border:1px solid #E8E6DF; border-radius:6px; padding:10px; text-align:center; width:34%;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#6B7280;">Priority</div>
+          <div style="font-size:14px; font-weight:600; color:#0F1720;">${priority}</div>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #E8E6DF; padding-bottom:4px;">What changed</div>
+    <table role="presentation" cellpadding="6" cellspacing="0" width="100%" style="margin-top:6px; font-size:13px;">
+      <tr><td style="color:#6B7280; font-weight:600; width:35%; white-space:nowrap; vertical-align:top;">Description</td><td style="word-break:break-word;">${descriptionOfChange}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Reason</td><td style="word-break:break-word;">${reasonForChange}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Related DRR</td><td style="font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5;">${drrNumber}</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #E8E6DF; padding-bottom:4px;">Product impact</div>
+    <table role="presentation" cellpadding="6" cellspacing="0" width="100%" style="margin-top:6px; font-size:13px;">
+      <tr><td style="color:#6B7280; font-weight:600; width:35%; white-space:nowrap; vertical-align:top;">Product Lines</td><td style="word-break:break-word;">${productLines}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Subcontractors</td><td style="word-break:break-word;">${subcontractors}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Training Requirement</td><td>${trainingRequirement}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Business Unit</td><td>${businessUnit}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Change Impact Disposition</td><td>${changeImpactDisposition}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Change Impact Details</td><td style="word-break:break-word;">${changeImpactDetails}</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #E8E6DF; padding-bottom:4px;">Who's involved</div>
+    <table role="presentation" cellpadding="6" cellspacing="0" width="100%" style="margin-top:6px; font-size:13px;">
+      <tr><td style="color:#6B7280; font-weight:600; width:35%; white-space:nowrap; vertical-align:top;">Document Owners</td><td style="color:#4a6fa5; word-break:break-word;">${documentOwners}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Approvers</td><td style="color:#4a6fa5; word-break:break-word;">${approvers}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Observers</td><td style="color:#4a6fa5; word-break:break-word;">${observers}</td></tr>
+      <tr><td style="color:#6B7280; font-weight:600; vertical-align:top;">Additional stakeholders</td><td style="word-break:break-word;">${notifyStakeholders}</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #E8E6DF; padding-bottom:4px;">Attachments</div>
+    <p style="margin:8px 0; font-size:13px;"><strong>${attachmentsCount}</strong> file(s) attached to the DCO in Agile. The signed attestation PDF is included with this email.</p>
+  </td></tr>
+
+  <tr><td style="padding:14px 20px 0;">
+    <div style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #E8E6DF; padding-bottom:4px;">Signed by</div>
+    <p style="margin:8px 0; font-size:13px;"><strong style="color:#4a6fa5;">${signedBy}</strong> &lt;${signedEmail}&gt;<br><span style="font-family:'IBM Plex Mono',Consolas,monospace; font-size:11px; color:#6B7280;">${submittedAt}</span></p>
+  </td></tr>
+
+  <tr><td style="padding:14px 20px; font-family:'IBM Plex Mono',Consolas,monospace; font-size:11px; color:#6B7280; border-top:1px solid #E8E6DF;">${submittedAt}</td></tr>
+
+  <tr><td style="padding:14px 20px; background:#FAFAF7; border-top:1px solid #E8E6DF; text-align:center;">
+    <div style="font-size:11px; color:#6B7280;">PLM Toolkit &middot; IMS Dashboard</div>
+    ${accountStatusFooter}
+    <div style="font-size:11px; color:#6B7280;">This is an automated notification. Please do not reply.</div>
+  </td></tr>
+
+</table>
+</body>
+</html>

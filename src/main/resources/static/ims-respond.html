@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>IMS Document Review — Response</title>
+<style>
+  :root {
+    --bg:        #FAFAF7;
+    --card:      #ffffff;
+    --ink:       #0F1720;
+    --muted:     #6B7280;
+    --border:    #E8E6DF;
+    --primary:   #4a6fa5;
+    --header-bg: #2c3e50;
+    --success:   #1F8A4C;
+    --error:     #B8342B;
+    --warn:      #C7801B;
+    --shared:    #5B21B6;
+    --shared-bg: #f1ebfb;
+    --faint:     #9aa1ab;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans','Segoe UI',Calibri,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .topbar {
+    background: var(--header-bg); color: #fff; padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .topbar .brand {
+    font-family: 'IBM Plex Serif',Georgia,serif; font-size: 20px;
+    font-weight: 500;
+  }
+  .topbar .sub { color: #b8c5d0; font-size: 12px; }
+  .wrap {
+    max-width: 1040px; margin: 32px auto; padding: 0 16px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 28px; margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted);
+    font-size: 11px; font-weight: 600; margin-bottom: 6px;
+  }
+  h1 {
+    font-family: 'IBM Plex Serif',Georgia,serif; font-size: 24px;
+    font-weight: 500; margin: 0 0 14px;
+  }
+  .docmeta {
+    background: #FAFAF7; border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 18px; margin: 14px 0;
+  }
+  .docmeta-row { display: flex; gap: 12px; padding: 4px 0; font-size: 13px; }
+  .docmeta-row .k { width: 130px; color: var(--muted); font-weight: 600; }
+  .docmeta-row .v { flex: 1; word-break: break-word; }
+  .docmeta-row .docno { font-family: 'IBM Plex Mono',Consolas,monospace; color: var(--primary); font-weight: 600; }
+  .action-grid { display: grid; grid-template-columns: 1fr; gap: 7px; margin: 14px 0; }
+  .action-card {
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 9px 12px; cursor: pointer; background: #fff;
+    text-align: left; transition: border-color 0.15s, background 0.15s;
+  }
+  .action-card:hover { background: #f5f7fa; }
+  .action-card.selected { border-color: var(--primary); background: #eef3fa; }
+  .action-card .title { font-weight: 600; font-size: 13px; }
+  .action-card.no-change .title { color: var(--success); }
+  .action-card.upload .title    { color: var(--shared); }
+  .action-card.help .title      { color: var(--warn); }
+  .action-card.approve .title   { color: var(--success); }
+  .action-card.send-back .title { color: var(--shared); }
+  .action-card .sub  { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+  /* Revamp: richer 4-option picker (icon chip + title + sub) — handoff §3 */
+  .opt-card { display: flex; gap: 13px; align-items: flex-start;
+    border: 1px solid #d8d5cc; border-radius: 9px; padding: 13px 16px;
+    cursor: pointer; background: #fff; text-align: left; width: 100%;
+    transition: border-color .15s, background .15s; }
+  .opt-card:hover { background: #f6f8fb; border-color: #c7cdd6; }
+  .opt-card.selected { border-color: var(--primary); background:#eef3fa; }
+  .opt-chip { width: 27px; height: 27px; border-radius: 7px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .opt-body { display: flex; flex-direction: column; gap: 2px; }
+  .opt-title { font-weight: 600; font-size: 13px; }
+  .opt-sub { font-size: 11.5px; color: var(--muted); }
+  .opt-card.no-change .opt-chip { background:#e3f3ea; color:#1F8A4C; }
+  .opt-card.no-change .opt-title { color:#1F8A4C; }
+  .opt-card.change .opt-chip { background:#eaf1fa; color:#4a6fa5; }
+  .opt-card.change .opt-title { color:#4a6fa5; }
+  .opt-card.obs .opt-chip { background:#f8e9e8; color:#b0413a; }
+  .opt-card.obs .opt-title { color:#9e3b34; }
+  .lp-help-sep { font-family:'IBM Plex Mono',Consolas,monospace; font-size:10px;
+    letter-spacing:0.08em; text-transform:uppercase; color:#b3aea2; margin:15px 0 3px; }
+  .opt-card.help { border:0; border-radius:7px; padding:9px 8px; background:none; }
+  .opt-card.help:hover { background:#f4f3ef; }
+  .opt-card.help .opt-chip { width:22px; height:22px; background:none; color:var(--muted); }
+  .opt-card.help .opt-title { color:var(--ink); }
+  .opt-card.help .opt-sub { color:#9aa1ab; }
+
+  /* Revamp: full-width "I need help" banner (replaces the help opt-card) — handoff §A2 */
+  .lp-help-banner { margin-top:6px; border:1px solid #E8E6DF; background:#FAFAF7;
+    border-radius:8px; padding:13px 18px; display:flex; align-items:center; gap:13px; cursor:pointer;
+    transition:border-color .15s; }
+  .lp-help-banner:hover { border-color:#c7cdd6; }
+  .lp-help-q { width:26px; height:26px; border:1px solid #E8E6DF; background:#fff; color:#6B7280;
+    border-radius:999px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; }
+  .lp-help-title { display:block; font-size:13px; font-weight:600; color:#0F1720; }
+  .lp-help-sub { display:block; font-size:12.5px; color:#6B7280; }
+
+  /* Revamp: shared "IMS Document Details" reference panel — handoff §5 */
+  .co-ref2 { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:14px 0; }
+  .co-ref2 > summary { list-style:none; cursor:pointer; padding:11px 16px;
+    background:#e7eef9; border-bottom:1px solid #d2ddf0; box-shadow: inset 3px 0 0 #4a6fa5;
+    display:flex; gap:9px; align-items:center; }
+  .co-ref2 > summary::-webkit-details-marker { display:none; }
+  .co-ref2-title { font-family:'IBM Plex Mono',Consolas,monospace; font-size:11.5px;
+    letter-spacing:0.08em; text-transform:uppercase; color:#2c3e50; font-weight:600; }
+  .co-ref2-expand { margin-left:auto; display:inline-flex; gap:6px; align-items:center;
+    font-size:11px; color:#9aa1ab; font-weight:500; }
+  .co-ref2 .chev { color:#b3aea2; font-size:10px; transition:transform .15s; }
+  .co-ref2[open] > summary .chev { transform:rotate(90deg); }
+  .co-ref2-inner { padding:6px 16px 14px; background:#fff; }
+  .co-ref2-grp { border:1px solid var(--border); border-radius:7px; margin-top:10px; overflow:hidden; }
+  .co-ref2-grp > summary { list-style:none; cursor:pointer; padding:7px 12px;
+    background:#FAFAF7; border-bottom:1px solid var(--border);
+    display:flex; gap:8px; align-items:center; font-size:12.5px; font-weight:600; color:#2c3e50; }
+  .co-ref2-grp > summary::-webkit-details-marker { display:none; }
+  .co-ref2-grp .ct { margin-left:auto; font-family:'IBM Plex Mono',Consolas,monospace;
+    font-size:10px; color:#9aa1ab; font-weight:400; }
+  .co-ref2-grp[open] > summary .chev { transform:rotate(90deg); }
+  .co-ref2-body { display:grid; grid-template-columns:1fr 1fr; column-gap:26px; padding:4px 14px 8px; }
+  .co-ref2-row { display:grid; grid-template-columns:42% 1fr; gap:12px; align-items:start;
+    padding:6px 0; border-bottom:1px solid #f3f1eb; }
+  .co-ref2-k { text-align:right; font-size:12.5px; line-height:1.45; color:#8a8f98; font-weight:600; }
+  .co-ref2-v { font-size:13.5px; line-height:1.45; color:#2b323b; word-break:break-word; }
+  .co-ref2-v.empty { color:#cdc8bb; }
+  .co-ref2-v.docno { font-family:'IBM Plex Mono',Consolas,monospace; color:#4a6fa5; font-weight:600; }
+  @media (max-width:560px) { .co-ref2-body { grid-template-columns:1fr; } }
+
+  .followup { display: none; margin: 14px 0 6px; }
+  .followup.show { display: block; }
+  label.field { display: block; margin: 12px 0; }
+  label.field .lbl { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+  label.field input, label.field textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 14px; background: #fff;
+    font-family: inherit;
+  }
+  label.field input[readonly] {
+    background: #FAFAF7; color: var(--ink); cursor: not-allowed;
+    font-family: 'IBM Plex Mono',Consolas,monospace;
+  }
+  label.field textarea { min-height: 80px; resize: vertical; }
+  label.field input[type=file] { padding: 8px; }
+  .signature-block {
+    background: #FAFAF7; border-left: 3px solid var(--primary);
+    border-radius: 0 6px 6px 0; padding: 14px 16px; margin: 18px 0;
+  }
+  .signature-block h3 { margin: 0 0 4px; font-size: 14px; }
+  .signature-block p  { margin: 0; font-size: 12px; color: var(--muted); }
+  .submit-row { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
+  .btn {
+    padding: 7px 14px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 600; border: 1px solid var(--border);
+    background: #fff; color: var(--ink); font-family: inherit;
+  }
+  .btn-primary { background: var(--header-bg); color: #fff; border-color: var(--header-bg); }
+  .btn-primary:disabled { background: #b6becb; border-color: #b6becb; cursor: not-allowed; }
+  .banner {
+    border-radius: 6px; padding: 12px 14px; margin: 12px 0;
+    font-size: 13px; border-left: 4px solid var(--muted);
+    white-space: pre-wrap;
+  }
+  .banner.success { background: #e8f5e9; border-color: var(--success); color: #1a4d2a; }
+  .banner.error   { background: #fdeaea; border-color: var(--error);   color: #6b1f1c; }
+  .banner.warn    { background: #fff8e1; border-color: var(--warn);    color: #6b4b16; }
+  .footer {
+    text-align: center; color: var(--muted); font-size: 11px;
+    margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .footer .pill {
+    display: inline-block; padding: 2px 10px; border: 1px solid #ececec;
+    border-radius: 12px; font-size: 11px;
+  }
+  @media (max-width: 540px) {
+    .docmeta-row { flex-direction: column; gap: 2px; }
+    .docmeta-row .k { width: auto; }
+  }
+
+  /* ----- DCO Form Drawer (Phase 5) ----- */
+  .dco-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    display: none; z-index: 9000;
+  }
+  .dco-backdrop.show { display: block; }
+  /* Change-order form: a centered, full-height page panel (not a right-side rail). */
+  .dco-drawer {
+    position: fixed; top: 24px; bottom: 24px; left: 16px; right: 16px;
+    margin: 0 auto; width: auto; max-width: 1040px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.18); overflow: hidden;
+    opacity: 0; visibility: hidden; transform: translateY(10px);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s;
+    z-index: 9001; display: flex; flex-direction: column;
+  }
+  .dco-drawer.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .dco-drawer-hd {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .dco-drawer-hd .x { background: none; border: 0; font-size: 22px; cursor: pointer; color: var(--muted); }
+  .dco-drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .dco-drawer-ft {
+    padding: 14px 20px; border-top: 1px solid var(--border);
+    background: #FAFAF7;
+  }
+  .dco-section {
+    margin: 18px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted);
+    font-weight: 600;
+  }
+  .dco-field { display: block; margin: 10px 0; }
+  .dco-field .lbl { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+  .dco-field .lbl.req::after { content: ' *'; color: var(--error); }
+  .dco-field input, .dco-field textarea, .dco-field select {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border);
+    border-radius: 5px; font-size: 13px; font-family: inherit;
+    background: #fff;
+  }
+  .dco-field .helper { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .dco-field.err input, .dco-field.err textarea, .dco-field.err select { border-color: var(--error); }
+  .dco-field.err .helper { color: var(--error); }
+  .dco-disclaimer {
+    background: #fff8e1; border-left: 4px solid var(--warn);
+    border-radius: 0 6px 6px 0; padding: 10px 14px; margin-bottom: 14px;
+    font-size: 12.5px; color: #5a4a1f;
+  }
+  .dco-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .dco-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #eef3fa; border: 1px solid #b4d0fe; border-radius: 12px;
+    padding: 2px 8px; font-size: 11px; color: #1a3a5c;
+  }
+  .dco-chip .rm { cursor: pointer; color: #1a3a5c; opacity: 0.6; }
+  .dco-typeahead { position: relative; }
+  .dco-typeahead-results {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 10;
+    background: #fff; border: 1px solid var(--border); border-radius: 5px;
+    max-height: 200px; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+    display: none;
+  }
+  .dco-typeahead-results.show { display: block; }
+  .dco-typeahead-results .hit {
+    padding: 6px 10px; cursor: pointer; font-size: 12px;
+    border-bottom: 1px solid #f0eee8;
+  }
+  .dco-typeahead-results .hit:hover { background: #eef3fa; }
+  .dco-optional-toggle { color: var(--primary); cursor: pointer; font-size: 12px; margin: 8px 0; display:inline-block; }
+  .dco-optional { display: none; }
+  .dco-optional.show { display: block; }
+  .dco-att-slot { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .dco-att-slot .typ { width: 110px; font-size: 11px; color: var(--muted); font-weight: 600; }
+  .dco-att-files { list-style: none; padding: 0; margin: 4px 0 0 118px; }
+  .dco-att-files li { display: flex; gap: 8px; align-items: center; font-size: 11px; color: var(--muted); padding: 2px 0; }
+  .dco-att-files .rm { color: var(--error); cursor: pointer; text-decoration: underline; }
+
+  .dco-sec {
+    text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted);
+    font-size: 11px; font-weight: 600; margin: 18px 0 8px;
+    padding-bottom: 4px; border-bottom: 1px solid var(--border);
+  }
+  .dco-cap { color: #9aa1ab; font-size: 11px; }
+  /* Inline radio selections — replaced the big Yes/No & Yes/N-A segmented
+     toggles to conserve vertical space on the merged Change info step. */
+  .dco-radios { display: flex; gap: 18px; align-items: center; padding: 3px 0; }
+  .dco-radio { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; font-weight: 500; color: var(--ink); }
+  .dco-radio input { width: 15px; height: 15px; margin: 0; cursor: pointer; accent-color: #5B21B6; }
+  /* Label + radios on the same line (Priority, Product Line(s) mode) */
+  .dco-field-inline { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .dco-field-inline > .lbl { margin-bottom: 0 !important; }
+  .dco-field-inline .dco-radios { padding: 0; }
+  /* Compact LoV pickers/typeaheads (deck: "using a whole line just to fill values") */
+  .dco-drawer-body .dco-typeahead input,
+  .dco-drawer-body .dco-picker-filter { padding: 5px 9px; font-size: 12.5px; }
+  .dco-drawer-body .dco-picker-list { max-height: 150px; }
+  .dco-drawer-body .dco-chips, .dco-drawer-body .dco-picker-chips { gap: 3px; }
+  /* Lighter, smaller hint text (deck: "make it smaller or lighter") */
+  .dco-drawer-body .dco-field .helper { font-size: 10.5px; color: #9aa1ab; }
+  .dco-fslot-hint { font-size: 11px !important; color: #9aa1ab !important; }
+  .dco-mf-list { list-style: none; padding: 0; margin: 4px 0 0; }
+  .dco-mf-list li { font-size: 11.5px; color: var(--muted); padding: 1px 0; }
+  /* File-slot redesign */
+  .dco-fslot {
+    border: 1.5px dashed #d8d5cc; border-radius: 8px;
+    padding: 11px 14px; margin-bottom: 9px;
+    background: #fff; display: flex; align-items: center; gap: 12px;
+  }
+  .dco-fslot.has-file { border: 1.5px solid var(--success); background: #e8f5e9; }
+  .dco-fslot.dco-dragover { border: 1.5px dashed var(--accent, #4a6fa5); background: #eef3fb; }
+  .dco-fslot.dco-dragover * { pointer-events: none; }
+  .dco-fslot-meta { flex: 1; min-width: 0; }
+  .dco-fslot-title {
+    font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px;
+  }
+  .dco-fslot-title .check { color: var(--success); }
+  .dco-fslot-hint { font-size: 11.5px; color: var(--muted); margin-top: 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dco-fslot button { padding: 6px 12px; font-size: 12px; }
+  /* Stakeholder Notification: equal-height Email Copy / Email Addresses boxes + OR divider (handoff §B10) */
+  .dco-emailcopy .dco-fslot { min-height: 58px; border-color: #E8E6DF; }
+  .dco-or-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  .dco-or-line { flex: 1; height: 1px; background: #E8E6DF; }
+  .dco-or-pill {
+    font-family: 'IBM Plex Mono',Consolas,monospace; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; color: #1a3a5c; background: #e8f0fe; border: 1px solid #E8E6DF;
+    border-radius: 999px; padding: 2px 12px;
+  }
+  .dco-notify-ta {
+    width: 100%; box-sizing: border-box; min-height: 58px; resize: vertical;
+    border: 1.5px dashed #E8E6DF; border-radius: 8px; padding: 9px 12px;
+    font-size: 13px; font-family: inherit; background: #fff;
+  }
+  .dco-notify-ta::placeholder { font-size: 11.5px; color: #9aa1ab; }
+  .dco-attest {
+    display: flex; gap: 9px; align-items: flex-start;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 11px 14px; font-size: 12.5px; margin-bottom: 14px; cursor: pointer;
+  }
+  .dco-attest input { width: 16px; height: 16px; margin-top: 1px; }
+
+  /* Agile-style multi-pick picker for Product Lines / Subcontractors */
+  .dco-picker {
+    border: 1px solid var(--border); border-radius: 5px; background: #fff;
+  }
+  .dco-picker-chips {
+    padding: 6px 8px; min-height: 26px; border-bottom: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+  .dco-picker-chips:empty::before {
+    content: 'Nothing selected — click rows below to add'; color: var(--muted); font-size: 11px; font-style: italic;
+  }
+  .dco-picker-filter {
+    width: 100%; padding: 6px 8px; border: 0; border-bottom: 1px solid var(--border);
+    font-size: 12px; outline: none; font-family: inherit; background: #FAFAF7;
+  }
+  .dco-picker-list { max-height: 180px; overflow-y: auto; }
+  .dco-picker-row {
+    padding: 4px 10px; font-size: 12px; cursor: pointer; user-select: none;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .dco-picker-row:hover { background: #eef3fa; }
+  .dco-picker-row.sel { background: #e8f0fe; color: #1a3a5c; font-weight: 600; }
+  .dco-picker-row .cb { display: inline-block; width: 14px; color: var(--primary); margin-right: 4px; }
+  .dco-picker-empty { padding: 8px 10px; color: var(--muted); font-size: 11px; font-style: italic; }
+  .dco-field.err .dco-picker { border-color: var(--error); }
+  .dco-banner-err {
+    background:#fdeaea; color:#6b1f1c; border-left:4px solid var(--error);
+    padding: 8px 12px; border-radius: 0 4px 4px 0; margin: 8px 0; font-size: 12px;
+  }
+  /* ℹ️ field-definition tooltip — clickable popover (A75) */
+  .dco-info {
+    display: inline-block; margin-left: 4px; color: #9aa1ab;
+    font-size: 12px; font-weight: 400; cursor: pointer; vertical-align: baseline;
+  }
+  .dco-info:hover, .dco-info:focus { color: #5B21B6; outline: none; }
+  /* Rich, multi-line popover anchored under the clicked ℹ️ icon. Appended to
+     <body> so it escapes the drawer's overflow clipping. */
+  .dco-tip-pop {
+    position: absolute; z-index: 10050; max-width: 320px;
+    background: #0F1720; color: #F3F4F6; font-size: 12px; line-height: 1.5;
+    padding: 9px 12px; border-radius: 6px; box-shadow: 0 6px 22px rgba(0,0,0,0.30);
+    white-space: normal; word-break: break-word;
+  }
+  .dco-tip-pop strong { color: #ffffff; font-weight: 600; }
+  /* Business Unit inline multi-select toggle buttons (SDSM docs) */
+  .dco-bu-group { display: inline-flex; flex-wrap: wrap; gap: 6px; vertical-align: middle; }
+  .dco-bu-btn {
+    padding: 5px 12px; font-size: 12px; border: 1px solid #E8E6DF; border-radius: 14px;
+    background: #fff; color: var(--ink, #0F1720); cursor: pointer;
+  }
+  .dco-bu-btn:hover { border-color: #4a6fa5; }
+  .dco-bu-btn.dco-bu-on { background: #4a6fa5; color: #fff; border-color: #4a6fa5; }
+  /* Change Impact Details 3-column row editor */
+  .cid-row { display: grid; grid-template-columns: 1fr 1.3fr 1.1fr 26px; gap: 6px; margin-bottom: 6px; align-items: start; }
+  .cid-head { font-size: 11px; font-weight: 600; color: var(--muted, #6B7280); margin-bottom: 2px; }
+  .cid-head > div { padding: 0 2px; }
+  .cid-in { width: 100%; font-size: 12px; padding: 5px 6px; border: 1px solid #E8E6DF; border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: inherit; }
+  .cid-del { border: 1px solid #E8E6DF; background: #fff; color: #B8342B; border-radius: 4px; cursor: pointer; font-size: 15px; line-height: 1; height: 28px; }
+  .cid-del:hover { background: #fdeaea; }
+  .dco-cid-add { margin-top: 4px; padding: 5px 12px; font-size: 12px; border: 1px solid #E8E6DF; border-radius: 4px; background: #fff; color: #4a6fa5; cursor: pointer; }
+  .dco-cid-add:hover { border-color: #4a6fa5; }
+  /* Compaction — the merged "Change info" step packs change + scope + people on
+     one page, so tighten the vertical rhythm + controls (deck: "make this page
+     more compact"). Scoped to the drawer so other panels/buttons are untouched. */
+  .dco-drawer-body .dco-field { margin: 7px 0; }
+  .dco-drawer-body .dco-field .lbl { margin-bottom: 3px; }
+  .dco-drawer-body .dco-field input,
+  .dco-drawer-body .dco-field textarea,
+  .dco-drawer-body .dco-field select { padding: 6px 9px; }
+  .dco-drawer-body .dco-sec,
+  .dco-drawer-body .dco-section { margin: 13px 0 6px; }
+  .dco-drawer-ft .btn { padding: 6px 12px; font-size: 12px; }
+  @media (max-width: 768px) {
+    .dco-drawer { top: 0; bottom: 0; left: 0; right: 0; max-width: none; border-radius: 0; border: 0; }
+  }
+
+  /* Revamp: tabular single-page DCO form (handoff §4) */
+  .co-head { padding:16px 22px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  .co-fsec { border-bottom:1px solid var(--border); }
+  .co-fsec > summary { list-style:none; cursor:pointer; padding:9px 22px; background:#F4F2EC; border-top:1px solid var(--border); display:flex; gap:9px; align-items:center; font-family:'IBM Plex Mono',Consolas,monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:#2c3e50; font-weight:600; }
+  .co-fsec > summary::-webkit-details-marker { display:none; }
+  .co-fsec .chev { color:#b3aea2; font-size:10px; transition:transform .15s; }
+  .co-fsec[open] > summary .chev { transform:rotate(90deg); }
+  .co-fsec .n { color:#b3aea2; }
+  .co-fsec .note { margin-left:auto; font-family:'IBM Plex Sans',sans-serif; font-size:10px; letter-spacing:0; text-transform:none; color:#9aa1ab; font-weight:500; }
+  .co-row { display:grid; grid-template-columns:var(--labelw,188px) 1fr; border-bottom:1px solid var(--border); }
+  .co-row:last-child { border-bottom:0; }
+  .co-k { background:#FAFAF7; border-right:1px solid var(--border); padding:12px 14px; font-size:12.5px; font-weight:600; color:#3c4654; display:flex; gap:5px; align-items:flex-start; justify-content:space-between; }
+  .co-k .req { color:var(--error); }
+  .co-v { background:#fff; padding:10px 14px; }
+  .co-v .co-ta, .co-v input.co-in, .co-v select.co-in { width:100%; padding:7px 10px; border:1px solid #d8d5cc; border-radius:5px; font-size:13px; font-family:inherit; background:#fff; }
+  .co-v .co-ta { min-height:56px; resize:vertical; }
+  .co-help { font-size:10.5px; color:#9aa1ab; margin-top:5px; }
+  .co-radios { display:flex; gap:16px; flex-wrap:wrap; }
+  .co-radio { display:inline-flex; align-items:center; gap:5px; font-size:13px; cursor:pointer; }
+  .co-radio input { width:15px; height:15px; accent-color:#4a6fa5; }
+  .co-foot { padding:12px 22px; border-top:1px solid var(--border); background:#FAFAF7; display:flex; gap:14px; align-items:center; }
+  .co-foot-status { flex:1; font-size:11px; color:#9aa1ab; line-height:1.45; }
+  .co-foot-status.ok { color:#1F8A4C; }
+  @media (max-width:560px) { .co-row { grid-template-columns:1fr; } .co-k { border-right:0; border-bottom:1px solid var(--border); } }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><img src="sandisk-logo-red.png" alt="SanDisk" style="height:18px; vertical-align:middle; margin-right:10px;">PLM Toolkit</div>
+    <div class="sub">IMS Document Review · Electronic Approval</div>
+  </div>
+  <div class="wrap">
+
+    <div id="loading" class="card">
+      <p style="text-align:center; color:var(--muted); margin:20px 0;">Loading review details…</p>
+    </div>
+
+    <div id="errorCard" class="card" style="display:none;">
+      <div class="eyebrow">Cannot proceed</div>
+      <h1 id="errTitle">This response link can't be used</h1>
+      <div id="errBanner" class="banner error"></div>
+      <div id="errExtra"></div>
+      <p style="font-size:12px; color:var(--muted); margin-top:14px;">
+        Need help? Reply to the email Doc Control sent you, or contact pdl-plm-admin@sandisk.com.
+      </p>
+    </div>
+
+    <div id="successCard" class="card" style="display:none;">
+      <div class="eyebrow">Confirmed</div>
+      <h1>Your response is recorded.</h1>
+      <div class="banner success" id="successMsg"></div>
+      <div id="successPdf" style="margin-top:8px; font-size:13px;"></div>
+      <p id="successFooter" style="font-size:12px; color:var(--muted); margin-top:14px;">
+        Doc Control has been notified. You can close this tab.
+      </p>
+    </div>
+
+    <div id="formCard" class="card" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+        <div>
+          <div class="eyebrow" id="roleEyebrow">Loading…</div>
+          <h1 id="formTitle" style="margin-bottom:6px;">Review</h1>
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+          <a id="trainingGuideBtn" href="#" target="_blank" rel="noopener"
+            style="display:none; background:#fff; border:1px solid #b9cde8; color:#4a6fa5; padding:9px 15px; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; text-decoration:none; margin-right:8px; vertical-align:top;">
+            Training Guide</a>
+          <button type="button" id="dlAttachBtn" onclick="downloadAttachments('dlAttachBtn','dlAttachStatus')"
+            style="background:#eaf1fa; border:1px solid #b9cde8; color:#4a6fa5; padding:9px 15px; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap;">
+            &#8615; Download IMS Document</button>
+          <div id="dlAttachStatus" style="font-size:11px; color:var(--muted); margin-top:4px;"></div>
+        </div>
+      </div>
+
+      <div class="docmeta" id="docMeta"></div>
+      <div id="refPanelMount"></div>
+
+      <div id="actionPicker">
+        <div class="eyebrow" style="margin:18px 0 8px;">Pick your response</div>
+        <div class="action-grid" id="actionGrid"></div>
+        <div id="continueRow" style="margin-top:16px; display:none;">
+          <button class="btn btn-primary" id="continueBtn" type="button" onclick="onContinue()">Continue &rarr;</button>
+          <span style="font-size:12px; color:var(--muted); margin-left:10px;">You'll confirm with your AD password on the next step.</span>
+        </div>
+      </div>
+
+      <!-- Signing step — hidden until DO picks an action and clicks Continue.
+           Separates choosing from signing so the page doesn't demand a password
+           before the owner has decided what they're doing. -->
+      <div id="signCard" style="display:none;">
+
+        <div id="followupUpload" class="followup">
+          <label class="field">
+            <span class="lbl">Upload the revised document</span>
+            <input type="file" id="uploadFile">
+          </label>
+          <label class="field">
+            <span class="lbl">Notes for Doc Control (optional)</span>
+            <textarea id="uploadNote" placeholder="What changed, why, anything Doc Control needs to know"></textarea>
+          </label>
+        </div>
+
+        <div id="followupHelp" class="followup">
+          <label class="field">
+            <span class="lbl">What do you need help with?</span>
+            <textarea id="helpNote" placeholder="Describe what's blocking you so Doc Control can step in"></textarea>
+          </label>
+          <label class="field">
+            <span class="lbl">Attachments (optional &mdash; select one or more)</span>
+            <input type="file" id="helpFile" multiple>
+            <span style="font-size:11px; color:var(--muted); margin-top:4px;">
+              Screenshots, draft notes, anything that helps Doc Control understand the ask. All files are sent with the email and kept on the IMS Dashboard for the DCC team to pull.
+            </span>
+          </label>
+        </div>
+
+        <div class="signature-block">
+          <h3>&#x1F512; Electronic signature</h3>
+          <p>Enter your Sandisk AD credentials below. We record your verified identity, the action you took, the timestamp, and your IP on a tamper-evident PDF that lands in your DRR.</p>
+        </div>
+
+        <label class="field">
+          <span class="lbl">AD Username</span>
+          <input type="text" id="username" autocomplete="username" placeholder="login ID or email">
+          <span id="usernameLockedNote" class="lockednote" style="display:none; font-size:11px; color:var(--muted); margin-top:4px;">Pre-filled from the email recipient. Sign in as this person.</span>
+        </label>
+        <label class="field">
+          <span class="lbl">AD Password</span>
+          <input type="password" id="password" autocomplete="current-password">
+        </label>
+
+        <div id="formBanner"></div>
+
+        <div class="submit-row">
+          <button class="btn" type="button" onclick="onBackToPicker()">&larr; Choose a different response</button>
+          <button class="btn btn-primary" id="submitBtn" onclick="onSubmit()" disabled>Sign &amp; Submit</button>
+          <span id="submitStatus" style="font-size:12px; color:var(--muted);"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="pill">sandisk</div>
+      <div style="margin-top:6px;">PLM Toolkit · IMS Dashboard · This is an automated workflow page. Do not reply.</div>
+    </div>
+  </div>
+
+<!-- DCO Form Drawer (Phase 5) -->
+<div id="dcoBackdrop" class="dco-backdrop" onclick="dcoMaybeClose()"></div>
+<aside id="dcoDrawer" class="dco-drawer" aria-hidden="true">
+  <!-- Header carries the 4-step stepper. AD credentials moved to step 4 so
+       the page doesn't demand a password while the owner is still answering. -->
+  <div class="dco-drawer-hd" style="flex-direction:column; align-items:stretch; padding-bottom:14px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); font-weight:600;" id="dcoEyebrow">Update</div>
+        <div id="dcoTitle" style="font-family:'IBM Plex Serif',Georgia,serif; font-size:19px; font-weight:500; margin-top:2px;">Create the change order</div>
+      </div>
+      <button class="x" onclick="dcoMaybeClose()" aria-label="Close" type="button" style="background:none;border:0;font-size:24px;color:var(--muted);cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <!-- Persistent "download the source document" control — visible from the
+         moment the drawer opens, on every step (the responder needs the released
+         file to build the redline/final). Background download, never disturbs
+         the in-progress form. -->
+    <div style="margin-top:10px; padding:8px 10px; background:var(--body-bg,#FAFAF7); border:1px solid #E8E6DF; border-radius:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <a id="dcoTrainingBtn" href="#" target="_blank" rel="noopener" style="display:none; padding:5px 10px; font-size:12px; background:#fff; color:#4a6fa5; border:1px solid #E8E6DF; border-radius:4px; cursor:pointer; white-space:nowrap; text-decoration:none;">Training Guide</a>
+      <button type="button" id="dcoDlBtn" onclick="downloadAttachments('dcoDlBtn','dcoDlStatus')" style="padding:5px 10px; font-size:12px; background:#fff; color:#4a6fa5; border:1px solid #E8E6DF; border-radius:4px; cursor:pointer; white-space:nowrap;">&#11015; Download IMS Document</button>
+      <span id="dcoDlStatus" style="font-size:11px; color:var(--muted);"></span>
+    </div>
+  </div>
+  <div class="dco-drawer-body" id="dcoBody">
+    <div id="dcoFormContent">Loading form&hellip;</div>
+  </div>
+  <!-- Footer: a live "Still needed" / "✓ complete" status line + the single
+       Sign & submit button. The wizard's Back/Next nav is gone now that the
+       whole form is a single scrollable page. -->
+  <div class="dco-drawer-ft co-foot">
+    <div id="dcoStatusLine" class="co-foot-status">Loading…</div>
+    <button class="btn btn-primary" id="dcoSubmitBtn" type="button" onclick="dcoSubmit()" disabled>&#x1F512; Sign &amp; submit</button>
+  </div>
+</aside>
+<script src="/imsreview-dco-form.js?v=20260630b"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function getParam(name) {
+    var p = new URLSearchParams(window.location.search);
+    return p.get(name) || '';
+  }
+
+  // Build an Agile webclient deep-link for a number; fail-soft to plain text
+  // when no base URL is available (response page has no app session — base
+  // arrives via token/info → STATE.info.agileWebclientUrl).
+  function agileBase() {
+    return (STATE.info && STATE.info.agileWebclientUrl) || window.AGILE_WEBCLIENT_URL || '';
+  }
+  function agileLink(number, kind) { // kind: 'item' | 'change'
+    if (!number) return '';
+    var base = agileBase();
+    if (!base) return esc(number);
+    var href = kind === 'item'
+      ? base + '/object/Part/' + encodeURIComponent(number) + '/tab/13'
+      : base + '/object/' + encodeURIComponent((String(number).split('-')[0] || '')) + '/' + encodeURIComponent(number);
+    return '<a href="' + href + '" target="_blank" rel="noopener" '
+         + 'style="color:#4a6fa5; text-decoration:none; border-bottom:1px dashed #a0b8d0;">' + esc(number) + '</a>';
+  }
+
+  var TOKEN = getParam('token');
+  var URL_ACTION = getParam('action');  // optional pre-selection from the email button
+  var STATE = {
+    info: null,
+    chosenAction: null
+  };
+
+  function showError(text, extraHtml) {
+    $('loading').style.display = 'none';
+    $('formCard').style.display = 'none';
+    $('successCard').style.display = 'none';
+    $('errorCard').style.display = '';
+    $('errBanner').textContent = text || 'Unknown error.';
+    $('errExtra').innerHTML = extraHtml || '';
+  }
+
+  // Admin preview mode (ims-respond.html?preview=1) — render the DCO change-order
+  // form populated with the real dropdown lists but with submit disabled, so admins
+  // can review the layout without a live response link. Auth is enforced server-side
+  // by /api/ims-review/dco-form-preview-metadata (admin/DCC session only).
+  if (getParam('preview') === '1') {
+    $('loading').style.display = 'none';
+    if (typeof window.dcoOpen === 'function') {
+      window.dcoOpen({ preview: true, docNumber: '(preview)', recipientEmail: '', allowedActors: [], rev: '' });
+    } else {
+      showError('Preview unavailable — the DCO form script did not load.');
+    }
+    return;
+  }
+
+  if (!TOKEN) {
+    showError('No response token in the URL. Open this page from the link in your email.');
+    return;
+  }
+
+  fetch('/api/ims-review/token/info?token=' + encodeURIComponent(TOKEN), { credentials: 'omit' })
+    .then(function (r) { return r.json(); })
+    .then(function (info) {
+      STATE.info = info;
+      if (info.alreadyRedeemed) {
+        var extra = '';
+        if (info.redeemedAt) {
+          extra = '<p style="font-size:13px; margin-top:10px;">Submitted by <strong>' + esc(info.redeemedBy || '(unknown)') + '</strong> on <strong>' + esc((info.redeemedAt || '').replace('T',' ').substring(0, 16)) + ' UTC</strong>.</p>';
+        }
+        showError(info.errorReason || 'This review was already submitted.', extra);
+        return;
+      }
+      if (!info.valid) {
+        showError(info.errorReason || 'This response link is no longer valid.');
+        return;
+      }
+      renderForm(info);
+    })
+    .catch(function (e) {
+      showError('Could not load the review: ' + e.message);
+    });
+
+  // Shared "IMS Document Details" reference panel (handoff §5). Read-only,
+  // collapsed by default. Binds to token/info fields that exist today; any
+  // not yet wired from Agile render as a faint "—" (backend follow-up).
+  function refRow(label, val, kind) {
+    var has = !(val == null || val === '');
+    var inner;
+    if (!has) inner = '—';
+    else if (kind === 'docno') inner = agileLink(val, 'item');
+    else if (kind === 'change') inner = agileLink(val, 'change');
+    else inner = esc(val);
+    var cls = 'co-ref2-v' + (!has ? ' empty' : (kind === 'docno' ? ' docno' : ''));
+    return '<div class="co-ref2-row"><div class="co-ref2-k">' + esc(label) +
+           '</div><div class="' + cls + '">' + inner + '</div></div>';
+  }
+  function refGroup(title, rows) {
+    return '<details class="co-ref2-grp" open><summary><span class="chev">&#9656;</span>' +
+           esc(title) + '</summary>' +
+           '<div class="co-ref2-body">' + rows.join('') + '</div></details>';
+  }
+  window.renderRefPanel = function (info) {
+    info = info || {};
+    var titleBlock = [
+      refRow('Number', info.docNumber, 'docno'),
+      refRow('Document Type', info.documentType),
+      refRow('Lifecycle Phase', info.lifecyclePhase),
+      refRow('Description', info.description),
+      refRow('Document Category', info.documentCategory),
+      refRow('Product Line', info.productLine),
+      refRow('Rev Release Date', info.revReleaseDate)
+    ];
+    var moreInfo = [
+      refRow('Old Document Number', info.oldDocumentNumber),
+      refRow('Referenced Documents', info.referencedDocuments),
+      refRow('Owner', (info.ownerNames || []).join('; ')),
+      refRow('Create User', info.createUser),
+      refRow('Create Date', info.createDate)
+    ];
+    var docDetails = [
+      refRow('Automotive Product Development Standard Applicability?', info.apdsApplicability),
+      refRow('Last Reviewed Date', info.lastReviewedDate),
+      refRow('Next Review Date', info.nextReviewDate),
+      refRow('Site Location', info.siteLocation),
+      refRow('Function / Sub Function', info.functionSubFunction),
+      refRow('Document Owner(s)', (info.ownerNames || []).join('; ')),
+      refRow('Subcontractors', info.subcontractorsDisplay),
+      refRow('Document Style', info.documentStyle),
+      refRow('VAR Type', info.varType),
+      refRow('Product Group', info.productGroup),
+      refRow('Applies to all Part Numbers in Model list', info.appliesAllParts),
+      refRow('Part Number', info.partNumber),
+      refRow('Support document category/type', info.supportDocCategory),
+      refRow('Spec', info.spec),
+      refRow('Support document Number', info.supportDocNumber),
+      refRow('Document Classification', info.documentClassification),
+      refRow('Product', info.product),
+      refRow('PM Checklist', info.pmChecklist)
+    ];
+    return '<details class="co-ref2"><summary><span class="chev">&#9656;</span>' +
+           '<span class="co-ref2-title">IMS Document Details</span>' +
+           '<span class="co-ref2-expand">Expand for more details</span></summary>' +
+           '<div class="co-ref2-inner">' +
+             refGroup('Title Block', titleBlock) +
+             refGroup('More Info', moreInfo) +
+             refGroup('Document Details', docDetails) +
+           '</div></details>';
+  };
+
+  // Build one option card for the landing-page action picker (handoff §3).
+  function optCardHtml(a) {
+    return '<button class="opt-card ' + a.cls + '" data-action="' + esc(a.key) + '" onclick="onPickAction(\'' + a.key + '\')">' +
+      '<span class="opt-chip">' + esc(a.icon) + '</span>' +
+      '<span class="opt-body"><span class="opt-title">' + esc(a.title) + '</span>' +
+      '<span class="opt-sub">' + esc(a.sub) + '</span></span></button>';
+  }
+
+  // Full-width "I need help" banner (handoff §A2). Replaces the HELP opt-card;
+  // routes to the same HELP action. Placed after the three response cards.
+  function helpBannerHtml() {
+    return '<div class="lp-help-banner" onclick="onPickAction(\'HELP\')">' +
+      '<span class="lp-help-q">?</span>' +
+      '<span style="flex:1;">' +
+        '<span class="lp-help-title">Stuck? I need help</span>' +
+        '<span class="lp-help-sub">I\'m blocked and need Doc Control\'s assistance.</span>' +
+      '</span>' +
+      '<span style="color:#6B7280;">&rarr;</span>' +
+      '</div>';
+  }
+
+  function renderForm(info) {
+    $('loading').style.display = 'none';
+    $('formCard').style.display = '';
+    $('roleEyebrow').textContent = info.role === 'DM'
+      ? 'Manager-level approval'
+      : 'Document owner response';
+    // Headline asks the question — matches the email and gives the owner a
+    // clear yes/no frame before they pick an action.
+    $('formTitle').textContent = info.role === 'DM'
+      ? 'Approve this document review?'
+      : 'Is this document still accurate?';
+
+    // Training Guide button (handoff §A1) — links to the landing-page training
+    // guide. Only shown when the backend provided a URL on token/info.
+    var tgBtn = $('trainingGuideBtn');
+    if (tgBtn) {
+      if (info.trainingDocUrl) {
+        tgBtn.href = info.trainingDocUrl;
+        tgBtn.style.display = 'inline-block';
+      } else {
+        tgBtn.style.display = 'none';
+      }
+    }
+
+    // Summary — four rows only (handoff §3). Owner / dates / type now live in
+    // the collapsible reference panel below, not in this top summary.
+    var meta = '';
+    meta += '<div class="docmeta-row"><div class="k">Number</div><div class="v docno">' + agileLink(info.docNumber, 'item') + '</div></div>';
+    meta += '<div class="docmeta-row"><div class="k">Description</div><div class="v">' + esc(info.description || '') + '</div></div>';
+    meta += '<div class="docmeta-row"><div class="k">Rev / Lifecycle</div><div class="v">' + esc(info.rev || '') + ' / ' + esc(info.lifecyclePhase || '') + '</div></div>';
+    if (info.drrNumber) {
+      meta += '<div class="docmeta-row"><div class="k">Related DRR</div><div class="v">' + agileLink(info.drrNumber, 'change') + '</div></div>';
+    }
+    $('docMeta').innerHTML = meta;
+    $('refPanelMount').innerHTML = window.renderRefPanel(info);
+
+    // Action picker — four richer option cards (handoff §3). DM keeps its two
+    // actions but renders as opt-cards too for visual consistency.
+    var grid = '';
+    if (info.role === 'DM') {
+      var dmActions = [
+        { key:'DM_APPROVE', cls:'no-change', icon:'✓', title:'Confirm No Change',
+          sub:'Closes the review. Doc Control closes the DRR with both signed PDFs attached.' },
+        { key:'DM_SEND_BACK', cls:'change', icon:'↩', title:'Send Back to DO',
+          sub:'DO needs to revise. Reopens the DO step. No PDF generated for send-back.' }
+      ];
+      dmActions.forEach(function (a) { grid += optCardHtml(a); });
+    } else {
+      var doActions = [
+        { key:'NO_CHANGE', cls:'no-change', icon:'✓', title:'No change needed',
+          sub:'This document is current and needs no revision. Generates an approval PDF and notifies your manager.' },
+        { key:'UPLOAD', cls:'change', icon:'✎', title:'Needs change — start a change order',
+          sub:'I have a revised file. Opens the change-order form; Doc Control takes it from there.' }
+      ];
+      if (info.dcoFormEnabled) {
+        doActions.push({ key:'OBS', cls:'obs', icon:'⊙', title:"Don't need this — OBS it",
+          sub:'This document is no longer needed. Starts an obsolete (OBS) change order to retire it in Agile.' });
+      }
+      doActions.forEach(function (a) { grid += optCardHtml(a); });
+      grid += helpBannerHtml();
+    }
+    $('actionGrid').innerHTML = grid;
+
+    // Pre-fill + LOCK username from recipient — but ONLY when the SEND went
+    // to a single person. Multi-recipient docs (e.g. two Document Owners)
+    // get the same token; whoever clicks first wins, so we can't lock the
+    // field to one name. In that case leave it editable and show a hint
+    // listing the allowed signers. DL recipients (pdl-/ims-) also stay
+    // editable — whichever team member is actually clicking signs in.
+    var actors = info.allowedActors || (info.recipientEmail ? [info.recipientEmail] : []);
+    var isDl = info.recipientEmail
+            && (info.recipientEmail.toLowerCase().indexOf('pdl-') === 0
+             || info.recipientEmail.toLowerCase().indexOf('ims-') === 0);
+    if (actors.length === 1 && !isDl) {
+      $('username').value = actors[0];
+      $('username').setAttribute('readonly', 'readonly');
+      $('usernameLockedNote').style.display = '';
+    } else if (actors.length > 1) {
+      // Multi-owner SEND — leave editable, surface the allowed list as a hint.
+      $('username').removeAttribute('readonly');
+      $('username').value = '';
+      var note = $('usernameLockedNote');
+      if (note) {
+        note.style.display = '';
+        note.textContent = 'This document has multiple owners. Sign in as one of: '
+            + actors.join('; ') + '. First response wins.';
+      }
+    }
+
+    // Honor ?action=X from the email button click. The DO now picks the action
+    // IN the email (three buttons), so skip the picker entirely and drop them
+    // straight on the sign-off / DCO step — no Continue click. onContinue()
+    // hides the picker (or opens the DCO drawer for UPLOAD); a "← choose a
+    // different response" link on the sign card lets them correct a misclick.
+    if (URL_ACTION && info.allowedActions.indexOf(URL_ACTION) >= 0) {
+      // onPickAction now advances straight into the action (drawer or sign
+      // card) on its own — no separate onContinue() needed here.
+      onPickAction(URL_ACTION);
+    }
+  }
+
+  // Download the document's attachments via the token-scoped endpoint. Uses
+  // fetch→blob so a 404 (no attachments) shows an inline message instead of
+  // navigating to a raw JSON error. The server writes a "downloaded by <you>"
+  // entry to the Agile document History tab (A73).
+  window.downloadAttachments = function (btnId, statusId) {
+    if (!TOKEN) return;
+    var btn = $(btnId || 'dlAttachBtn'), st = $(statusId || 'dlAttachStatus');
+    if (btn) btn.disabled = true;
+    if (st) st.textContent = 'Preparing download…';
+    fetch('/api/ims-review/token/attachments?token=' + encodeURIComponent(TOKEN), { credentials: 'omit' })
+      .then(function (r) {
+        if (!r.ok) {
+          return r.json().catch(function () { return {}; }).then(function (j) {
+            throw new Error(j.error || (r.status === 404 ? 'No attachments on this document.' : 'Download failed.'));
+          });
+        }
+        var cd = r.headers.get('Content-Disposition') || '';
+        var m = /filename="?([^"]+)"?/.exec(cd);
+        var fname = m ? m[1] : 'attachments';
+        return r.blob().then(function (blob) { return { blob: blob, fname: fname }; });
+      })
+      .then(function (res) {
+        var url = URL.createObjectURL(res.blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = res.fname;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        if (btn) btn.disabled = false;
+        if (st) st.textContent = 'Downloaded ✓';
+      })
+      .catch(function (e) {
+        if (btn) btn.disabled = false;
+        if (st) st.textContent = e.message || 'Download failed.';
+      });
+  };
+
+  // PICK ACTION — only marks the chosen card and reveals the Continue button.
+  // Does NOT reveal the signature block (signing is gated behind Continue).
+  window.onPickAction = function (key) {
+    STATE.chosenAction = key;
+    document.querySelectorAll('.opt-card').forEach(function (b) {
+      b.classList.toggle('selected', b.getAttribute('data-action') === key);
+    });
+    // Go straight into the chosen action — no separate Continue click (Vikas
+    // 2026-06-19: "want to go straight into the action"). onContinue() routes:
+    // Needs Change + rich form opens the change-order drawer; every other
+    // action reveals the AD-sign card. The Continue button is never shown.
+    $('continueRow').style.display = 'none';
+    onContinue();
+  };
+
+  // CONTINUE — gate that reveals the signature step (or opens the DCO wizard
+  // for UPLOAD when the kill-switch is on).
+  window.onContinue = function () {
+    if (!STATE.chosenAction) return;
+    var key = STATE.chosenAction;
+
+    // UPLOAD or OBS with the rich-form flag → open the change-order drawer.
+    // OBS is interim-routed to the standard DCO form (handoff §7.1); a
+    // dedicated obsolete/retire variant comes later. Signing happens in the
+    // drawer footer, NOT on the main page. Leave the picker visible so the
+    // user can dismiss the drawer and pick a different action.
+    if ((key === 'UPLOAD' || key === 'OBS') && STATE.info && STATE.info.dcoFormEnabled) {
+      if (typeof window.dcoOpen === 'function') {
+        window.dcoOpen(STATE.info, STATE.chosenAction);
+        return;
+      }
+      // OBS has no inline/legacy path — it only exists as the change-order
+      // drawer flow. If the drawer script didn't load, fail loudly instead
+      // of POSTing an action the backend rejects.
+      if (key === 'OBS') {
+        showError('The change-order form failed to load. Please reload the page and try again.');
+        return;
+      }
+      // dco-form-enabled but JS didn't load — fall through to legacy inline UI
+    }
+
+    // Hide picker + reveal signCard with the right follow-up block.
+    $('actionPicker').style.display = 'none';
+    $('signCard').style.display = '';
+    $('followupUpload').classList.toggle('show', key === 'UPLOAD');
+    $('followupHelp').classList.toggle('show', key === 'HELP');
+    refreshSubmitButton();
+    // Scroll the signature block into view so the password field is what the
+    // owner sees next, not the old picker scrolled up.
+    var sig = $('signCard');
+    if (sig && sig.scrollIntoView) sig.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // BACK — return to picker without losing the selected action.
+  window.onBackToPicker = function () {
+    $('signCard').style.display = 'none';
+    $('actionPicker').style.display = '';
+  };
+
+  function refreshSubmitButton() {
+    var ok = !!STATE.chosenAction
+          && !!$('username').value.trim()
+          && !!$('password').value;
+    if (STATE.chosenAction === 'UPLOAD') {
+      var f = $('uploadFile').files;
+      ok = ok && f && f.length > 0;
+    }
+    $('submitBtn').disabled = !ok;
+  }
+  $('username').addEventListener('input', refreshSubmitButton);
+  $('password').addEventListener('input', refreshSubmitButton);
+  $('uploadFile').addEventListener('change', refreshSubmitButton);
+
+  window.onSubmit = function () {
+    if (!STATE.chosenAction) return;
+    var btn = $('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Verifying & recording…';
+    $('formBanner').innerHTML = '';
+
+    var fd = new FormData();
+    fd.append('token', TOKEN);
+    fd.append('action', STATE.chosenAction);
+    fd.append('username', $('username').value.trim());
+    fd.append('password', $('password').value);
+    var note = '';
+    if (STATE.chosenAction === 'UPLOAD') {
+      var f = $('uploadFile').files;
+      if (f && f.length > 0) fd.append('file', f[0]);
+      note = $('uploadNote').value.trim();
+    } else if (STATE.chosenAction === 'HELP') {
+      note = $('helpNote').value.trim();
+      var hf = $('helpFile').files;
+      if (hf && hf.length > 0) {
+        // Multiple file support — append each as a separate "file" part.
+        // Spring's MultipartHttpServletRequest collects same-name parts into
+        // a List<MultipartFile> on the backend.
+        for (var i = 0; i < hf.length; i++) fd.append('file', hf[i]);
+      }
+    }
+    if (note) fd.append('note', note);
+
+    fetch('/api/ims-review/token/submit', {
+      method: 'POST', body: fd, credentials: 'omit'
+    }).then(function (r) {
+      return r.json().then(function (j) { return { status: r.status, body: j }; });
+    }).then(function (resp) {
+      if (resp.body.success) {
+        $('formCard').style.display = 'none';
+        $('successCard').style.display = '';
+        var msg = STATE.chosenAction === 'NO_CHANGE'
+            ? 'Approval recorded. Your manager has been emailed for the final sign-off.'
+          : STATE.chosenAction === 'DM_APPROVE'
+            ? 'Approval recorded. Doc Control will close the DRR.'
+          : STATE.chosenAction === 'UPLOAD'
+            ? 'Your revised file is with Doc Control.'
+          : STATE.chosenAction === 'HELP'
+            ? 'Doc Control will reach out to help.'
+          : STATE.chosenAction === 'DM_SEND_BACK'
+            ? 'The DO has been notified to revise. No PDF was generated for send-back.'
+          : 'Your response is recorded.';
+        // Show the DRR number (hyperlinked to Agile) on the confirmation so the
+        // signer has a direct reference to the change request they just actioned.
+        var drrNo = STATE.info && STATE.info.drrNumber;
+        if (drrNo) {
+          $('successMsg').innerHTML = esc(msg)
+            + '<div style="margin-top:6px; font-size:13px;">DRR: ' + agileLink(drrNo, 'change') + '</div>';
+        } else {
+          $('successMsg').textContent = msg;
+        }
+        if (resp.body.signedBy) {
+          $('successPdf').innerHTML = 'Signed by <strong>' + esc(resp.body.signedBy) + '</strong>' + (resp.body.signedEmail ? ' &lt;' + esc(resp.body.signedEmail) + '&gt;' : '') + '.';
+        }
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Sign & Submit';
+        var b = document.createElement('div');
+        b.className = 'banner error';
+        b.textContent = resp.body.error || ('Submit failed (HTTP ' + resp.status + ').');
+        $('formBanner').innerHTML = '';
+        $('formBanner').appendChild(b);
+      }
+    }).catch(function (e) {
+      btn.disabled = false;
+      btn.textContent = 'Sign & Submit';
+      var b = document.createElement('div');
+      b.className = 'banner error';
+      b.textContent = 'Submit failed: ' + e.message;
+      $('formBanner').innerHTML = '';
+      $('formBanner').appendChild(b);
+    });
+  };
+})();
+</script>
+</body>
+</html>
